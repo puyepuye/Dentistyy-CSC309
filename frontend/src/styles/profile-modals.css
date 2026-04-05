@@ -1,0 +1,286 @@
+/* Talent profile edit modals — teal CTA, rounded card (matches mockups) */
+
+.profile-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgb(15 23 42 / 0.55);
+    animation: profile-modal-in 0.18s ease-out;
+}
+
+.profile-modal-backdrop--nested {
+    z-index: 1100;
+    background: rgb(15 23 42 / 0.45);
+}
+
+@keyframes profile-modal-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.profile-modal {
+    width: 100%;
+    max-width: 520px;
+    max-height: min(92vh, 720px);
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-elevated);
+    border-radius: 14px;
+    box-shadow: 0 24px 48px rgb(0 0 0 / 0.18);
+    overflow: hidden;
+}
+
+.profile-modal--wide {
+    max-width: 640px;
+}
+
+.profile-modal__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.25rem 1.35rem 0.75rem;
+}
+
+.profile-modal__title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-brand-dark);
+    line-height: 1.25;
+}
+
+.profile-modal__close {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.profile-modal__close:hover {
+    background: var(--color-bg-tabs);
+    color: var(--color-text-heading);
+}
+
+.profile-modal__body {
+    padding: 0.5rem 1.35rem 1.25rem;
+    overflow-y: auto;
+}
+
+.profile-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding: 1rem 1.35rem 1.25rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+}
+
+.profile-modal__btn-primary {
+    padding: 0.65rem 1.35rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-primary-strong);
+    color: var(--color-text-on-primary);
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.profile-modal__btn-primary:hover:not(:disabled) {
+    background: var(--color-primary);
+}
+
+.profile-modal__btn-primary:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.profile-modal__btn-ghost {
+    padding: 0.65rem 1rem;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+}
+
+.profile-modal__btn-ghost:hover {
+    color: var(--color-text-heading);
+}
+
+.profile-modal__error {
+    margin: 0 0 0.75rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 8px;
+    background: rgb(180 40 40 / 0.09);
+    color: var(--color-error);
+    font-size: 0.88rem;
+}
+
+/* Form fields */
+.pm-field {
+    margin-bottom: 1rem;
+}
+
+.pm-field__label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.pm-field__input,
+.pm-field__select,
+.pm-field__textarea {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--color-border-input);
+    border-radius: 10px;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--color-text-heading);
+    background: var(--color-bg-elevated);
+}
+
+.pm-field__input:focus,
+.pm-field__select:focus,
+.pm-field__textarea:focus {
+    outline: none;
+    border-color: var(--color-primary-strong);
+    box-shadow: 0 0 0 2px var(--color-primary-soft);
+}
+
+.pm-field__input:read-only {
+    color: var(--color-text-muted);
+    background: var(--color-bg-tabs);
+    cursor: not-allowed;
+}
+
+.pm-field__textarea {
+    min-height: 140px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+.pm-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+    .pm-field-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pm-upload-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+}
+
+.pm-upload-row input[type='file'] {
+    font-size: 0.82rem;
+}
+
+.pm-file-name {
+    color: var(--color-text-subtle);
+    font-size: 0.88rem;
+}
+
+/* Qualifications table */
+.pm-quals-section-title {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-brand-dark);
+}
+
+.pm-quals-table-wrap {
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--color-bg-tabs);
+}
+
+.pm-quals-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+}
+
+.pm-quals-table th,
+.pm-quals-table td {
+    padding: 0.55rem 0.65rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.pm-quals-table th {
+    font-weight: 600;
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: rgb(255 255 255 / 0.7);
+}
+
+.pm-quals-table tr:last-child td {
+    border-bottom: none;
+}
+
+.pm-quals-table td {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-heading);
+}
+
+.pm-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--color-primary-strong);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.pm-link:hover {
+    color: var(--color-accent);
+}
+
+.pm-add-block {
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 0.5rem;
+}
+
+.pm-submit-inline {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+}

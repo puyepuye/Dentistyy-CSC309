@@ -1,0 +1,91 @@
+Temporary Staffing Platform (A3) - INSTALL
+
+Environment used
+- Ubuntu 24.04 LTS (or equivalent Linux VM/container)
+- Node.js 20+ and npm 10+
+- SQLite3 via Prisma (local file database)
+
+Important platform note
+- The backend writes SQLite DB files and uploads to local disk.
+- On many PaaS providers this storage is ephemeral, so data may be lost on restart/redeploy.
+- This submission assumes single-user usage and does not guarantee persistence across redeployments.
+
+Prerequisites
+1) Install Node.js and npm
+   - Example:
+     - curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+     - sudo apt-get install -y nodejs
+2) Verify versions:
+   - node -v
+   - npm -v
+
+Project structure
+- backend/: Express + Prisma + SQLite API
+- frontend/: React (Vite) app
+- Makefile: helper clean/zip targets
+
+Backend setup
+1) Open terminal in backend:
+   - cd backend
+2) Install packages:
+   - npm install
+3) Seed database:
+   - npm run seed
+4) Start server:
+   - npm start
+5) Backend runs at:
+   - http://localhost:3000
+
+CORS (browser frontend)
+- The backend enables CORS so the React app can call the API from another origin (e.g. Vite on port 5173).
+- By default all origins are allowed (`origin: true`). For production, set a comma-separated allowlist:
+  - export CORS_ORIGIN=https://your-frontend.example,http://localhost:5173
+
+Frontend setup
+1) Open terminal in frontend:
+   - cd frontend
+2) Install packages:
+   - npm install
+3) (Optional) Set backend API URL:
+   - export VITE_API_BASE_URL=http://localhost:3000
+   - If omitted, frontend defaults to http://localhost:3000
+4) Start dev server:
+   - npm run dev
+5) Frontend runs at:
+   - http://localhost:5173
+
+Production build (frontend)
+1) Build static assets:
+   - cd frontend
+   - npm run build
+2) Output directory:
+   - frontend/dist
+
+Simple deployment approach (single VM preferred)
+Use one Ubuntu VM with both frontend and backend processes.
+
+Backend deployment
+1) Deploy repository to VM.
+2) Run in backend/:
+   - npm install
+   - npm run seed
+   - npm start
+3) Keep process alive with systemd/pm2/screen.
+
+Frontend deployment
+Option A: Static hosting behind Nginx
+1) Build frontend:
+   - cd frontend && npm install && npm run build
+2) Serve frontend/dist with Nginx.
+3) Configure reverse proxy for backend API to backend process (port 3000), or set VITE_API_BASE_URL to public backend URL before build.
+
+Option B: Same machine, separate process
+1) Serve frontend assets with any static server:
+   - npm install -g serve
+   - cd frontend && serve -s dist -l 4173
+2) Keep backend on port 3000.
+
+Nginx notes (recommended)
+- Serve frontend as SPA and rewrite unknown routes to index.html.
+- Proxy API requests (for example /auth, /users, /jobs, etc.) to backend at http://127.0.0.1:3000.
+- Ensure CORS/backend base URL settings align with your deployment domain.

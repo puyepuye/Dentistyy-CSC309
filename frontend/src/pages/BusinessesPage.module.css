@@ -1,0 +1,22 @@
+.businessesPublic {
+    max-width: 640px;
+}
+
+.businessesPublicTitle {
+    font-size: 1.85rem;
+    margin: 0 0 0.75rem;
+    color: var(--color-text-heading);
+}
+
+.businessesPublicLede {
+    margin: 0 0 1.25rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+}
+
+.businessesPublicActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}

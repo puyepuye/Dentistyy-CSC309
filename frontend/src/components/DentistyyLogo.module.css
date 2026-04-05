@@ -1,0 +1,6 @@
+/* PNG/SVG logo from public/static/dentistyy-logo.png */
+.dentistyyLogo {
+    display: block;
+    flex-shrink: 0;
+    object-fit: contain;
+}

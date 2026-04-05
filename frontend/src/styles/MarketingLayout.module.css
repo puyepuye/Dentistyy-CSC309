@@ -1,0 +1,12 @@
+.pageContainer {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+}
+
+.mainLanding {
+    max-width: none;
+    margin: 0;
+    padding: 0 clamp(1rem, 4vw, 2.25rem) 3.5rem;
+    background: var(--color-bg-elevated);
+}

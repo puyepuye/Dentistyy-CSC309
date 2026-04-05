@@ -1,0 +1,278 @@
+/* —— Talent (/talent) workspace: thick header, profile cards —— */
+
+.talent-workspace-header {
+    background: var(--color-bg-header);
+    border-bottom: 1px solid var(--color-border);
+    padding: clamp(1.15rem, 3vw, 1.65rem) clamp(1rem, 3vw, 2rem);
+}
+
+.talent-workspace-header__inner {
+    min-width: 0;
+}
+
+.talent-workspace-header__greeting {
+    margin: 0;
+    font-size: clamp(1.45rem, 2.8vw, 1.9rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text-heading);
+}
+
+.talent-workspace-header__status {
+    margin: 0.4rem 0 0;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+}
+
+.talent-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.talent-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.35rem;
+    box-shadow: var(--shadow-card);
+}
+
+.talent-card__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.15rem;
+}
+
+.talent-card__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-brand-dark);
+}
+
+.talent-card__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-primary-strong);
+    cursor: pointer;
+}
+
+.talent-card__action:hover {
+    background: var(--color-primary-soft);
+}
+
+.talent-card__action:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.talent-card__action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Personal info row */
+.talent-profile-personal {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: clamp(1rem, 3vw, 2rem);
+    align-items: start;
+}
+
+.talent-avatar {
+    position: relative;
+    width: 128px;
+    height: 128px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-tabs);
+    border: 1px solid var(--color-border);
+}
+
+.talent-avatar__placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(145deg, var(--color-bg-tabs), var(--color-border));
+}
+
+.talent-avatar__img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    object-fit: cover;
+    display: block;
+}
+
+.talent-avatar__camera {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-bg-elevated);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-card);
+}
+
+.talent-field-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem 1.5rem;
+}
+
+@media (max-width: 800px) {
+    .talent-field-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 520px) {
+    .talent-field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .talent-profile-personal {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+}
+
+.talent-field__label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-subtle);
+    margin-bottom: 0.2rem;
+}
+
+.talent-field__value {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-text-heading);
+    line-height: 1.4;
+}
+
+/* Bottom row: biography + qualifications */
+.talent-profile-split {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .talent-profile-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+.talent-bio__body {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text);
+}
+
+.talent-bio__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.88rem;
+}
+
+.talent-bio__resume-link {
+    color: var(--color-primary-strong);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.talent-bio__upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--color-primary-strong);
+    cursor: pointer;
+}
+
+.talent-bio__upload:hover {
+    text-decoration: underline;
+}
+
+.talent-quals__list {
+    margin: 0;
+    padding-left: 1.15rem;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--color-text-heading);
+}
+
+.talent-profile__loading,
+.talent-profile__error,
+.talent-quals__empty {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.talent-profile__error {
+    color: #9a1c1c;
+}
+
+.talent-bio__resume-missing {
+    color: var(--color-text-muted);
+}
+
+.talent-bio__body--spaced {
+    margin-top: 1rem;
+}
+
+.talent-bio__upload:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.talent-bio__file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

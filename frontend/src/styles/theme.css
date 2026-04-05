@@ -1,0 +1,101 @@
+/**
+ * Design tokens — change colors here only; components use var(--token-name).
+ * Palette aligned with Dentistyy-style reference (sidebar, mint header, teal CTAs).
+ */
+:root {
+    /* Typography */
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    /* Brand — buttons / solid CTAs */
+    --color-primary: #3d7068;
+    --color-primary-strong: #325c56;
+    --color-primary-contrast: #ffffff;
+    --color-primary-soft: #e9f7f5;
+
+    /* Accent — active nav item, active tab text / underline */
+    --color-accent: #59a897;
+
+    /* Sidebar / dark chrome */
+    --color-navy: #0d111f;
+    --color-navy-text: #ffffff;
+    --color-navy-muted: #9ca3af;
+    --color-sidebar-active: var(--color-accent);
+    --color-sidebar-edge: rgb(0 0 0 / 0.2);
+    --color-sidebar-divider: rgb(255 255 255 / 0.08);
+    --color-sidebar-link: rgb(255 255 255 / 0.88);
+    --color-sidebar-link-hover-bg: rgb(255 255 255 / 0.06);
+    --color-sidebar-active-row-bg: rgba(89, 168, 151, 0.12);
+    --color-sidebar-logout-fg: var(--color-text-on-dark-muted);
+    --color-sidebar-logout-border: var(--color-text-on-dark-muted);
+    --color-sidebar-logout-hover-bg: rgb(255 255 255 / 0.06);
+    --color-sidebar-logout-icon: var(--color-navy-muted);
+
+    /* Page & surfaces */
+    --color-bg-app: #f3f4f6;
+    --color-bg-elevated: #ffffff;
+    --color-bg-header: #e9f7f5;
+    --color-bg-navbar: var(--color-bg-header);
+    --color-bg-sidebar: var(--color-navy);
+    --color-bg-tabs: #e8eceb;
+    --color-login-tab-mint: #e0f2f0;
+    --color-login-tab-mint-hover: #d5ebe8;
+
+    /* Text */
+    --color-text: #1a1a1a;
+    --color-text-heading: #1a1a1a;
+    --color-text-muted: #6b7280;
+    --color-text-subtle: #9ca3af;
+    --color-text-on-primary: var(--color-primary-contrast);
+    --color-text-on-dark: #ffffff;
+    --color-text-on-dark-muted: #c5cdd8;
+
+    /* Borders & inputs (neutral, matches gray page bg) */
+    --color-border: #e5e7eb;
+    --color-border-nav: #d1d5db;
+    --color-border-strong: #d1d5db;
+    --color-border-input: #d1d5db;
+
+    /* Semantic */
+    --color-error: #b42318;
+    --color-success: #027a48;
+
+    /* Navigation states (top bar — light context) */
+    --color-nav-active-bg: rgba(89, 168, 151, 0.12);
+    --color-nav-active-text: var(--color-accent);
+
+    /* Avatars / chips */
+    --color-avatar-1: #59a897;
+    --color-avatar-2: #d9468c;
+    --color-avatar-3: #7c6bcf;
+
+    /* Marketing / landing (Dentistyy hero + stats) */
+    --color-brand-dark: #0f172a;
+    --color-landing-teal: #4fd1c5;
+    --color-landing-gradient-mid: #1e4b52;
+    --color-landing-gradient-end: #5ebab5;
+    --color-stats-bar-bg: #e5e7eb;
+    --color-text-marketing: #1f2937;
+    --color-press-badge-bg: rgb(37 99 235 / 0.14);
+    --color-press-badge-fg: #2563eb;
+    --color-landing-hero-badge-border: rgb(255 255 255 / 0.55);
+    --color-landing-subhead: rgb(255 255 255 / 0.88);
+    --color-landing-btn-outline-border: rgb(255 255 255 / 0.8);
+    --color-landing-btn-outline-hover-bg: rgb(255 255 255 / 0.08);
+    --color-landing-btn-ghost: rgb(255 255 255 / 0.95);
+    --color-focus-ring-accent-soft: rgb(89 168 151 / 0.25);
+    --color-accent-soft-bg: rgba(89, 168, 151, 0.08);
+
+    /* Layout */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 24px;
+    --radius-2xl: 28px;
+    --radius-full: 9999px;
+    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.06);
+    --shadow-landing-float: 0 8px 24px rgb(15 23 42 / 0.12);
+
+    /* Focus visible (keyboard) */
+    --focus-ring: 2px solid var(--color-accent);
+    --focus-ring-offset: 2px;
+}
