@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signupBusiness } from '../lib/api.js';
+import { isValidPassword, PASSWORD_HINT } from '../lib/passwordValidation.js';
 import AuthFormSection from '../components/marketing/AuthFormSection.jsx';
 import FormTextField from '../components/marketing/FormTextField.jsx';
 import styles from '../styles/MarketingForms.module.css';
@@ -19,7 +20,6 @@ function BusinessSignupPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
 
     function updateField(event) {
         const { name, value } = event.target;
@@ -30,7 +30,12 @@ function BusinessSignupPage() {
         event.preventDefault();
         setLoading(true);
         setError('');
-        setSuccessMessage('');
+
+        if (!isValidPassword(formData.password)) {
+            setError(`Password does not meet requirements. ${PASSWORD_HINT}`);
+            setLoading(false);
+            return;
+        }
 
         try {
             const payload = {
@@ -38,12 +43,20 @@ function BusinessSignupPage() {
                 location: DEFAULT_LOCATION,
             };
             const result = await signupBusiness(payload);
-            setSuccessMessage(
-                `Practice account created. Activation token: ${result.resetToken}. Complete activation via the API, then log in.`
-            );
-            setTimeout(() => navigate('/login'), 1600);
+            navigate('/activate', {
+                replace: true,
+                state: {
+                    email: formData.email.trim(),
+                    resetToken: result.resetToken,
+                },
+            });
         } catch (err) {
-            setError(err.message);
+            const base = err.message || 'Request failed';
+            setError(
+                base === 'Invalid payload'
+                    ? `${base}. ${PASSWORD_HINT} Ensure phone and address are filled in.`
+                    : base
+            );
         } finally {
             setLoading(false);
         }
@@ -105,8 +118,8 @@ function BusinessSignupPage() {
                     onChange={updateField}
                     required
                 />
+                <p className={styles.formHint}>{PASSWORD_HINT}</p>
                 {error && <p className={styles.error}>{error}</p>}
-                {successMessage && <p className={styles.success}>{successMessage}</p>}
                 <button className={`${styles.btn} ${styles.btnPrimary}`} type="submit" disabled={loading}>
                     {loading ? 'Creating practice…' : 'Create practice account'}
                 </button>

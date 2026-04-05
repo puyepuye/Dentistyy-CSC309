@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signupRegularUser } from '../lib/api.js';
+import { isValidPassword, PASSWORD_HINT } from '../lib/passwordValidation.js';
 import AuthFormSection from '../components/marketing/AuthFormSection.jsx';
 import FormTextField from '../components/marketing/FormTextField.jsx';
 import styles from '../styles/MarketingForms.module.css';
@@ -18,7 +19,6 @@ function SignupPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
 
     function updateField(event) {
         const { name, value } = event.target;
@@ -29,16 +29,38 @@ function SignupPage() {
         event.preventDefault();
         setLoading(true);
         setError('');
-        setSuccessMessage('');
+        if (!formData.first_name.trim() || !formData.last_name.trim()) {
+            setError('Please enter your first and last name.');
+            setLoading(false);
+            return;
+        }
+        if (!formData.birthday || !/^\d{4}-\d{2}-\d{2}$/.test(formData.birthday)) {
+            setError('Please choose a valid birthday (YYYY-MM-DD).');
+            setLoading(false);
+            return;
+        }
+        if (!isValidPassword(formData.password)) {
+            setError(`Password does not meet requirements. ${PASSWORD_HINT}`);
+            setLoading(false);
+            return;
+        }
 
         try {
             const result = await signupRegularUser(formData);
-            setSuccessMessage(
-                `Account created. Activation reset token: ${result.resetToken}. Use /auth/resets/:token to activate, then login.`
-            );
-            setTimeout(() => navigate('/login'), 1200);
+            navigate('/activate', {
+                replace: true,
+                state: {
+                    email: formData.email.trim(),
+                    resetToken: result.resetToken,
+                },
+            });
         } catch (err) {
-            setError(err.message);
+            const base = err.message || 'Request failed';
+            setError(
+                base === 'Invalid payload'
+                    ? `${base}. ${PASSWORD_HINT} Also check that your email looks valid.`
+                    : base
+            );
         } finally {
             setLoading(false);
         }
@@ -106,8 +128,10 @@ function SignupPage() {
                     onChange={updateField}
                     required
                 />
+                <p className={styles.formHint} id="signup-password-hint">
+                    {PASSWORD_HINT}
+                </p>
                 {error && <p className={styles.error}>{error}</p>}
-                {successMessage && <p className={styles.success}>{successMessage}</p>}
                 <button className={`${styles.btn} ${styles.btnPrimary}`} type="submit" disabled={loading}>
                     {loading ? 'Creating account...' : 'Create account'}
                 </button>

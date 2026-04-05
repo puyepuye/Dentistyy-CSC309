@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import DentistyyLogo from '../components/DentistyyLogo.jsx';
 import { login, mapApiRoleToFrontend, parseJwtPayload } from '../lib/api.js';
@@ -13,6 +13,7 @@ function redirectPathForRole(frontendRole) {
 
 function LoginPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const { loginWithToken } = useAuth();
 
@@ -26,6 +27,7 @@ function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [submitError, setSubmitError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const activationNotice = location.state?.postActivationMessage;
 
     useEffect(() => {
         setTab(searchParams.get('tab') === 'business' ? 'business' : 'talent');
@@ -50,7 +52,15 @@ function LoginPage() {
             loginWithToken(token, expiresAt ?? null, frontendRole);
             navigate(redirectPathForRole(frontendRole), { replace: true });
         } catch (e) {
-            setSubmitError(e instanceof Error ? e.message : 'Sign-in failed.');
+            const msg = e instanceof Error ? e.message : 'Sign-in failed.';
+            const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
+            if (status === 403 || msg === 'Forbidden') {
+                setSubmitError(
+                    'This account is not activated yet. After signing up, open Activate account and enter your email and activation token, then try logging in again.'
+                );
+            } else {
+                setSubmitError(msg);
+            }
         } finally {
             setSubmitting(false);
         }
@@ -101,6 +111,12 @@ function LoginPage() {
                             <DentistyyLogo size={32} />
                         </div>
                         <h1 className="login-card__title">Log in</h1>
+
+                        {activationNotice ? (
+                            <p className="login-card__success" role="status">
+                                {activationNotice}
+                            </p>
+                        ) : null}
 
                         <div className="login-field">
                             <label htmlFor="login-email">Email</label>
@@ -153,6 +169,8 @@ function LoginPage() {
                             <Link to="/signup">Talent signup</Link>
                             {' · '}
                             <Link to="/signup/business">Practice signup</Link>
+                            {' · '}
+                            <Link to="/activate">Activate account</Link>
                         </p>
                         <p className="login-card__placeholder-note">
                             Seeded demo: e.g. regular1@csc309.utoronto.ca, business1@csc309.utoronto.ca, or

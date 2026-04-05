@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
 import BusinessesPage from './pages/BusinessesPage.jsx';
 import BusinessSignupPage from './pages/BusinessSignupPage.jsx';
+import ActivateAccountPage from './pages/ActivateAccountPage.jsx';
 import StaffProfilePage from './pages/staff/StaffProfilePage.jsx';
 import StaffJobsPage from './pages/staff/StaffJobsPage.jsx';
 import StaffNegotiationsPage from './pages/staff/StaffNegotiationsPage.jsx';
@@ -54,6 +55,7 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/signup/business" element={<BusinessSignupPage />} />
+                    <Route path="/activate" element={<ActivateAccountPage />} />
                 </Route>
 
                 <Route

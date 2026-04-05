@@ -203,6 +203,16 @@
     line-height: 1.35;
 }
 
+.login-card__success {
+    margin: 0.75rem 0 0;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    background: rgba(34, 120, 80, 0.1);
+    color: #1d6b45;
+    font-size: 0.88rem;
+    line-height: 1.35;
+}
+
 .login-card__footer {
     margin: 1.25rem 0 0;
     font-size: 0.88rem;
