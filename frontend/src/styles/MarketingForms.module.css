@@ -32,6 +32,24 @@
     font-size: 0.95rem;
 }
 
+.checkboxRow {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    font-weight: 500;
+    color: var(--color-text-heading);
+}
+
+/* Beat `.authForm label { display: grid }` for checkbox rows */
+.authForm .checkboxRow {
+    display: flex;
+}
+
+.checkboxRow input[type='checkbox'] {
+    width: auto;
+    margin-top: 0.25rem;
+}
+
 .error {
     margin: 0;
     color: var(--color-error);

@@ -34,13 +34,14 @@ export function mapApiRoleToFrontend(apiRole) {
 }
 
 async function request(path, options = {}) {
+    const { headers: optionHeaders, ...restOptions } = options;
     const response = await fetch(`${API_BASE_URL}${path}`, {
         cache: 'no-store',
+        ...restOptions,
         headers: {
             'Content-Type': 'application/json',
-            ...(options.headers || {}),
+            ...(optionHeaders || {}),
         },
-        ...options,
     });
 
     let payload = null;
@@ -78,6 +79,19 @@ export function login(formData) {
     return request('/auth/tokens', {
         method: 'POST',
         body: JSON.stringify(formData),
+    });
+}
+
+/**
+ * Activate a new account (or complete password reset) using the reset token from registration.
+ * @param {string} resetToken - UUID from signup response
+ * @param {{ email: string, password?: string }} body - password optional; omit to keep the password you signed up with
+ */
+export function activateWithResetToken(resetToken, body) {
+    const token = encodeURIComponent(resetToken);
+    return request(`/auth/resets/${token}`, {
+        method: 'POST',
+        body: JSON.stringify(body),
     });
 }
 
