@@ -1,8 +1,5 @@
-fo backend:
+# Dentistyy
 
-cd backend
-npm install
-npx prisma migrate deploy
-npm run seed
+Hosted website: [https://dentistyy-csc309-frontend-production.up.railway.app/](https://dentistyy-csc309-frontend-production.up.railway.app/)
 
-fo fontend:
+Book temp dental shifts faster than you can say "open wide."

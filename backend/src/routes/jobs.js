@@ -70,6 +70,7 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
       'order',
       'page',
       'limit',
+      'q',
     ]);
     if (!valid) return sendError(res, 400, 'Invalid query');
 
@@ -82,7 +83,16 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
       order = 'asc',
       page = '1',
       limit = '10',
+      q: qRaw,
     } = req.query;
+
+    let qTrim = '';
+    if (qRaw !== undefined) {
+      if (typeof qRaw !== 'string') {
+        return sendError(res, 400, 'Invalid query');
+      }
+      qTrim = qRaw.trim().slice(0, 200);
+    }
 
     const pageNum = Number(page);
     const limitNum = Number(limit);
@@ -154,6 +164,12 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
       },
       ...(positionTypeIdNum !== undefined && { positionTypeId: positionTypeIdNum }),
       ...(businessIdNum !== undefined && { business: { accountId: businessIdNum } }),
+      ...(qTrim.length > 0 && {
+        OR: [
+          { positionType: { name: { contains: qTrim, mode: 'insensitive' } } },
+          { business: { businessName: { contains: qTrim, mode: 'insensitive' } } },
+        ],
+      }),
     };
 
     const prismaFieldMap = {
@@ -302,8 +318,9 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
 
     if (role === 'regular') {
       const winningNeg = job.negotiations[0] ?? null;
-      const isWorker = winningNeg?.user?.id === regularUserId;
-      const allowedStatus = ['OPEN', 'FILLED', 'CANCELLED'];
+      const workerRegularUserId = winningNeg?.user?.id ?? job.workerId ?? null;
+      const isWorker = workerRegularUserId != null && workerRegularUserId === regularUserId;
+      const allowedStatus = ['OPEN', 'FILLED', 'CANCELLED', 'COMPLETED', 'EXPIRED'];
 
       if (!allowedStatus.includes(job.status)) {
         return sendError(res, 404, 'Not Found');

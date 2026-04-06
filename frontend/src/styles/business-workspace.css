@@ -153,8 +153,12 @@
 .business-jobs-browse__hero {
     background: var(--color-bg-header);
     border-bottom: 1px solid var(--color-border);
-    padding: clamp(1.15rem, 3vw, 1.65rem) clamp(1rem, 3vw, 2rem);
+    /* ~10% taller than previous values and sticky during scroll. */
+    padding: clamp(1.27rem, 3.3vw, 1.82rem) clamp(1rem, 3vw, 2rem);
     margin-bottom: 0;
+    position: sticky;
+    top: 0;
+    z-index: 18;
 }
 
 .business-jobs-browse__hero-inner {

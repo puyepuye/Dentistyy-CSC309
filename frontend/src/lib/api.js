@@ -235,7 +235,7 @@ export async function uploadUserResume(token, file) {
     return payload;
 }
 
-/** Open job postings (regular). Query: lat, lon, position_type_id, business_id, sort, order, page, limit */
+/** Open job postings (regular). Query: lat, lon, position_type_id, business_id, sort, order, page, limit, q */
 export function getOpenJobs(token, params = {}) {
     const q = new URLSearchParams();
     if (params.lat != null && params.lon != null) {
@@ -247,6 +247,9 @@ export function getOpenJobs(token, params = {}) {
     }
     if (params.business_id != null && params.business_id !== '') {
         q.set('business_id', String(params.business_id));
+    }
+    if (params.q != null && String(params.q).trim() !== '') {
+        q.set('q', String(params.q).trim());
     }
     if (params.sort) q.set('sort', params.sort);
     if (params.order) q.set('order', params.order);

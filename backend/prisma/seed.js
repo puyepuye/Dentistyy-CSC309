@@ -220,8 +220,10 @@ async function main() {
         const end = new Date(start);
         end.setHours(end.getHours() + 8);
 
+        // Only assign workers on FILLED/COMPLETED jobs when someone is qualified for this position type.
+        const qualifiedWorker = firstRegularQualifiedForJob({ positionTypeId: pt.id });
         const workerId =
-            status === 'FILLED' || status === 'COMPLETED' ? regulars[j % regulars.length].regularUser.id : null;
+            status === 'FILLED' || status === 'COMPLETED' ? qualifiedWorker?.id ?? null : null;
 
         const job = await prisma.job.create({
             data: {
