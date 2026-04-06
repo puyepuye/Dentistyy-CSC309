@@ -220,4 +220,132 @@ export async function uploadUserResume(token, file) {
     return payload;
 }
 
+/** Public business card (same shape visitors see — account id in URL). */
+export function getBusinessPublic(accountId) {
+    return request(`/businesses/${accountId}`, { method: 'GET' });
+}
+
+export function patchBusinessMe(token, body) {
+    return authRequest('/businesses/me', token, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+}
+
+export async function uploadBusinessAvatar(token, file) {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/businesses/me/avatar`, {
+        method: 'PUT',
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+    });
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch {
+        payload = null;
+    }
+    if (!response.ok) {
+        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
+        const err = new Error(message);
+        err.status = response.status;
+        throw err;
+    }
+    return payload;
+}
+
+export function getBusinessMyJobs(token, params = {}) {
+    const q = new URLSearchParams();
+    const merged = { page: '1', limit: '10', ...params };
+    for (const [k, v] of Object.entries(merged)) {
+        if (v === undefined || v === null || v === '') continue;
+        if (Array.isArray(v)) {
+            for (const item of v) {
+                if (item !== undefined && item !== null && item !== '') q.append(k, String(item));
+            }
+        } else {
+            q.set(k, String(v));
+        }
+    }
+    return authRequest(`/businesses/me/jobs?${q}`, token, { method: 'GET' });
+}
+
+export function createBusinessJob(token, body) {
+    return authRequest('/businesses/me/jobs', token, {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+}
+
+export function patchBusinessJob(token, jobId, body) {
+    return authRequest(`/businesses/me/jobs/${jobId}`, token, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+}
+
+export function deleteBusinessJob(token, jobId) {
+    return authRequest(`/businesses/me/jobs/${jobId}`, token, { method: 'DELETE' });
+}
+
+export function getJobById(token, jobId) {
+    return authRequest(`/jobs/${jobId}`, token, { method: 'GET' });
+}
+
+export function getJobCandidates(token, jobId, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '20',
+        ...params,
+    });
+    return authRequest(`/jobs/${jobId}/candidates?${q}`, token, { method: 'GET' });
+}
+
+export function getJobCandidateDetail(token, jobId, userId) {
+    return authRequest(`/jobs/${jobId}/candidates/${userId}`, token, { method: 'GET' });
+}
+
+export function patchJobCandidateInterested(token, jobId, userId, interested) {
+    return authRequest(`/jobs/${jobId}/candidates/${userId}/interested`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ interested }),
+    });
+}
+
+export function getJobInterests(token, jobId, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '20',
+        ...params,
+    });
+    return authRequest(`/jobs/${jobId}/interests?${q}`, token, { method: 'GET' });
+}
+
+export function patchJobNoShow(token, jobId) {
+    return authRequest(`/jobs/${jobId}/no-show`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({}),
+    });
+}
+
+export function startNegotiation(token, interestId) {
+    return authRequest('/negotiations', token, {
+        method: 'POST',
+        body: JSON.stringify({ interest_id: interestId }),
+    });
+}
+
+export function getMyNegotiation(token) {
+    return authRequest('/negotiations/me', token, { method: 'GET' });
+}
+
+export function patchNegotiationDecision(token, negotiationId, decision) {
+    return authRequest('/negotiations/me/decision', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ negotiation_id: negotiationId, decision }),
+    });
+}
+
 export { API_BASE_URL };

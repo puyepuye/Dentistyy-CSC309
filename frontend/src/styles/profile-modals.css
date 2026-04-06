@@ -8,13 +8,13 @@
     align-items: center;
     justify-content: center;
     padding: 1.25rem;
-    background: rgb(15 23 42 / 0.55);
+    background: var(--color-modal-backdrop);
     animation: profile-modal-in 0.18s ease-out;
 }
 
 .profile-modal-backdrop--nested {
     z-index: 1100;
-    background: rgb(15 23 42 / 0.45);
+    background: var(--color-modal-backdrop-nested);
 }
 
 @keyframes profile-modal-in {
@@ -34,7 +34,7 @@
     flex-direction: column;
     background: var(--color-bg-elevated);
     border-radius: 14px;
-    box-shadow: 0 24px 48px rgb(0 0 0 / 0.18);
+    box-shadow: var(--shadow-modal-dialog);
     overflow: hidden;
 }
 
@@ -131,7 +131,7 @@
     margin: 0 0 0.75rem;
     padding: 0.55rem 0.65rem;
     border-radius: 8px;
-    background: rgb(180 40 40 / 0.09);
+    background: var(--color-error-bg-medium);
     color: var(--color-error);
     font-size: 0.88rem;
 }
@@ -246,7 +246,7 @@
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    background: rgb(255 255 255 / 0.7);
+    background: var(--color-bg-tabs);
 }
 
 .pm-quals-table tr:last-child td {

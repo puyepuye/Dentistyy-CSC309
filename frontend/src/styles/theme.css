@@ -59,6 +59,14 @@
     --color-error: #b42318;
     --color-success: #027a48;
 
+    /* Error / success — tinted surfaces on light UI (forms, badges, alerts) */
+    --color-error-bg-subtle: color-mix(in srgb, var(--color-error) 9%, transparent);
+    --color-error-bg-medium: color-mix(in srgb, var(--color-error) 11%, transparent);
+    --color-error-border-muted: color-mix(in srgb, var(--color-error) 35%, transparent);
+
+    --color-success-bg-subtle: color-mix(in srgb, var(--color-success) 16%, transparent);
+    --color-success-bg-medium: color-mix(in srgb, var(--color-success) 10%, transparent);
+
     /* Navigation states (top bar — light context) */
     --color-nav-active-bg: rgba(89, 168, 151, 0.12);
     --color-nav-active-text: var(--color-accent);
@@ -70,6 +78,12 @@
 
     /* Marketing / landing (Dentistyy hero + stats) */
     --color-brand-dark: #0f172a;
+
+    /* Modal overlays & elevated dialog shadow (use brand-dark) */
+    --color-modal-backdrop: color-mix(in srgb, var(--color-brand-dark) 55%, transparent);
+    --color-modal-backdrop-nested: color-mix(in srgb, var(--color-brand-dark) 45%, transparent);
+    --shadow-modal-dialog: 0 24px 48px color-mix(in srgb, var(--color-brand-dark) 22%, transparent);
+
     --color-landing-teal: #4fd1c5;
     --color-landing-gradient-mid: #1e4b52;
     --color-landing-gradient-end: #5ebab5;

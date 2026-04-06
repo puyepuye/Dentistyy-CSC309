@@ -1,0 +1,912 @@
+/* —— Business (/businesses) workspace — cards, tables, filters, job subnav —— */
+
+/* Job postings dashboard (/businesses/jobs) */
+.business-job-postings {
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.business-job-postings__shell {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.35rem 1.45rem 1.5rem;
+    box-shadow: var(--shadow-card);
+}
+
+.business-job-postings__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.business-job-postings__title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+    line-height: 1.2;
+}
+
+.business-job-postings__lede {
+    margin: 0.35rem 0 0;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+    max-width: 40rem;
+}
+
+.business-job-postings__new {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.business-job-postings__new:hover {
+    color: var(--color-primary-strong);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.business-job-postings__new:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: var(--radius-sm);
+}
+
+.business-job-postings__filters {
+    margin-bottom: 1.15rem;
+}
+
+.business-job-postings__empty {
+    display: inline-block;
+    padding: 0.35rem 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
+.business-job-list__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.business-job-list__search {
+    flex: 1 1 220px;
+    max-width: min(100%, 420px);
+}
+
+.business-job-list__meta {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+    text-align: right;
+    flex: 1 1 200px;
+}
+
+@media (max-width: 640px) {
+    .business-job-list__meta {
+        text-align: left;
+        flex-basis: 100%;
+    }
+}
+
+.business-job-postings__search-wrap {
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+}
+
+.business-job-postings__search-wrap .fa-search {
+    position: absolute;
+    left: 0.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-subtle);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.business-job-postings__search {
+    width: 100%;
+    padding: 0.65rem 0.85rem 0.65rem 2.35rem;
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-full);
+    background: var(--color-bg-app);
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+
+.business-job-postings__search:focus {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+    border-color: var(--color-accent);
+    background: var(--color-bg-elevated);
+}
+
+.business-job-postings__open-only-hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+    max-width: 28rem;
+}
+
+/* Business jobs browse — mint hero, tabs, card grid (mock) */
+.business-job-postings--browse {
+    max-width: none;
+    margin: 0;
+}
+
+.business-jobs-browse__hero {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-accent) 14%, var(--color-bg-app)) 0%,
+        var(--color-bg-app) 100%
+    );
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.5rem clamp(1rem, 3vw, 2rem) 1.35rem;
+    margin-bottom: 0;
+}
+
+.business-jobs-browse__hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1.25rem;
+}
+
+.business-jobs-browse__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    color: var(--color-text-heading);
+    line-height: 1.15;
+}
+
+.business-jobs-browse__subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+}
+
+.business-jobs-browse__new {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.business-jobs-browse__new:hover {
+    color: var(--color-primary-strong);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.business-jobs-browse__new:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: var(--radius-sm);
+}
+
+.business-jobs-browse__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem clamp(1rem, 3vw, 2rem) 0;
+}
+
+.business-jobs-browse__verify-hint {
+    margin: 0 0 1rem;
+}
+
+.business-jobs-browse__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.1rem;
+}
+
+.business-jobs-browse__tab {
+    position: relative;
+    padding: 0.55rem 0 0.75rem;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-heading);
+    cursor: pointer;
+}
+
+.business-jobs-browse__tab:hover {
+    color: var(--color-accent);
+}
+
+.business-jobs-browse__tab--active {
+    color: var(--color-accent);
+}
+
+.business-jobs-browse__tab--active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 2px 2px 0 0;
+}
+
+.business-jobs-browse__toolbar {
+    margin-bottom: 1rem;
+}
+
+.business-jobs-browse__toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+}
+
+.business-jobs-browse__toolbar-row--top {
+    margin-bottom: 0.65rem;
+}
+
+.business-jobs-browse__toolbar-row--top .business-job-postings__search-wrap {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.business-job-postings__search--browse {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-radius: var(--radius-full);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--color-text-heading) 8%, transparent);
+}
+
+.business-jobs-browse__sort {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
+.business-jobs-browse__sort label {
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.business-jobs-browse__sort select {
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-heading);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-md);
+    padding: 0.45rem 0.65rem;
+    background: var(--color-bg-elevated);
+    cursor: pointer;
+}
+
+.business-jobs-browse__toolbar-row--sub {
+    justify-content: flex-start;
+    align-items: baseline;
+    gap: 0.65rem 1.25rem;
+    font-size: 0.88rem;
+}
+
+.business-jobs-browse__advanced {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: none;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--color-text-heading);
+    cursor: pointer;
+    padding: 0;
+}
+
+.business-jobs-browse__advanced:hover {
+    color: var(--color-accent);
+}
+
+.business-jobs-browse__advanced .fa-chevron-down {
+    font-size: 0.7rem;
+    opacity: 0.75;
+}
+
+.business-jobs-browse__filter-hint {
+    color: var(--color-text-muted);
+}
+
+.business-jobs-browse__results {
+    margin-left: auto;
+    color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+    .business-jobs-browse__results {
+        margin-left: 0;
+        flex-basis: 100%;
+    }
+}
+
+.business-jobs-browse__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+    .business-jobs-browse__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .business-jobs-browse__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.business-job-card {
+    display: flex;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    min-height: 100%;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.business-job-card:hover {
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-text-heading) 10%, transparent);
+}
+
+.business-job-card:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.business-job-card__accent {
+    width: 5px;
+    flex-shrink: 0;
+    background: var(--color-bg-sidebar);
+}
+
+.business-job-card__body {
+    flex: 1;
+    min-width: 0;
+    padding: 1rem 1.1rem 1.05rem;
+}
+
+.business-job-card__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+    line-height: 1.25;
+}
+
+.business-job-card__clinic {
+    margin: 0.25rem 0 0;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+}
+
+.business-job-card__row {
+    margin: 0.45rem 0 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+}
+
+.business-job-card__row .fa-map-marker-alt,
+.business-job-card__row .fa-wallet,
+.business-job-card__row .fa-user {
+    width: 1rem;
+    text-align: center;
+    color: var(--color-text-subtle);
+    font-size: 0.8rem;
+}
+
+.business-job-card__row--status {
+    margin-top: 0.35rem;
+}
+
+.business-job-card__shift {
+    margin: 0.55rem 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.business-card__head-text .business-card__hint {
+    margin: 0.35rem 0 0;
+}
+
+.business-card__hint {
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+/* Inline edit — public practice view (business profile) */
+.business-public-practice {
+    margin-top: 0.25rem;
+}
+
+.business-public-practice__error {
+    margin: 0 0 0.85rem;
+}
+
+.business-public-practice__grid .business-public-practice__field {
+    min-width: 0;
+}
+
+.business-public-practice__input,
+.business-public-practice__textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-top: 0.35rem;
+}
+
+.business-public-practice__input[readonly] {
+    background: var(--color-bg-app);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+}
+
+.business-public-practice__readonly-hint {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: var(--color-text-subtle);
+    line-height: 1.35;
+}
+
+.business-public-practice__coords {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 520px) {
+    .business-public-practice__coords {
+        grid-template-columns: 1fr;
+    }
+}
+
+.business-public-practice__bio {
+    margin-top: 1.15rem;
+}
+
+.business-public-practice__textarea {
+    resize: vertical;
+    min-height: 5rem;
+}
+
+.business-public-practice__actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.15rem;
+    padding-top: 0.25rem;
+}
+
+.business-public-practice__read-bio {
+    margin-top: 1.15rem;
+}
+
+/* Practice logo control on profile (uses .talent-avatar base from talent-workspace) */
+.talent-avatar--btn {
+    display: block;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.talent-avatar--btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.talent-avatar--btn:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.business-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.business-subnav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.business-subnav__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.business-subnav__link:hover {
+    color: var(--color-text-heading);
+    border-color: var(--color-primary-soft);
+    background: var(--color-primary-soft);
+}
+
+.business-subnav__link--active {
+    color: var(--color-sidebar-active);
+    border-color: var(--color-sidebar-active);
+    background: var(--color-sidebar-active-row-bg);
+}
+
+.business-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    padding: 1rem 1.1rem;
+    background: var(--color-bg-app);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: none;
+}
+
+.business-filters__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.business-filters__field--grow {
+    flex: 1 1 220px;
+    min-width: min(100%, 220px);
+}
+
+.business-filters__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-subtle);
+}
+
+.business-filters__input,
+.business-filters__select {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.55rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-app);
+    color: var(--color-text-heading);
+    min-width: 7rem;
+}
+
+.business-filters__statuses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+}
+
+.business-filters__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.business-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+    box-shadow: none;
+}
+
+.business-job-postings__table-wrap {
+    border-radius: var(--radius-md);
+}
+
+.business-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.business-table th,
+.business-table td {
+    padding: 0.8rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.business-table th {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-subtle);
+    background: var(--color-bg-tabs);
+}
+
+.business-table tr:last-child td {
+    border-bottom: none;
+}
+
+.business-table a {
+    color: var(--color-accent);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.business-table a:hover {
+    color: var(--color-primary-strong);
+}
+
+.business-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: var(--color-bg-tabs);
+    color: var(--color-text-heading);
+}
+
+.business-badge--open {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-strong);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+.business-badge--filled {
+    background: var(--color-success-bg-subtle);
+    color: var(--color-success);
+}
+
+.business-badge--muted {
+    opacity: 0.85;
+}
+
+.business-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.business-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.business-btn--primary {
+    background: var(--color-primary-strong);
+    color: var(--color-text-on-primary);
+    border-color: var(--color-primary-strong);
+}
+
+.business-btn--primary:hover {
+    filter: brightness(1.05);
+}
+
+.business-btn--ghost {
+    background: transparent;
+    color: var(--color-primary-strong);
+    border-color: var(--color-border);
+}
+
+.business-btn--ghost:hover {
+    background: var(--color-primary-soft);
+}
+
+.business-btn--danger {
+    background: transparent;
+    color: var(--color-error);
+    border-color: var(--color-error-border-muted);
+}
+
+.business-btn--danger:hover {
+    background: var(--color-error-bg-subtle);
+}
+
+.business-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.business-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    margin-top: 1.15rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+}
+
+.business-pagination__info {
+    font-variant-numeric: tabular-nums;
+}
+
+.business-pagination__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.business-job-postings__pagination {
+    margin-top: 1.25rem;
+}
+
+.business-pagination.business-pagination--browse {
+    border-top: 1px solid var(--color-border);
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 1.25rem;
+}
+
+.business-pagination__chevron {
+    width: 2.35rem;
+    height: 2.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.business-pagination__chevron:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.business-pagination__chevron:not(:disabled):hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.business-pagination__browse-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    min-width: 8rem;
+}
+
+.business-pagination__browse-label {
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.business-pagination__browse-total {
+    font-size: 0.8rem;
+    color: var(--color-text-subtle);
+}
+
+.business-neg-timer {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--color-brand-dark);
+}
+
+.business-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.business-stat-card {
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elevated);
+    box-shadow: var(--shadow-card);
+}
+
+.business-stat-card__value {
+    margin: 0.35rem 0 0.5rem;
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+    line-height: 1.1;
+}
+
+.business-stat-card__link {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-primary-strong);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.business-stat-card__link:hover {
+    color: var(--color-brand-dark);
+}

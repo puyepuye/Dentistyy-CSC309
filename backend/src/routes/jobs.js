@@ -571,6 +571,14 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
       },
       include: {
         account: true,
+        qualifications: {
+          where: {
+            positionTypeId: job.positionTypeId,
+            approved: true,
+          },
+          select: { note: true },
+          take: 1,
+        },
         filledJobs: {
           where: {
             status: 'FILLED',
@@ -592,12 +600,16 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
     const count = discoverable.length;
     const paginated = discoverable.slice((page - 1) * limit, page * limit);
 
-    const results = paginated.map((user) => ({
-      id: user.accountId,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      invited: invitedUserIds.has(user.id),
-    }));
+    const results = paginated.map((user) => {
+      const qNote = user.qualifications[0]?.note?.trim() || '';
+      return {
+        id: user.accountId,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        invited: invitedUserIds.has(user.id),
+        qualification_summary: qNote.length > 220 ? `${qNote.slice(0, 220)}…` : qNote,
+      };
+    });
 
     return res.status(200).json({
       count,
