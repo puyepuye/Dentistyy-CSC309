@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 /**
- * Horizontal strip: card-sized pages, left-aligned; dots match one per job card when scrolled.
+ * Horizontal strip: scroll by viewport width; dots = number of scroll positions (pages), not item count.
  */
 export default function JobInterestCarousel({ title, subtitle, items, emptyMessage, renderItem }) {
     const viewportRef = useRef(null);
     const [pageIndex, setPageIndex] = useState(0);
     const [pageCount, setPageCount] = useState(1);
     const [hasOverflow, setHasOverflow] = useState(false);
+    const [atStart, setAtStart] = useState(true);
+    const [atEnd, setAtEnd] = useState(true);
 
     const updateScrollMetrics = useCallback(() => {
         const vp = viewportRef.current;
@@ -17,28 +19,23 @@ export default function JobInterestCarousel({ title, subtitle, items, emptyMessa
         const sw = scrollWidth;
         const overflow = sw > cw + 2;
         setHasOverflow(overflow);
+        const maxScroll = Math.max(0, sw - cw);
+        setAtStart(scrollLeft <= 1);
+        setAtEnd(scrollLeft >= maxScroll - 1);
 
-        const track = vp.querySelector('.talent-interest-carousel__track');
-        const slots = track?.querySelectorAll('.talent-interest-carousel__card-slot');
-        const n = slots?.length ?? 0;
-
-        if (!overflow || n <= 1) {
+        if (!overflow) {
             setPageCount(1);
             setPageIndex(0);
             return;
         }
 
-        setPageCount(n);
-
-        let best = 0;
-        for (let i = 0; i < n; i++) {
-            const el = slots[i];
-            const left = el.offsetLeft - track.offsetLeft;
-            if (left <= scrollLeft + 8) {
-                best = i;
-            }
+        const pages = Math.max(1, Math.ceil(sw / cw));
+        setPageCount(pages);
+        let idx = 0;
+        if (pages > 1 && maxScroll > 0) {
+            idx = Math.min(pages - 1, Math.round((scrollLeft / maxScroll) * (pages - 1)));
         }
-        setPageIndex(Math.min(best, n - 1));
+        setPageIndex(idx);
     }, []);
 
     useLayoutEffect(() => {
@@ -63,33 +60,23 @@ export default function JobInterestCarousel({ title, subtitle, items, emptyMessa
         updateScrollMetrics();
     }, [updateScrollMetrics]);
 
-    const scrollToCardIndex = useCallback((targetIdx) => {
+    const scrollToPageIndex = useCallback((targetIdx) => {
         const vp = viewportRef.current;
-        const track = vp?.querySelector('.talent-interest-carousel__track');
-        if (!vp || !track) return;
-        const slots = track.querySelectorAll('.talent-interest-carousel__card-slot');
-        const idx = Math.max(0, Math.min(slots.length - 1, targetIdx));
-        const slot = slots[idx];
-        if (!slot) return;
-        const left = slot.offsetLeft - track.offsetLeft;
+        if (!vp) return;
+        const cw = Math.max(1, vp.clientWidth);
+        const sw = vp.scrollWidth;
+        const maxScroll = Math.max(0, sw - cw);
+        const pages = Math.max(1, Math.ceil(sw / cw));
+        if (pages <= 1) return;
+        const left = (targetIdx / (pages - 1)) * maxScroll;
         vp.scrollTo({ left, behavior: 'smooth' });
     }, []);
 
-    const scrollByCard = useCallback(
-        (delta) => {
-            const vp = viewportRef.current;
-            const track = vp?.querySelector('.talent-interest-carousel__track');
-            if (!vp || !track) return;
-            const slots = track.querySelectorAll('.talent-interest-carousel__card-slot');
-            let cur = 0;
-            for (let i = 0; i < slots.length; i++) {
-                const left = slots[i].offsetLeft - track.offsetLeft;
-                if (left <= vp.scrollLeft + 8) cur = i;
-            }
-            scrollToCardIndex(cur + delta);
-        },
-        [scrollToCardIndex]
-    );
+    const scrollByPage = useCallback((dir) => {
+        const vp = viewportRef.current;
+        if (!vp) return;
+        vp.scrollBy({ left: dir * vp.clientWidth, behavior: 'smooth' });
+    }, []);
 
     if (!items?.length) {
         return (
@@ -103,9 +90,6 @@ export default function JobInterestCarousel({ title, subtitle, items, emptyMessa
         );
     }
 
-    const atStart = pageIndex <= 0;
-    const atEnd = pageIndex >= pageCount - 1;
-
     return (
         <section className="talent-interest-carousel" aria-label={title}>
             <div className="talent-interest-carousel__header">
@@ -117,9 +101,9 @@ export default function JobInterestCarousel({ title, subtitle, items, emptyMessa
                     <button
                         type="button"
                         className="talent-interest-carousel__arrow talent-interest-carousel__arrow--prev"
-                        aria-label="Previous job"
-                        disabled={atStart}
-                        onClick={() => scrollByCard(-1)}
+                        aria-label="Scroll back"
+                        disabled={!hasOverflow || atStart}
+                        onClick={() => scrollByPage(-1)}
                     >
                         <i className="fas fa-chevron-left" aria-hidden />
                     </button>
@@ -144,9 +128,9 @@ export default function JobInterestCarousel({ title, subtitle, items, emptyMessa
                     <button
                         type="button"
                         className="talent-interest-carousel__arrow talent-interest-carousel__arrow--next"
-                        aria-label="Next job"
-                        disabled={atEnd}
-                        onClick={() => scrollByCard(1)}
+                        aria-label="Scroll forward"
+                        disabled={!hasOverflow || atEnd}
+                        onClick={() => scrollByPage(1)}
                     >
                         <i className="fas fa-chevron-right" aria-hidden />
                     </button>
@@ -160,13 +144,13 @@ export default function JobInterestCarousel({ title, subtitle, items, emptyMessa
                             type="button"
                             role="tab"
                             aria-selected={i === pageIndex}
-                            aria-label={`Job ${i + 1} of ${pageCount}`}
+                            aria-label={`Page ${i + 1} of ${pageCount}`}
                             className={
                                 i === pageIndex
                                     ? 'talent-interest-carousel__dot talent-interest-carousel__dot--active'
                                     : 'talent-interest-carousel__dot'
                             }
-                            onClick={() => scrollToCardIndex(i)}
+                            onClick={() => scrollToPageIndex(i)}
                         />
                     ))}
                 </div>

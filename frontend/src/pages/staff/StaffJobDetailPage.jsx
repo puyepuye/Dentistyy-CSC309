@@ -5,6 +5,7 @@ import { useTalentNegotiation } from '../../contexts/TalentNegotiationContext.js
 import {
     getJobById,
     getNegotiationWindowSeconds,
+    parseJwtPayload,
     patchJobInterested,
     startNegotiation,
 } from '../../lib/api.js';
@@ -197,6 +198,11 @@ export default function StaffJobDetailPage() {
         job?.eta != null && typeof job.eta === 'number' ? `${job.eta} min` : null;
 
     const interest = job?.interest ?? EMPTY_INTEREST;
+    const currentAccountId = Number(parseJwtPayload(token)?.id ?? 0);
+    const isCurrentUserWorker =
+        Number.isInteger(currentAccountId) &&
+        currentAccountId > 0 &&
+        Number(job?.worker?.id ?? 0) === currentAccountId;
     const open = job?.status === 'open';
     const pendingNeg = job?.negotiation_pending_id != null;
     const hasUserInterest = Boolean(interest?.user_expressed);
@@ -211,7 +217,11 @@ export default function StaffJobDetailPage() {
 
     if (!open) {
         actionTitle = 'Status';
-        actionText = `This job is ${job?.status ?? 'closed'} and is not accepting new interest.`;
+        if (job?.status === 'filled' && isCurrentUserWorker) {
+            actionText = 'You already took this job.';
+        } else {
+            actionText = `This job is ${job?.status ?? 'closed'} and is not accepting new interest.`;
+        }
     } else if (pendingNeg) {
         actionTitle = 'Negotiation';
         actionText = 'You have an active negotiation for this job.';
