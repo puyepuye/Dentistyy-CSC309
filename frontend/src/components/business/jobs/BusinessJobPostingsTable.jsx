@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isJobPeopleTabDisabled } from '../../lib/businessJobStatus.js';
 import BusinessJobStatusBadge from './BusinessJobStatusBadge.jsx';
 
 function formatSalaryRange(min, max) {
@@ -44,9 +45,15 @@ export default function BusinessJobPostingsTable({ jobs }) {
                                 </td>
                                 <td>
                                     {j.worker ? (
-                                        <Link to={`/businesses/jobs/${j.id}/candidates/${j.worker.id}`}>
-                                            {j.worker.first_name} {j.worker.last_name}
-                                        </Link>
+                                        isJobPeopleTabDisabled(j.status) ? (
+                                            <>
+                                                {j.worker.first_name} {j.worker.last_name}
+                                            </>
+                                        ) : (
+                                            <Link to={`/businesses/jobs/${j.id}/candidates?view=manage`}>
+                                                {j.worker.first_name} {j.worker.last_name}
+                                            </Link>
+                                        )
                                     ) : (
                                         '-'
                                     )}

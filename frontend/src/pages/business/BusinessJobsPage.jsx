@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useBusinessProfile } from '../../contexts/BusinessProfileContext.jsx';
 import BusinessJobPostingCard from '../../components/business/jobs/BusinessJobPostingCard.jsx';
@@ -11,6 +11,7 @@ import { getBusinessMyJobs, getPositionTypes } from '../../lib/api.js';
 export default function BusinessJobsPage() {
     const { token } = useAuth();
     const { profile } = useBusinessProfile();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [jobs, setJobs] = useState([]);
     const [count, setCount] = useState(0);
     const [page, setPage] = useState(1);
@@ -24,14 +25,16 @@ export default function BusinessJobsPage() {
     const [orderBy, setOrderBy] = useState('updated_at');
     const [orderDir, setOrderDir] = useState('desc');
     const [searchQuery, setSearchQuery] = useState('');
-    const [listTab, setListTab] = useState('search');
     const [sortPresetId, setSortPresetId] = useState('updated_desc');
     const [advancedOpen, setAdvancedOpen] = useState(false);
+    const latestLoadIdRef = useRef(0);
 
     const practiceName = profile?.business_name || '';
 
     const load = useCallback(async () => {
         if (!token) return;
+        const loadId = latestLoadIdRef.current + 1;
+        latestLoadIdRef.current = loadId;
         setLoading(true);
         setError(null);
         try {
@@ -50,13 +53,16 @@ export default function BusinessJobsPage() {
             const st = STATUS_KEYS.filter((k) => statusFilters.has(k));
             if (st.length > 0) params.status = st;
             const res = await getBusinessMyJobs(token, params);
+            if (loadId !== latestLoadIdRef.current) return;
             setJobs(res.results || []);
             setCount(res.count ?? 0);
         } catch (e) {
+            if (loadId !== latestLoadIdRef.current) return;
             setError(e instanceof Error ? e.message : 'Failed to load jobs');
             setJobs([]);
             setCount(0);
         } finally {
+            if (loadId !== latestLoadIdRef.current) return;
             setLoading(false);
         }
     }, [token, page, limit, orderBy, orderDir, positionTypeId, salaryMin, statusFilters]);
@@ -81,15 +87,21 @@ export default function BusinessJobsPage() {
         };
     }, [token]);
 
-    function handleListTabChange(tab) {
-        setListTab(tab);
-        setPage(1);
-        if (tab === 'matched') {
-            setStatusFilters(new Set(['FILLED', 'COMPLETED']));
-        } else {
-            setStatusFilters(new Set(STATUS_KEYS));
+    const statusParam = searchParams.get('status');
+
+    useEffect(() => {
+        if (!statusParam) return;
+        const parsed = statusParam
+            .split(',')
+            .map((s) => s.trim().toUpperCase())
+            .filter((s) => STATUS_KEYS.includes(s));
+        if (parsed.length > 0) {
+            setStatusFilters(new Set(parsed));
+            setPage(1);
         }
-    }
+        // Treat URL status as an initial preset only; clear it so users can freely retoggle filters.
+        setSearchParams({}, { replace: true });
+    }, [statusParam, setSearchParams]);
 
     function handleSortPresetChange(id) {
         setSortPresetId(id);
@@ -106,6 +118,7 @@ export default function BusinessJobsPage() {
             const next = new Set(prev);
             if (next.has(key)) next.delete(key);
             else next.add(key);
+            // Keep at least one status selected.
             if (next.size === 0) return prev;
             return next;
         });
@@ -128,9 +141,9 @@ export default function BusinessJobsPage() {
         if (positionTypeId) n++;
         if (salaryMin.trim()) n++;
         if (sortPresetId !== 'updated_desc') n++;
-        if (listTab === 'search' && statusFilters.size < STATUS_KEYS.length) n++;
+        if (statusFilters.size < STATUS_KEYS.length) n++;
         return n;
-    }, [positionTypeId, salaryMin, sortPresetId, listTab, statusFilters]);
+    }, [positionTypeId, salaryMin, sortPresetId, statusFilters]);
 
     const resultsLine = useMemo(() => {
         if (searchQuery.trim()) {
@@ -169,8 +182,6 @@ export default function BusinessJobsPage() {
                 ) : null}
 
                 <BusinessJobsBrowseToolbar
-                    listTab={listTab}
-                    onListTabChange={handleListTabChange}
                     searchQuery={searchQuery}
                     onSearchChange={(v) => setSearchQuery(v)}
                     sortPresetId={sortPresetId}
@@ -208,8 +219,7 @@ export default function BusinessJobsPage() {
                         statusFilters={statusFilters}
                         onToggleStatus={toggleStatus}
                         showSortFields={false}
-                        hideStatusFilters={listTab === 'matched'}
-                        statusHiddenHint="Showing FILLED and COMPLETED roles. Switch to Search to filter every status."
+                        hideStatusFilters={false}
                     />
                 ) : null}
 

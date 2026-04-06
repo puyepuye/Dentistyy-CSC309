@@ -236,10 +236,25 @@
     font-size: 0.95rem;
     color: var(--color-text-heading);
     cursor: pointer;
+    text-decoration: none;
+}
+
+a.business-jobs-browse__tab:visited {
+    color: var(--color-text-heading);
+}
+
+a.business-jobs-browse__tab--active:visited {
+    color: var(--color-accent);
 }
 
 .business-jobs-browse__tab:hover {
     color: var(--color-accent);
+}
+
+.business-jobs-browse__tab:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: var(--radius-sm);
 }
 
 .business-jobs-browse__tab--active {
@@ -255,6 +270,17 @@
     height: 2px;
     background: var(--color-accent);
     border-radius: 2px 2px 0 0;
+}
+
+.business-jobs-browse__tab--disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    color: var(--color-text-muted);
+    pointer-events: none;
+}
+
+.business-jobs-browse__tab--disabled:hover {
+    color: var(--color-text-muted);
 }
 
 .business-jobs-browse__toolbar {
@@ -540,6 +566,651 @@
     margin-top: 1.15rem;
 }
 
+.business-job-candidates__filter {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0 0 0.85rem;
+    font-size: 0.9rem;
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.business-job-candidates__filter input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.business-job-candidates__search {
+    margin-bottom: 0.85rem;
+    max-width: min(100%, 520px);
+}
+
+/* Full-width search aligned with table (Manage candidates) */
+.business-candidates-manage__search {
+    max-width: none;
+    width: 100%;
+}
+
+.business-job-people__tabs {
+    margin-top: 0.35rem;
+}
+
+.business-job-people__head {
+    align-items: center;
+}
+
+.business-job-detail__candidates-link {
+    display: inline-block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+    margin: -0.25rem 0 0;
+}
+
+.business-job-detail__candidates-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.business-job-detail__filled-by-name-btn {
+    display: inline;
+    text-align: left;
+}
+
+/* Slide-out: discover candidates for one job */
+.business-candidates-drawer-root {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+.business-candidates-drawer-root .business-candidates-drawer__backdrop,
+.business-candidates-drawer-root .business-candidates-drawer {
+    pointer-events: auto;
+}
+
+.business-candidates-drawer__backdrop {
+    position: absolute;
+    inset: 0;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    background: color-mix(in srgb, var(--color-text-heading) 42%, transparent);
+}
+
+.business-candidates-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(440px, 100vw);
+    max-width: 100%;
+    background: var(--color-bg-elevated);
+    border-left: 1px solid var(--color-border);
+    box-shadow: -12px 0 40px color-mix(in srgb, var(--color-text-heading) 14%, transparent);
+    display: flex;
+    flex-direction: column;
+    animation: business-candidates-drawer-in 0.28s ease;
+}
+
+@keyframes business-candidates-drawer-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0.92;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.business-candidates-drawer__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1rem 0.85rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.business-candidates-drawer__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+    line-height: 1.25;
+}
+
+.business-candidates-drawer__subtitle {
+    margin: 0.3rem 0 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+}
+
+.business-candidates-drawer__close {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.business-candidates-drawer__close:hover {
+    background: var(--color-bg-app);
+    color: var(--color-text-heading);
+}
+
+.business-candidates-drawer__close:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.business-candidates-drawer__toolbar {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.business-candidates-drawer__search-wrap {
+    margin-bottom: 0.65rem;
+}
+
+.business-candidates-drawer__search {
+    font-size: 0.9rem;
+}
+
+.business-candidates-drawer__filter {
+    margin: 0;
+}
+
+.business-candidates-drawer__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.85rem 1rem 1rem;
+}
+
+.business-candidates-drawer__card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.65rem;
+    background: var(--color-bg-app);
+}
+
+.business-candidates-drawer__card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.business-candidates-drawer__name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--color-text-heading);
+    text-decoration: none;
+}
+
+.business-candidates-drawer__name:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.business-candidates-drawer__name--static {
+    cursor: default;
+}
+
+.business-candidates-drawer__name--static:hover {
+    color: var(--color-text-heading);
+    text-decoration: none;
+}
+
+.business-candidates-drawer__pill {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.2rem 0.45rem;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-tabs);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+}
+
+.business-candidates-drawer__pill--on {
+    background: var(--color-sidebar-active-row-bg);
+    color: var(--color-sidebar-active);
+    border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+}
+
+.business-candidates-drawer__summary {
+    margin: 0 0 0.5rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.business-candidates-drawer__action {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.15rem;
+}
+
+.business-candidates-drawer__footer {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+}
+
+.business-candidates-drawer__pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.business-candidates-drawer__pager-info {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.business-candidates-drawer__full-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.business-candidates-drawer__full-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.business-candidates-drawer__full-link .fa-arrow-right {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* Discover tab: inline list (same cards as drawer, page flow) */
+.business-candidates-discover-inline {
+    margin-top: 0.5rem;
+}
+
+.business-candidates-discover-inline__title {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-heading);
+}
+
+.business-candidates-discover-inline__subtitle {
+    margin: 0 0 0.75rem;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+}
+
+.business-candidates-discover-inline__toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+}
+
+@media (min-width: 640px) {
+    .business-candidates-discover-inline__toolbar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .business-candidates-discover-inline__search-wrap {
+        flex: 1 1 12rem;
+        max-width: 28rem;
+        margin-bottom: 0;
+    }
+
+    .business-candidates-discover-inline__filter {
+        flex-shrink: 0;
+    }
+}
+
+.business-candidates-discover-inline__body {
+    max-height: min(60vh, 28rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.business-candidates-discover-inline__card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+}
+
+.business-candidates-discover-inline__card-actions .business-candidates-drawer__action {
+    flex: 1 1 9rem;
+    min-width: 0;
+}
+
+.business-candidates-discover-inline__footer {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.business-candidates-discover-inline__footer .business-candidates-drawer__pager {
+    margin-bottom: 0.5rem;
+}
+
+/* Candidate preview (People tab sidebar) */
+.business-candidates-drawer--preview .business-candidate-preview-drawer__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.85rem 1rem 1rem;
+}
+
+.business-candidate-preview-drawer__hero {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.business-candidate-preview-drawer__avatar {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-tabs);
+    border: 1px solid var(--color-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.business-candidate-preview-drawer__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.business-candidate-preview-drawer__name {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-text-heading);
+}
+
+.business-candidate-preview-drawer__meta {
+    margin: 0.25rem 0 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+}
+
+.business-candidate-preview-drawer__block {
+    margin-bottom: 1rem;
+}
+
+.business-candidate-preview-drawer__block-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-subtle);
+}
+
+.business-candidate-preview-drawer__bio {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--color-text);
+}
+
+.business-candidate-preview-drawer__muted {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+}
+
+.business-candidate-preview-drawer__inline-link {
+    display: inline-block;
+    margin-top: 0.35rem;
+}
+
+.business-candidate-preview-drawer__hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.82rem;
+}
+
+.business-candidate-preview-drawer__footer {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+}
+
+.business-candidate-preview-drawer__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.business-candidate-preview-drawer__actions .business-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.business-text-link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-weight: 700;
+    color: var(--color-accent);
+    cursor: pointer;
+    text-align: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.business-text-link-button:hover {
+    color: var(--color-primary-strong);
+}
+
+.business-text-link-button:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.business-interest-user {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+}
+
+.business-interest-user__avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-tabs);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.business-interest-user__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.business-interest-user__name {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-text-heading);
+}
+
+.business-interest-user__summary {
+    margin: 0.2rem 0 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+    max-width: 26rem;
+}
+
+.business-interest-user__note {
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+    max-width: 20rem;
+}
+
+.business-table--interest td {
+    vertical-align: top;
+}
+
+.business-table--shortlist td {
+    vertical-align: middle;
+}
+
+.business-table--shortlist .business-table__shortlist-name {
+    width: 24%;
+    white-space: nowrap;
+}
+
+.business-table--shortlist .business-table__shortlist-summary {
+    width: auto;
+}
+
+.business-table--interest .business-table__availability-cell,
+.business-table--interest .business-table__mutual-cell {
+    white-space: nowrap;
+    padding-top: 1rem;
+}
+
+.business-table--interest .business-table__negotiation-cell {
+    min-width: 16rem;
+    padding-top: 0.9rem;
+}
+
+.business-table--manage-candidates {
+    table-layout: fixed;
+}
+
+.business-table--manage-candidates .business-table__flag-cell {
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+}
+
+.business-table--manage-candidates td {
+    vertical-align: middle;
+}
+
+.business-table--manage-candidates th:nth-child(1) {
+    width: 34%;
+}
+
+.business-table--manage-candidates th:nth-child(2),
+.business-table--manage-candidates th:nth-child(3),
+.business-table--manage-candidates th:nth-child(4),
+.business-table--manage-candidates th:nth-child(5) {
+    width: 9%;
+}
+
+.business-table--manage-candidates th:nth-child(6) {
+    width: 22%;
+}
+
+.business-table--manage-candidates th:nth-child(2),
+.business-table--manage-candidates th:nth-child(3),
+.business-table--manage-candidates th:nth-child(4),
+.business-table--manage-candidates th:nth-child(5) {
+    text-align: center;
+}
+
+.business-table--manage-candidates th:nth-child(6) {
+    text-align: left;
+}
+
+.business-table--manage-candidates td:nth-child(2),
+.business-table--manage-candidates td:nth-child(3),
+.business-table--manage-candidates td:nth-child(4),
+.business-table--manage-candidates td:nth-child(5) {
+    text-align: center;
+}
+
+.business-table--manage-candidates td:nth-child(6) {
+    text-align: left;
+}
+
+.business-table--manage-candidates .business-table__availability-cell,
+.business-table--manage-candidates .business-table__mutual-cell {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+}
+
+.business-table--manage-candidates .business-table__negotiation-cell {
+    min-width: 0;
+    max-width: none;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+    overflow-wrap: anywhere;
+}
+
+.business-table--manage-candidates .business-interest-user {
+    align-items: center;
+}
+
+.business-table--interest .business-table__negotiation-cell .business-btn {
+    min-width: 10.5rem;
+}
+
 /* Practice logo control on profile (uses .talent-avatar base from talent-workspace) */
 .talent-avatar--btn {
     display: block;
@@ -570,38 +1241,6 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
-}
-
-.business-subnav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-bottom: 1rem;
-}
-
-.business-subnav__link {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.45rem 0.85rem;
-    border-radius: var(--radius-md);
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-elevated);
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-
-.business-subnav__link:hover {
-    color: var(--color-text-heading);
-    border-color: var(--color-primary-soft);
-    background: var(--color-primary-soft);
-}
-
-.business-subnav__link--active {
-    color: var(--color-sidebar-active);
-    border-color: var(--color-sidebar-active);
-    background: var(--color-sidebar-active-row-bg);
 }
 
 .business-filters {
@@ -745,6 +1384,69 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.75rem;
+}
+
+/* Job → candidate detail: actions column (matches business Figma) */
+.business-candidate-detail__hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.25rem 1.35rem;
+}
+
+.business-candidate-detail__hero-main {
+    flex: 1 1 0;
+    min-width: min(100%, 280px);
+}
+
+.business-candidate-detail__hint {
+    margin-top: 0.75rem;
+}
+
+.business-candidate-detail__hero-actions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: min(100%, 220px);
+}
+
+.business-candidate-detail__action-stack {
+    margin-top: 0;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 16rem;
+}
+
+.business-candidate-detail__action-stack .business-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .business-candidate-detail__hero-actions {
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .business-candidate-detail__action-stack {
+        max-width: none;
+    }
+}
+
+.business-candidate-detail__bio-lead {
+    margin-bottom: 0;
+}
+
+.business-candidate-detail__about-resume {
+    margin-top: 1.25rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
 }
 
 .business-btn {

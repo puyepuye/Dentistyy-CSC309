@@ -2,10 +2,12 @@
  * Greeting + status line for practice workspace header (mirrors talent header behaviour).
  * @param {string} pathname
  * @param {{ business_name?: string, verified?: boolean } | null} profile
+ * @param {string | null | undefined} jobName
  */
-export function businessHeaderFromPath(pathname, profile) {
+export function businessHeaderFromPath(pathname, profile, jobName) {
     const name = profile?.business_name?.trim() || 'your practice';
     const hello = `Hello, ${name}`;
+    const jobPreview = jobName || null;
 
     if (pathname === '/businesses' || pathname === '/businesses/') {
         return {
@@ -24,17 +26,24 @@ export function businessHeaderFromPath(pathname, profile) {
     if (pathname.includes('/jobs/new')) {
         return { greeting: hello, statusLine: 'New job posting' };
     }
-    if (pathname.match(/\/jobs\/\d+\/candidates\/\d+$/)) {
-        return { greeting: hello, statusLine: 'Candidate detail' };
-    }
-    if (pathname.includes('/candidates')) {
-        return { greeting: hello, statusLine: 'Discoverable candidates' };
+    if (pathname.includes('/candidates') && !pathname.match(/\/candidates\/\d+$/)) {
+        return {
+            greeting: hello,
+            statusLine: jobPreview
+                ? `${jobPreview} — People — discover & manage`
+                : 'People — discover & manage',
+        };
     }
     if (pathname.includes('/interests')) {
-        return { greeting: hello, statusLine: 'Interested candidates' };
+        return {
+            greeting: hello,
+            statusLine: jobPreview
+                ? `${jobPreview} — People — discover & manage`
+                : 'People — discover & manage',
+        };
     }
     if (pathname.match(/\/businesses\/jobs\/\d+$/)) {
-        return { greeting: hello, statusLine: 'Job posting' };
+        return { greeting: hello, statusLine: jobPreview || 'Job posting' };
     }
     if (pathname.includes('/jobs')) {
         return { greeting: hello, statusLine: 'Job postings' };

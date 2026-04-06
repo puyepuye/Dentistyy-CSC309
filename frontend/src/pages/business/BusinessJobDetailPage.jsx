@@ -7,6 +7,8 @@ import {
     patchBusinessJob,
     patchJobNoShow,
 } from '../../lib/api.js';
+import BusinessCandidatePreviewDrawer from '../../components/business/jobs/BusinessCandidatePreviewDrawer.jsx';
+import { isJobFilledOrCompleted, isJobPeopleTabDisabled } from '../../lib/businessJobStatus.js';
 
 function toLocalDatetimeValue(iso) {
     const d = new Date(iso);
@@ -36,7 +38,7 @@ export default function BusinessJobDetailPage() {
     const [startLocal, setStartLocal] = useState('');
     const [endLocal, setEndLocal] = useState('');
     const [note, setNote] = useState('');
-
+    const [workerPreviewAccountId, setWorkerPreviewAccountId] = useState(null);
     const load = useCallback(async () => {
         if (!token || !Number.isInteger(id) || id < 1) return;
         setLoading(true);
@@ -159,7 +161,7 @@ export default function BusinessJobDetailPage() {
             <section className="talent-card">
                 <div className="talent-card__head">
                     <h2 className="talent-card__title">
-                        Job #{job.id} · {job.position_type?.name}
+                        {job.position_type?.name}
                     </h2>
                     <span className={statusBadgeClass(job.status)}>{job.status}</span>
                 </div>
@@ -179,12 +181,29 @@ export default function BusinessJobDetailPage() {
                         <p className="talent-field__value">{new Date(job.end_time).toLocaleString()}</p>
                     </div>
                     <div>
-                        <span className="talent-field__label">Worker</span>
+                        <span className="talent-field__label">
+                            {isJobFilledOrCompleted(job.status) ? 'Filled by' : 'Worker'}
+                        </span>
                         <p className="talent-field__value">
                             {job.worker ? (
-                                <Link to={`/businesses/jobs/${job.id}/candidates/${job.worker.id}`}>
-                                    {job.worker.first_name} {job.worker.last_name}
-                                </Link>
+                                isJobFilledOrCompleted(job.status) ? (
+                                    <button
+                                        type="button"
+                                        className="business-text-link-button business-job-detail__filled-by-name-btn"
+                                        onClick={() => setWorkerPreviewAccountId(job.worker.id)}
+                                        aria-label={`Preview profile: ${job.worker.first_name} ${job.worker.last_name}`}
+                                    >
+                                        {job.worker.first_name} {job.worker.last_name}
+                                    </button>
+                                ) : isJobPeopleTabDisabled(job.status) ? (
+                                    <>
+                                        {job.worker.first_name} {job.worker.last_name}
+                                    </>
+                                ) : (
+                                    <Link to={`/businesses/jobs/${job.id}/candidates?view=manage`}>
+                                        {job.worker.first_name} {job.worker.last_name}
+                                    </Link>
+                                )
                             ) : (
                                 '-'
                             )}
@@ -197,24 +216,20 @@ export default function BusinessJobDetailPage() {
                         {job.note?.trim() ? job.note : '-'}
                     </p>
                 </div>
-                <div className="business-stack">
-                    <Link to={`/businesses/jobs/${job.id}/candidates`} className="business-btn business-btn--primary">
-                        Discover candidates
-                    </Link>
-                    <Link to={`/businesses/jobs/${job.id}/interests`} className="business-btn business-btn--ghost">
-                        Interest & negotiations
-                    </Link>
-                    {canTryDelete ? (
-                        <button type="button" className="business-btn business-btn--danger" onClick={handleDelete}>
-                            Delete posting
-                        </button>
-                    ) : null}
-                    {canNoShow ? (
-                        <button type="button" className="business-btn business-btn--danger" onClick={handleNoShow}>
-                            Mark worker no-show
-                        </button>
-                    ) : null}
-                </div>
+                {canTryDelete || canNoShow ? (
+                    <div className="business-stack">
+                        {canTryDelete ? (
+                            <button type="button" className="business-btn business-btn--danger" onClick={handleDelete}>
+                                Delete posting
+                            </button>
+                        ) : null}
+                        {canNoShow ? (
+                            <button type="button" className="business-btn business-btn--danger" onClick={handleNoShow}>
+                                Mark worker no-show
+                            </button>
+                        ) : null}
+                    </div>
+                ) : null}
             </section>
 
             {canEdit ? (
@@ -312,6 +327,16 @@ export default function BusinessJobDetailPage() {
                         </div>
                     </form>
                 </section>
+            ) : null}
+
+            {isJobFilledOrCompleted(job.status) && job.worker ? (
+                <BusinessCandidatePreviewDrawer
+                    jobId={id}
+                    candidateAccountId={workerPreviewAccountId}
+                    onClose={() => setWorkerPreviewAccountId(null)}
+                    jobLabel={job.position_type?.name || 'Posting'}
+                    interestContext={null}
+                />
             ) : null}
         </>
     );
