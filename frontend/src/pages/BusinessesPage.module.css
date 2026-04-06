@@ -1,22 +1,321 @@
-.businessesPublic {
-    max-width: 640px;
+.directory {
+    width: min(75vw, 1120px);
+    margin: 0 auto;
 }
 
-.businessesPublicTitle {
-    font-size: 1.85rem;
-    margin: 0 0 0.75rem;
+.directoryHeader {
+    margin-bottom: 2rem;
+}
+
+.directoryHero {
+    padding: clamp(2.75rem, 5vw, 4rem) clamp(1.5rem, 4vw, 2.5rem);
+    border-radius: var(--radius-landing-hero);
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--color-brand-dark) 96%, transparent) 0%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 92%, transparent) 100%
+        ),
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--color-text-on-dark) 5%, transparent) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            color-mix(in srgb, var(--color-text-on-dark) 5%, transparent) 1px,
+            transparent 1px
+        );
+    background-size: auto, 76px 76px, 76px 76px;
+    background-position: center;
+    text-align: center;
+    color: var(--color-text-on-dark);
+    box-shadow: var(--shadow-landing-float-soft);
+}
+
+.directoryEyebrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-full);
+    border: 1px solid color-mix(in srgb, var(--color-text-on-dark) 16%, transparent);
+    background: color-mix(in srgb, var(--color-text-on-dark) 8%, transparent);
+    color: var(--color-text-on-dark);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    margin-bottom: 1rem;
+}
+
+.directoryTitle {
+    font-size: clamp(2.2rem, 4vw, 3.25rem);
+    margin: 0 0 0.8rem;
+    color: var(--color-text-on-dark);
+    font-family: var(--font-marketing);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+}
+
+.directoryLede {
+    margin: 0;
+    line-height: 1.65;
+    color: var(--color-landing-subhead);
+    max-width: 42rem;
+    margin-inline: auto;
+    font-size: 1.02rem;
+}
+
+.directorySearchRow {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.65rem;
+    align-items: stretch;
+    margin: 0 auto 1.75rem;
+    padding: 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-bg-elevated);
+    box-shadow: var(--shadow-card);
+}
+
+.directorySearchWrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.directorySearchWrap :global(.fa-search) {
+    position: absolute;
+    left: 0.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-subtle);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.directorySearch {
+    width: 100%;
+    padding: 0.95rem 1rem 0.95rem 2.6rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    background: transparent;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--color-text);
+}
+
+.directorySearch:focus {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+    border-color: var(--color-accent);
+}
+
+.directorySearchBtn {
+    padding: 0.85rem 1.65rem;
+    border-radius: var(--radius-full);
+    border: none;
+    background: var(--color-brand-dark);
+    color: var(--color-text-on-dark);
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+}
+
+.directorySearchBtn:hover {
+    filter: brightness(1.08);
+}
+
+.directoryError {
+    color: var(--color-error);
+    margin: 0 0 1rem;
+}
+
+.directoryMuted {
+    color: var(--color-text-muted);
+    margin: 0 0 1rem;
+}
+
+.directoryGrid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.directoryCard {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-landing-partner-border-subtle);
+    border-radius: var(--radius-landing-hero);
+    padding: 1.6rem 1.7rem 1.45rem;
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-dark) 5%, transparent);
+    transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.directoryCard:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+    box-shadow:
+        0 14px 30px color-mix(in srgb, var(--color-brand-dark) 8%, transparent),
+        inset 0 -3px 0 var(--color-accent);
+}
+
+.directoryCardTop {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.directoryCardIcon {
+    flex-shrink: 0;
+    color: var(--color-accent);
+}
+
+.directoryCardHead {
+    flex: 1;
+    min-width: 0;
+}
+
+.directoryCardTitle {
+    margin: 0;
+    font-size: 1.55rem;
+    font-weight: 700;
     color: var(--color-text-heading);
+    line-height: 1.18;
+    font-family: var(--font-marketing);
 }
 
-.businessesPublicLede {
-    margin: 0 0 1.25rem;
-    line-height: 1.55;
+.directoryCardLine {
+    margin: 0 0 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.98rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+.directoryCardLine :global(.fa-map-marker-alt) {
+    color: var(--color-accent);
+}
+
+.directoryCardSummary {
+    margin: 0 0 1rem;
+    max-width: 60ch;
+    font-size: 0.98rem;
+    line-height: 1.6;
     color: var(--color-text-muted);
 }
 
-.businessesPublicActions {
+.directoryCardMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.directoryTag {
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border-input);
+    color: var(--color-text-muted);
+    background: var(--color-bg-elevated);
+}
+
+.directoryCardLinkLabel {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--color-accent);
+}
+
+.directoryPager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.directoryPager button {
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.directoryPager button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.directoryCta {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.directoryCtaTitle {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+    color: var(--color-text-heading);
+}
+
+.directoryCtaLede {
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    max-width: 40rem;
+    margin-inline: auto;
+}
+
+.directoryCtaActions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
+    justify-content: center;
+}
+
+@media (max-width: 900px) {
+    .directory {
+        width: min(100%, 100%);
+    }
+
+    .directorySearchRow {
+        flex-wrap: wrap;
+    }
+
+    .directorySearchBtn {
+        width: 100%;
+    }
+
+    .directoryCard {
+        padding: 1.3rem 1.2rem 1.15rem;
+    }
+
+    .directoryCardTitle {
+        font-size: 1.25rem;
+    }
+
+    .directoryCardMeta {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
 }

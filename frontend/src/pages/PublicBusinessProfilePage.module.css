@@ -1,0 +1,207 @@
+.wrap {
+    width: min(75vw, 1120px);
+    margin: 0 auto;
+}
+
+.breadcrumb {
+    font-size: 0.92rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb a {
+    color: var(--color-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 1.75rem;
+    align-items: center;
+    padding: 1.85rem 2rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-landing-partner-border-subtle);
+    border-radius: var(--radius-landing-hero);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-dark) 5%, transparent);
+    margin-bottom: 1.75rem;
+}
+
+.avatarWrap {
+    flex-shrink: 0;
+    width: 8.5rem;
+    height: 8.5rem;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-app);
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-primary-soft), var(--color-bg-tabs));
+}
+
+.heroText {
+    flex: 1;
+    min-width: 0;
+}
+
+.title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.7rem, 3vw, 2.55rem);
+    color: var(--color-text-heading);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    font-family: var(--font-marketing);
+}
+
+.location {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.26rem;
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+.location .fa-map-marker-alt {
+    color: var(--color-accent);
+}
+
+.section {
+    padding: 1.5rem 1.65rem;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-landing-partner-border-subtle);
+    border-radius: var(--radius-xl);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-dark) 4%, transparent);
+}
+
+.sectionTitle {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    color: var(--color-text-heading);
+    font-family: var(--font-marketing);
+}
+
+.bio {
+    margin: 0;
+    max-width: 72ch;
+    line-height: 1.7;
+    color: var(--color-text);
+    white-space: pre-wrap;
+}
+
+.muted {
+    color: var(--color-text-muted);
+}
+
+.error {
+    color: var(--color-error);
+    margin: 0 0 1rem;
+}
+
+.backLink {
+    font-weight: 600;
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.backLink:hover {
+    text-decoration: underline;
+}
+
+.ctaBand {
+    padding: 1.5rem 1.65rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-landing-partner-border-subtle);
+    background: var(--color-bg-elevated);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-dark) 4%, transparent);
+}
+
+.ctaText {
+    margin: 0 0 1rem;
+    max-width: 52ch;
+    font-size: 0.98rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+}
+
+.ctaRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.ctaPrimary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.35rem;
+    border-radius: var(--radius-full);
+    background: var(--color-brand-dark);
+    color: var(--color-text-on-dark);
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+}
+
+.ctaPrimary:hover {
+    filter: brightness(1.05);
+}
+
+.ctaSecondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.35rem;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-text-heading);
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--color-border);
+}
+
+.ctaSecondary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+@media (max-width: 900px) {
+    .wrap {
+        width: 100%;
+    }
+
+    .hero {
+        padding: 1.35rem 1.2rem;
+    }
+
+    .avatarWrap {
+        width: 6.75rem;
+        height: 6.75rem;
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
+    .section,
+    .ctaBand {
+        padding: 1.25rem 1.2rem;
+    }
+}

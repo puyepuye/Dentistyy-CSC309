@@ -6,8 +6,10 @@ import BusinessAppLayout from './layouts/BusinessAppLayout.jsx';
 import AdminAppLayout from './layouts/AdminAppLayout.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import AdminLoginPage from './pages/AdminLoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
 import BusinessesPage from './pages/BusinessesPage.jsx';
+import PublicBusinessProfilePage from './pages/PublicBusinessProfilePage.jsx';
 import BusinessSignupPage from './pages/BusinessSignupPage.jsx';
 import ActivateAccountPage from './pages/ActivateAccountPage.jsx';
 import StaffProfilePage from './pages/staff/StaffProfilePage.jsx';
@@ -43,10 +45,22 @@ function BusinessJobInterestsRedirect() {
 function MarketingLayout() {
     const { pathname } = useLocation();
     const isMarketingHome = pathname === '/';
-    const isLogin = pathname === '/login';
+    const isMarketingDirectory = pathname === '/directory';
+    const isLogin = pathname.startsWith('/login');
+    const isAuthFormPage =
+        pathname === '/signup' ||
+        pathname === '/signup/business' ||
+        pathname === '/activate' ||
+        pathname === '/forgot-password';
     let mainClassName = marketingLayoutStyles.pageContainer;
-    if (isMarketingHome) mainClassName = marketingLayoutStyles.mainLanding;
+    if (isMarketingHome) {
+        mainClassName = `${marketingLayoutStyles.marketingGradientShell} ${marketingLayoutStyles.mainLanding}`;
+    }
+    if (isMarketingDirectory) {
+        mainClassName = `${marketingLayoutStyles.marketingGradientShell} ${marketingLayoutStyles.mainDirectory}`;
+    }
     if (isLogin) mainClassName = 'main--login';
+    if (isAuthFormPage) mainClassName = 'main--signup';
 
     return (
         <>
@@ -65,7 +79,9 @@ function App() {
                 <Route element={<MarketingLayout />}>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/directory" element={<BusinessesPage />} />
+                    <Route path="/directory/:businessId" element={<PublicBusinessProfilePage />} />
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/login/admin" element={<AdminLoginPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/signup/business" element={<BusinessSignupPage />} />

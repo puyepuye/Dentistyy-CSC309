@@ -2,36 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { getMyWorkerJobs } from '../../lib/api.js';
-
-function titleCaseStatus(status) {
-    if (!status || typeof status !== 'string') return '';
-    return status
-        .split(/[\s_]+/)
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-        .join(' ');
-}
-
-/** Hours between start and end, e.g. "6.5h" or "7h". */
-function formatShiftDuration(startIso, endIso) {
-    const ms = new Date(endIso).getTime() - new Date(startIso).getTime();
-    if (!Number.isFinite(ms) || ms <= 0) return '';
-    const h = ms / 3600000;
-    if (Math.abs(h - Math.round(h)) < 0.02) {
-        return `${Math.round(h)}h`;
-    }
-    return `${h.toFixed(1)}h`;
-}
-
-/** e.g. "Mon, 1:30 PM – 8:00 PM (6.5h)" */
-function formatSchedulePrimary(startIso, endIso) {
-    const s = new Date(startIso);
-    const e = new Date(endIso);
-    const weekday = s.toLocaleDateString(undefined, { weekday: 'short' });
-    const timeOpts = { hour: 'numeric', minute: '2-digit' };
-    const range = `${s.toLocaleTimeString(undefined, timeOpts)} – ${e.toLocaleTimeString(undefined, timeOpts)}`;
-    const dur = formatShiftDuration(startIso, endIso);
-    return dur ? `${weekday}, ${range} (${dur})` : `${weekday}, ${range}`;
-}
+import { formatSchedulePrimary, titleCaseStatus } from '../../lib/scheduleDisplay.js';
 
 const DATE_ACCENT_CLASSES = [
     'staff-scheduled-row--accent-a',
@@ -57,7 +28,9 @@ function ScheduledShiftRow({ job, variant }) {
     return (
         <Link
             to={`/talent/jobs/${job.id}`}
-            className={`staff-scheduled-row ${accentClass}`}
+            className={`staff-scheduled-row ${accentClass}${
+                variant === 'upcoming' ? ' staff-scheduled-row--upcoming' : ''
+            }`}
         >
             <div className="staff-scheduled-row__date" aria-hidden="true">
                 <span className="staff-scheduled-row__month">{month}</span>

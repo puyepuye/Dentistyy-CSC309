@@ -66,7 +66,7 @@ function BusinessSignupPage() {
 
     return (
         <AuthFormSection
-            title="Register your practice"
+            title="Register your business"
             intro="Creates a business account on Dentistyy. Location is defaulted to downtown Toronto (you can refine coordinates later in the product)."
             footer={
                 <p className={styles.formHint}>

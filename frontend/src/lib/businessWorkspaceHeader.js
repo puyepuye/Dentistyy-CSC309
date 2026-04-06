@@ -21,9 +21,6 @@ export function businessHeaderFromPath(pathname, profile, jobName) {
     if (pathname.endsWith('/profile')) {
         return { greeting: hello, statusLine: 'Practice profile' };
     }
-    if (pathname.includes('/scheduled')) {
-        return { greeting: 'Scheduled', statusLine: null };
-    }
     if (pathname.includes('/jobs/new')) {
         return { greeting: hello, statusLine: 'New job posting' };
     }

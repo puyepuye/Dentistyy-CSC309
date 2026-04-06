@@ -65,7 +65,7 @@ export default function StaffBusinessDirectoryPage() {
                                 <input
                                     type="search"
                                     className="business-job-postings__search"
-                                    placeholder="Search by practice name, address, or phone…"
+                                    placeholder="Search by practice name or address…"
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     onKeyDown={(e) => {

@@ -790,10 +790,15 @@
 .staff-scheduled-row__body {
   flex: 1;
   min-width: 0;
-  padding: 0.85rem 0.35rem 0.85rem 0.15rem;
+  padding: 0.85rem 0.75rem 0.85rem 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+/* Upcoming rows have no status line — pad body to match past cards (primary + secondary + status) */
+.staff-scheduled-row--upcoming .staff-scheduled-row__body {
+  padding: 1.05rem 0.75rem 2rem 1rem;
 }
 
 .staff-scheduled-row__primary {

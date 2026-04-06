@@ -1228,7 +1228,8 @@ a.business-jobs-browse__tab--active:visited {
     text-align: left;
 }
 
-.talent-avatar--btn:disabled {
+.talent-avatar--btn:disabled,
+.talent-avatar--btn[aria-disabled='true'] {
     opacity: 0.55;
     cursor: not-allowed;
 }

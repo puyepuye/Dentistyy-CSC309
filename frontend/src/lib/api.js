@@ -235,6 +235,30 @@ export async function uploadUserResume(token, file) {
     return payload;
 }
 
+export async function uploadUserAvatar(token, file) {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/users/me/avatar`, {
+        method: 'PUT',
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+    });
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch {
+        payload = null;
+    }
+    if (!response.ok) {
+        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
+        const err = new Error(message);
+        err.status = response.status;
+        throw err;
+    }
+    return payload;
+}
+
 /** Open job postings (regular). Query: lat, lon, position_type_id, business_id, sort, order, page, limit */
 export function getOpenJobs(token, params = {}) {
     const q = new URLSearchParams();

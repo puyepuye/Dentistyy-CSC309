@@ -12,7 +12,10 @@ function BusinessAppLayoutInner() {
     const { pathname } = useLocation();
     const { token } = useAuth();
     const { profile, loading } = useBusinessProfile();
-    const isBusinessJobsBrowse = pathname === '/businesses/jobs';
+    const isBusinessScheduledPage =
+        pathname === '/businesses/scheduled' || pathname === '/businesses/scheduled/';
+    const useBusinessFullWidthShell =
+        pathname === '/businesses/jobs' || isBusinessScheduledPage;
     const [headerJobName, setHeaderJobName] = useState(null);
     const [negotiationForHeader, setNegotiationForHeader] = useState(null);
     const [negotiationHeaderLoading, setNegotiationHeaderLoading] = useState(false);
@@ -91,7 +94,7 @@ function BusinessAppLayoutInner() {
         <div className="app-shell">
             <BusinessSidebar />
             <div className="app-shell__main">
-                {!isBusinessJobsBrowse ? (
+                {!useBusinessFullWidthShell ? (
                     <TalentWorkspaceHeader
                         greeting={greeting}
                         statusLine={statusLine}
@@ -103,7 +106,7 @@ function BusinessAppLayoutInner() {
                     />
                 ) : null}
                 <div
-                    className={`app-shell__body${isBusinessJobsBrowse ? ' app-shell__body--business-jobs-browse' : ''}`}
+                    className={`app-shell__body${useBusinessFullWidthShell ? ' app-shell__body--business-jobs-browse' : ''}`}
                 >
                     <Outlet />
                 </div>

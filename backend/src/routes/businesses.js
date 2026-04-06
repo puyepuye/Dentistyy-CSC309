@@ -228,6 +228,11 @@ router.get('/', async (req, res, next) => {
             { role: 'business' },
         ];
 
+        if (!isAdmin) {
+            andFilters.push({ activated: true });
+            andFilters.push({ business: { verified: true } });
+        }
+
         if (activated !== undefined) {
             if (activated !== 'true' && activated !== 'false') {
                 return sendError(res, 400, 'Invalid query');
@@ -248,18 +253,18 @@ router.get('/', async (req, res, next) => {
 
         if (keyword && keyword.trim()) {
             const k = keyword.trim();
-            const keywordOr = [
-                { email: { contains: k } },
-                { business: { businessName: { contains: k } } },
-                { business: { phoneNumber: { contains: k } } },
-                { business: { postalAddress: { contains: k } } },
-            ];
-
-            if (isAdmin) {
-                keywordOr.push({
-                    business: { ownerName: { contains: k } },
-                });
-            }
+            const keywordOr = isAdmin
+                ? [
+                      { email: { contains: k } },
+                      { business: { businessName: { contains: k } } },
+                      { business: { phoneNumber: { contains: k } } },
+                      { business: { postalAddress: { contains: k } } },
+                      { business: { ownerName: { contains: k } } },
+                  ]
+                : [
+                      { business: { businessName: { contains: k } } },
+                      { business: { postalAddress: { contains: k } } },
+                  ];
 
             andFilters.push({ OR: keywordOr });
         }
@@ -280,6 +285,8 @@ router.get('/', async (req, res, next) => {
                 if (!isAdmin) return sendError(res, 400, 'Invalid query');
                 orderBy = { business: { ownerName: order } };
             }
+        } else {
+            orderBy = { business: { businessName: 'asc' } };
         }
 
         const count = await prisma.account.count({ where });
@@ -293,22 +300,27 @@ router.get('/', async (req, res, next) => {
         });
 
         const results = businesses.map((account) => {
-            const out = {
-                id: account.id,
-                business_name: account.business.businessName,
-                email: account.email,
-                role: account.role,
-                phone_number: account.business.phoneNumber,
-                postal_address: account.business.postalAddress,
-            };
-
             if (isAdmin) {
-                out.owner_name = account.business.ownerName;
-                out.verified = account.business.verified;
-                out.activated = account.activated;
+                const out = {
+                    id: account.id,
+                    business_name: account.business.businessName,
+                    email: account.email,
+                    role: account.role,
+                    phone_number: account.business.phoneNumber,
+                    postal_address: account.business.postalAddress,
+                    owner_name: account.business.ownerName,
+                    verified: account.business.verified,
+                    activated: account.activated,
+                };
+                return out;
             }
 
-            return out;
+            return {
+                id: account.id,
+                business_name: account.business.businessName,
+                postal_address: account.business.postalAddress,
+                avatar: account.business.avatar,
+            };
         });
 
         return res.status(200).json({
@@ -1120,6 +1132,24 @@ router.get('/:businessId', async (req, res, next) => {
             return sendError(res, 404, 'Not Found');
         }
 
+        if (!isAdmin && (!account.activated || !account.business.verified)) {
+            return sendError(res, 404, 'Not Found');
+        }
+
+        if (!isAdmin) {
+            return res.status(200).json({
+                id: account.id,
+                business_name: account.business.businessName,
+                postal_address: account.business.postalAddress,
+                location: {
+                    lon: account.business.lon,
+                    lat: account.business.lat,
+                },
+                avatar: account.business.avatar,
+                biography: account.business.biography,
+            });
+        }
+
         const out = {
             id: account.id,
             business_name: account.business.businessName,
@@ -1135,12 +1165,10 @@ router.get('/:businessId', async (req, res, next) => {
             biography: account.business.biography,
         };
 
-        if (isAdmin) {
-            out.owner_name = account.business.ownerName;
-            out.activated = account.activated;
-            out.verified = account.business.verified;
-            out.createdAt = account.createdAt.toISOString();
-        }
+        out.owner_name = account.business.ownerName;
+        out.activated = account.activated;
+        out.verified = account.business.verified;
+        out.createdAt = account.createdAt.toISOString();
 
         return res.status(200).json(out);
     } catch (e) {

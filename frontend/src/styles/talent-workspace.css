@@ -151,6 +151,27 @@
     box-shadow: var(--shadow-card);
 }
 
+.talent-avatar--btn {
+    display: block;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    background: transparent;
+}
+
+.talent-avatar--btn:disabled,
+.talent-avatar--btn[aria-disabled='true'] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.talent-avatar--btn:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
 .talent-field-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
