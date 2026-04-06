@@ -185,7 +185,7 @@ function LoginPage() {
                             No account yet?{' '}
                             <Link to="/signup">Talent signup</Link>
                             {' · '}
-                            <Link to="/signup/business">Practice signup</Link>
+                            <Link to="/signup/business">Business signup</Link>
                             {' · '}
                             <Link to="/activate">Activate account</Link>
                         </p>
