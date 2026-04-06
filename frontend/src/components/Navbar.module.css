@@ -55,6 +55,24 @@
     background: transparent;
 }
 
+.navOverviewLink {
+    padding: 0.25rem 0.15rem;
+    font-weight: 500;
+    font-size: 0.84rem;
+    letter-spacing: 0.01em;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+}
+
+.navOverviewLink:hover {
+    color: var(--color-brand-dark);
+}
+
+.navOverviewLinkActive {
+    color: var(--color-brand-dark);
+    font-weight: 600;
+}
+
 .navRight {
     margin-left: auto;
     z-index: 1;
