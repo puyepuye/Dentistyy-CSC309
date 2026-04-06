@@ -290,6 +290,7 @@
     }
 
     .app-sidebar {
+        --app-sidebar-mobile-bar-height: 4.5rem;
         position: relative;
         z-index: 120;
         width: 100%;
@@ -308,6 +309,8 @@
     .app-sidebar__brand-row {
         margin-bottom: 0;
         padding: 0.75rem 1rem;
+        min-height: var(--app-sidebar-mobile-bar-height);
+        box-sizing: border-box;
         border-bottom: 1px solid var(--color-sidebar-divider);
         position: relative;
         z-index: 202;
@@ -320,16 +323,17 @@
 
     .app-sidebar__panel {
         position: fixed;
-        top: 0;
-        left: 0;
+        top: var(--app-sidebar-mobile-bar-height);
+        right: 0;
         bottom: 0;
         width: min(300px, 88vw);
         z-index: 200;
         padding: 1rem 0.65rem 1.25rem;
-        padding-top: max(1rem, env(safe-area-inset-top));
+        padding-top: max(1rem, env(safe-area-inset-top) * 0.35);
         background: var(--color-bg-sidebar);
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.28);
-        transform: translateX(-100%);
+        box-shadow: -4px 0 24px rgba(0, 0, 0, 0.28);
+        border-left: 1px solid var(--color-sidebar-edge);
+        transform: translateX(100%);
         transition: transform 0.22s ease;
         overflow-y: auto;
         overflow-x: hidden;
@@ -353,7 +357,10 @@
     .app-sidebar__backdrop {
         display: block;
         position: fixed;
-        inset: 0;
+        top: var(--app-sidebar-mobile-bar-height);
+        right: 0;
+        bottom: 0;
+        left: 0;
         z-index: 199;
         margin: 0;
         padding: 0;

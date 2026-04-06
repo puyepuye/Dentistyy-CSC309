@@ -75,19 +75,19 @@ function LandingPage() {
             <section className={styles.statsBand}>
                 <div className={styles.statsFeature}>
                     <div className={styles.statsFeatureInner}>
-                        <div className={styles.statsFeatureNumber}>#1</div>
-                        <div className={styles.statsFeatureText}>Platform for Dentists</div>
+                        <div className={styles.statsFeatureNumber}>Built for</div>
+                        <div className={styles.statsFeatureText}>dental hiring</div>
                     </div>
                 </div>
 
                 <div className={styles.statsItem}>
-                    <div className={styles.statsBig}>40,000+</div>
-                    <div className={styles.statsSmall}>connections made across the platform</div>
+                    <div className={styles.statsBig}>{Math.max(partners.length, PARTNER_SLOTS)} practices</div>
+                    <div className={styles.statsSmall}>featured in the public directory</div>
                 </div>
 
                 <div className={styles.statsItem}>
-                    <div className={styles.statsBig}>15 years</div>
-                    <div className={styles.statsSmall}>of recruiting and staffing insight</div>
+                    <div className={styles.statsBig}>Talent + clinics</div>
+                    <div className={styles.statsSmall}>connected in one place</div>
                 </div>
             </section>
 
