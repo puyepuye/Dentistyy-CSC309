@@ -293,7 +293,17 @@ router.get('/', async (req, res, next) => {
 
         const businesses = await prisma.account.findMany({
             where,
-            include: { business: true },
+            include: {
+                business: {
+                    include: {
+                        _count: {
+                            select: {
+                                jobs: true,
+                            },
+                        },
+                    },
+                },
+            },
             skip: (pageNum - 1) * limitNum,
             take: limitNum,
             ...(orderBy ? { orderBy } : {}),
@@ -319,7 +329,8 @@ router.get('/', async (req, res, next) => {
                 id: account.id,
                 business_name: account.business.businessName,
                 postal_address: account.business.postalAddress,
-                avatar: account.business.avatar,
+                avatar: account.business.avatar ?? null,
+                jobs_posted: account.business._count?.jobs ?? 0,
             };
         });
 

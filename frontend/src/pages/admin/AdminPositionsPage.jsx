@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { getAdminPositionTypes, patchPositionType, deletePositionType, createPositionType } from '../../lib/api.js';
 import AddPositionTypeModal from '../../components/AddPositionTypeModal.jsx';
-import '../../styles/admin.css';
 
 export default function AdminPositionsPage() {
     const { token } = useAuth();
@@ -95,55 +94,62 @@ export default function AdminPositionsPage() {
     const totalPages = Math.ceil(count / limit);
 
     return (
-        <div>
-            <h1 className="admin-businesses__header">Position Types</h1>
-
-            <div className="admin-businesses__toolbar">
-            <div className="admin-businesses__filter-wrap">
-                <select
-                    value={sortName}
-                    onChange={(e) => { setSortName(e.target.value); setPage(1); }}
-                    className="admin-businesses__filter"
-                >
-                    <option value="">Sort by: Name</option>
-                    <option value="asc">Name A→Z</option>
-                    <option value="desc">Name Z→A</option>
-                </select>
-                <i className="fas fa-chevron-down admin-businesses__filter-icon" aria-hidden />
-            </div>
-
-            <div className="admin-businesses__filter-wrap">
-                <select
-                    value={sortNumQualified}
-                    onChange={(e) => { setSortNumQualified(e.target.value); setPage(1); }}
-                    className="admin-businesses__filter"
-                >
-                    <option value="">Sort by: Qualified</option>
-                    <option value="asc">Least qualified</option>
-                    <option value="desc">Most qualified</option>
-                </select>
-                <i className="fas fa-chevron-down admin-businesses__filter-icon" aria-hidden />
-            </div>
-                
-
-                <div className="admin-businesses__filter-wrap">
-                    <select
-                        value={filterVisible}
-                        onChange={(e) => { setFilterVisible(e.target.value); setPage(1); }}
-                        className="admin-businesses__filter"
+        <div className="admin-page">
+            <div className="business-jobs-browse__toolbar admin-page__toolbar admin-page__toolbar--positions">
+                <div className="business-jobs-browse__toolbar-row business-jobs-browse__toolbar-row--top">
+                    <div className="business-jobs-browse__sort">
+                        <label htmlFor="admin-pt-sort-name">Name</label>
+                        <select
+                            id="admin-pt-sort-name"
+                            value={sortName}
+                            onChange={(e) => {
+                                setSortName(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">Default</option>
+                            <option value="asc">A→Z</option>
+                            <option value="desc">Z→A</option>
+                        </select>
+                    </div>
+                    <div className="business-jobs-browse__sort">
+                        <label htmlFor="admin-pt-sort-qualified">Qualified</label>
+                        <select
+                            id="admin-pt-sort-qualified"
+                            value={sortNumQualified}
+                            onChange={(e) => {
+                                setSortNumQualified(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">Default</option>
+                            <option value="asc">Least</option>
+                            <option value="desc">Most</option>
+                        </select>
+                    </div>
+                    <div className="business-jobs-browse__sort">
+                        <label htmlFor="admin-pt-filter-hidden">Visibility</label>
+                        <select
+                            id="admin-pt-filter-hidden"
+                            value={filterVisible}
+                            onChange={(e) => {
+                                setFilterVisible(e.target.value);
+                                setPage(1);
+                            }}
+                        >
+                            <option value="">All</option>
+                            <option value="false">Visible</option>
+                            <option value="true">Hidden</option>
+                        </select>
+                    </div>
+                    <button
+                        type="button"
+                        className="admin-positions__add-btn"
+                        onClick={() => setShowAddCard((v) => !v)}
                     >
-                        <option value="">Filter by: Status</option>
-                        <option value="false">Visible</option>
-                        <option value="true">Hidden</option>
-                    </select>
-                    <i className="fas fa-chevron-down admin-businesses__filter-icon" aria-hidden />
+                        <i className="fas fa-plus" aria-hidden /> Add position type
+                    </button>
                 </div>
-                <button
-                    className="admin-positions__add-btn"
-                    onClick={() => setShowAddCard((v) => !v)}
-                >
-                    <i className="fas fa-plus" /> Add Position Type
-                </button>
             </div>
 
             {showAddCard && (
@@ -157,8 +163,9 @@ export default function AdminPositionsPage() {
                 />
             )}
 
-            {error ? <p className="admin-businesses__error">{error}</p> : null}
+            {error ? <p className="admin-page__error">{error}</p> : null}
 
+            <div className="admin-page__table-wrap">
             <table className="admin-businesses__table">
                 <thead>
                     <tr>
@@ -171,9 +178,9 @@ export default function AdminPositionsPage() {
                 </thead>
                 <tbody>
                     {loading ? (
-                        <tr><td colSpan={4} className="admin-businesses__empty">Loading…</td></tr>
+                        <tr><td colSpan={5} className="admin-businesses__empty">Loading…</td></tr>
                     ) : positionTypes.length === 0 ? (
-                        <tr><td colSpan={4} className="admin-businesses__empty">No position types found.</td></tr>
+                        <tr><td colSpan={5} className="admin-businesses__empty">No position types found.</td></tr>
                     ) : positionTypes.map((b) => (
                         <tr key={b.id}>
                             <td>
@@ -250,14 +257,15 @@ export default function AdminPositionsPage() {
                     ))}
                 </tbody>
             </table>
+            </div>
 
-            {totalPages > 1 && (
-                <div className="admin-businesses__pagination">
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>◀</button>
+            {totalPages > 1 ? (
+                <div className="talent-jobs__pagination admin-page__pagination">
+                    <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>◀</button>
                     <span>Page {page} of {totalPages}</span>
-                    <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>▶</button>
+                    <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>▶</button>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }

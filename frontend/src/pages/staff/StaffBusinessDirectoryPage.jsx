@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getBusinessesList } from '../../lib/api.js';
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 15;
 
 export default function StaffBusinessDirectoryPage() {
     const [inputValue, setInputValue] = useState('');
@@ -42,6 +42,8 @@ export default function StaffBusinessDirectoryPage() {
     }
 
     const totalPages = Math.max(1, Math.ceil((data.count || 0) / PAGE_SIZE));
+    const startIdx = data.count === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+    const endIdx = data.count === 0 ? 0 : Math.min(page * PAGE_SIZE, data.count);
 
     return (
         <div className="business-job-postings business-job-postings--browse staff-business-directory">
@@ -57,9 +59,16 @@ export default function StaffBusinessDirectoryPage() {
             </header>
 
             <div className="business-jobs-browse__content">
-                <div className="business-jobs-browse__toolbar">
-                    <div className="business-jobs-browse__toolbar-row business-jobs-browse__toolbar-row--top">
-                        <div className="talent-business-directory__search-row">
+                <div className="staff-business-directory__sticky-head">
+                    <form
+                        className="business-jobs-browse__toolbar staff-business-directory__toolbar"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            applySearch();
+                        }}
+                        aria-label="Search practices"
+                    >
+                        <div className="business-jobs-browse__toolbar-row business-jobs-browse__toolbar-row--top">
                             <div className="business-job-postings__search-wrap">
                                 <i className="fas fa-search" aria-hidden />
                                 <input
@@ -68,21 +77,14 @@ export default function StaffBusinessDirectoryPage() {
                                     placeholder="Search by practice name or address…"
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') applySearch();
-                                    }}
                                     aria-label="Search practices"
                                 />
                             </div>
-                            <button
-                                type="button"
-                                className="talent-business-directory__search-btn"
-                                onClick={applySearch}
-                            >
+                            <button type="submit" className="staff-business-directory__search-btn">
                                 Search
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
                 {error ? (
@@ -91,37 +93,46 @@ export default function StaffBusinessDirectoryPage() {
                     </p>
                 ) : null}
 
-                {loading ? <p className="talent-jobs__loading">Loading…</p> : null}
-
-                {!loading && data.results.length === 0 ? (
-                    <p className="talent-jobs__empty">No practices match your search.</p>
-                ) : null}
-
-                {!loading && data.results.length > 0 ? (
-                    <div className="business-jobs-browse__grid talent-business-directory__grid">
-                        {data.results.map((b) => (
-                            <Link
-                                key={b.id}
-                                to={`/talent/businesses/${b.id}`}
-                                className="talent-business-directory__card"
-                            >
-                                <div className="talent-business-directory__card-accent" aria-hidden />
-                                <div className="talent-business-directory__card-body">
-                                    <h2 className="talent-business-directory__card-title">
-                                        {b.business_name}
-                                    </h2>
-                                    <p className="talent-business-directory__card-line">
-                                        <i className="fas fa-map-marker-alt" aria-hidden />
-                                        <span>{b.postal_address || 'Address on file'}</span>
-                                    </p>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                ) : null}
+                <div className="staff-business-directory__sheet">
+                    {loading ? (
+                        <p className="staff-business-directory__state">Loading…</p>
+                    ) : data.results.length === 0 ? (
+                        <p className="staff-business-directory__state staff-business-directory__state--empty">
+                            No practices match your search.
+                        </p>
+                    ) : (
+                        <>
+                            <div className="staff-business-directory__table-head" aria-hidden>
+                                <span>Practice</span>
+                                <span>Location</span>
+                                <span>Jobs posted</span>
+                            </div>
+                            <ul className="staff-business-directory__rows">
+                                {data.results.map((b) => (
+                                    <li key={b.id} className="staff-business-directory__row-item">
+                                        <Link
+                                            to={`/talent/businesses/${b.id}`}
+                                            className="staff-business-directory__row"
+                                        >
+                                            <span className="staff-business-directory__name">
+                                                {b.business_name}
+                                            </span>
+                                            <span className="staff-business-directory__location">
+                                                {b.postal_address?.trim() ? b.postal_address : 'Address on file'}
+                                            </span>
+                                            <span className="staff-business-directory__jobs">
+                                                {(b.jobs_posted ?? 0).toLocaleString()}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </div>
 
                 {!loading && totalPages > 1 ? (
-                    <div className="talent-jobs__pagination">
+                    <div className="talent-jobs__pagination staff-business-directory__pagination">
                         <button
                             type="button"
                             disabled={page <= 1}
@@ -142,6 +153,12 @@ export default function StaffBusinessDirectoryPage() {
                             ▶
                         </button>
                     </div>
+                ) : null}
+
+                {!loading && data.count > 0 ? (
+                    <p className="staff-business-directory__page-tag">
+                        Page {page} ({startIdx}-{endIdx})
+                    </p>
                 ) : null}
             </div>
         </div>

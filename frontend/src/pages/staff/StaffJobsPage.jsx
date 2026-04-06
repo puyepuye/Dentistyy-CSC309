@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import JobInterestCarousel from '../../components/staff/JobInterestCarousel.jsx';
 import {
@@ -26,7 +26,15 @@ function formatShiftRange(startIso, endIso) {
     return `${s.toLocaleTimeString(undefined, o)} – ${e.toLocaleTimeString(undefined, o)}`;
 }
 
-export function JobCard({ job, showMutual, mutual }) {
+function formatJobsFoundLabel(n) {
+    return `${n} job${n === 1 ? '' : 's'} found`;
+}
+
+function jobsParen(n) {
+    return `(${n} job${n === 1 ? '' : 's'})`;
+}
+
+export function JobCard({ job, showMutual, mutual, detailQuery = '' }) {
     const title = job.position_type?.name ?? 'Job';
     const clinic = job.business?.business_name ?? 'Practice';
     const salary = `$${job.salary_min}–${job.salary_max}/hr`;
@@ -37,8 +45,9 @@ export function JobCard({ job, showMutual, mutual }) {
             : null;
     const eta = job.eta != null && typeof job.eta === 'number' ? `${job.eta} min` : null;
 
+    const q = detailQuery ? `?${detailQuery}` : '';
     return (
-        <Link to={`/talent/jobs/${job.id}`} className="talent-job-card talent-job-card--link">
+        <Link to={`/talent/jobs/${job.id}${q}`} className="talent-job-card talent-job-card--link">
             <div className="talent-job-card__accent" aria-hidden />
             <div className="talent-job-card__body">
                 <h3 className="talent-job-card__title">{title}</h3>
@@ -75,7 +84,8 @@ const SORT_OPTIONS = [
 
 export default function StaffJobsPage() {
     const { token } = useAuth();
-    const [tab, setTab] = useState('search');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const tab = searchParams.get('tab') === 'interested' ? 'interested' : 'search';
     const [page, setPage] = useState(1);
     const [sortId, setSortId] = useState('closest');
     const [lat, setLat] = useState(DEFAULT_LAT);
@@ -83,6 +93,7 @@ export default function StaffJobsPage() {
     const [geoNote, setGeoNote] = useState(null);
 
     const [searchText, setSearchText] = useState('');
+    const deferredSearch = useDeferredValue(searchText.trim());
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const [positionTypeId, setPositionTypeId] = useState('');
     const [businessId, setBusinessId] = useState('');
@@ -148,6 +159,7 @@ export default function StaffJobsPage() {
                 order: sortConfig.order,
                 position_type_id: positionTypeId || undefined,
                 business_id: businessId || undefined,
+                q: deferredSearch || undefined,
             };
             if (sortConfig.sort === 'distance' || sortConfig.sort === 'eta') {
                 params.lat = lat;
@@ -170,6 +182,7 @@ export default function StaffJobsPage() {
         lon,
         positionTypeId,
         businessId,
+        deferredSearch,
     ]);
 
     const loadInterests = useCallback(async () => {
@@ -200,17 +213,6 @@ export default function StaffJobsPage() {
         }
     }, [token, tab, loadJobs, loadInterests]);
 
-    const filteredJobs = useMemo(() => {
-        const list = jobsData.results;
-        const q = searchText.trim().toLowerCase();
-        if (!q) return list;
-        return list.filter(
-            (j) =>
-                j.position_type?.name?.toLowerCase().includes(q) ||
-                j.business?.business_name?.toLowerCase().includes(q)
-        );
-    }, [jobsData.results, searchText]);
-
     const filterCount = useMemo(() => {
         let n = 0;
         if (positionTypeId) n++;
@@ -221,21 +223,26 @@ export default function StaffJobsPage() {
 
     const totalPagesSearch = Math.max(1, Math.ceil((jobsData.count || 0) / PAGE_SIZE));
     const totalPages = totalPagesSearch;
+    const jobsPageRangeStart = jobsData.count > 0 ? (page - 1) * PAGE_SIZE + 1 : 0;
+    const jobsPageRangeEnd =
+        jobsData.count > 0 ? Math.min((page - 1) * PAGE_SIZE + jobsData.results.length, jobsData.count) : 0;
+
+    const matchedRows = useMemo(
+        () => interestsBundle.matched.results.filter((r) => r.job?.status !== 'filled'),
+        [interestsBundle.matched.results]
+    );
 
     const pipelineTotal = useMemo(
         () =>
-            interestsBundle.matched.count +
-            interestsBundle.interest_shown.count +
-            interestsBundle.interested_in_you.count,
-        [interestsBundle]
+            matchedRows.length +
+            interestsBundle.interest_shown.results.length +
+            interestsBundle.interested_in_you.results.length,
+        [
+            matchedRows.length,
+            interestsBundle.interest_shown.results.length,
+            interestsBundle.interested_in_you.results.length,
+        ]
     );
-
-    const displayCount =
-        tab === 'search'
-            ? searchText.trim()
-                ? filteredJobs.length
-                : jobsData.count
-            : pipelineTotal;
 
     const openJobsPosted = tab === 'search' ? jobsData.count : pipelineTotal;
 
@@ -249,16 +256,28 @@ export default function StaffJobsPage() {
               : `${pipelineTotal} job${pipelineTotal === 1 ? '' : 's'} in your pipeline`;
 
     const resultsLine = useMemo(() => {
-        if (searchText.trim()) {
-            const m = filteredJobs.length;
-            return `${m} match${m === 1 ? '' : 'es'} on this page`;
+        if (loading && tab === 'search' && jobsData.count === 0) {
+            return 'Loading…';
         }
-        return `${Number(displayCount).toLocaleString()} results found`;
-    }, [searchText, filteredJobs.length, displayCount]);
+        const c = jobsData.count ?? 0;
+        if (deferredSearch) {
+            return `${c} match${c === 1 ? '' : 'es'}`;
+        }
+        return `${Number(c).toLocaleString()} results found`;
+    }, [loading, tab, jobsData.count, deferredSearch]);
 
     useEffect(() => {
         setPage(1);
-    }, [sortId, positionTypeId, businessId]);
+    }, [sortId, positionTypeId, businessId, deferredSearch]);
+
+    function setJobsTab(next) {
+        if (next === 'interested') {
+            setSearchParams({ tab: 'interested' }, { replace: true });
+        } else {
+            setSearchParams({}, { replace: true });
+        }
+        setPage(1);
+    }
 
     return (
         <div className="business-job-postings business-job-postings--browse staff-jobs-page">
@@ -285,10 +304,7 @@ export default function StaffJobsPage() {
                         role="tab"
                         aria-selected={tab === 'search'}
                         className={`business-jobs-browse__tab${tab === 'search' ? ' business-jobs-browse__tab--active' : ''}`}
-                        onClick={() => {
-                            setTab('search');
-                            setPage(1);
-                        }}
+                        onClick={() => setJobsTab('search')}
                     >
                         Job Search
                     </button>
@@ -297,10 +313,7 @@ export default function StaffJobsPage() {
                         role="tab"
                         aria-selected={tab === 'interested'}
                         className={`business-jobs-browse__tab${tab === 'interested' ? ' business-jobs-browse__tab--active' : ''}`}
-                        onClick={() => {
-                            setTab('interested');
-                            setPage(1);
-                        }}
+                        onClick={() => setJobsTab('interested')}
                     >
                         Manage Job Interests
                     </button>
@@ -406,11 +419,11 @@ export default function StaffJobsPage() {
                 ) : null}
 
                 {!loading && tab === 'search' ? (
-                    filteredJobs.length === 0 ? (
+                    jobsData.results.length === 0 ? (
                         <p className="talent-jobs__empty">No jobs match your filters.</p>
                     ) : (
                         <div className="business-jobs-browse__grid">
-                            {filteredJobs.map((job) => (
+                            {jobsData.results.map((job) => (
                                 <JobCard key={job.id} job={job} />
                             ))}
                         </div>
@@ -423,16 +436,16 @@ export default function StaffJobsPage() {
                     ) : (
                         <div className="talent-interest-sections">
                             <JobInterestCarousel
-                                title="Matched"
+                                title={`Matched (${formatJobsFoundLabel(matchedRows.length)})`}
                                 subtitle="You and the practice both expressed interest."
-                                items={interestsBundle.matched.results}
+                                items={matchedRows}
                                 emptyMessage="No matches yet."
                                 renderItem={(row) => (
                                     <JobCard job={row.job} showMutual mutual={row.mutual} />
                                 )}
                             />
                             <JobInterestCarousel
-                                title="Interested in you"
+                                title={`Interested in you (${formatJobsFoundLabel(interestsBundle.interested_in_you.results.length)})`}
                                 subtitle="Practices that reached out, open the job from Job Search to respond."
                                 items={interestsBundle.interested_in_you.results}
                                 emptyMessage="No practice outreach yet."
@@ -441,7 +454,7 @@ export default function StaffJobsPage() {
                                 )}
                             />
                             <JobInterestCarousel
-                                title="Interest shown"
+                                title={`Interest shown (${formatJobsFoundLabel(interestsBundle.interest_shown.results.length)})`}
                                 subtitle="You expressed interest, waiting on the practice."
                                 items={interestsBundle.interest_shown.results}
                                 emptyMessage="No pending interest from you."
@@ -475,6 +488,12 @@ export default function StaffJobsPage() {
                             ▶
                         </button>
                     </div>
+                ) : null}
+
+                {tab === 'search' && !loading && jobsData.count > 0 ? (
+                    <p className="staff-jobs-page__page-tag">
+                        Page {page} (results {jobsPageRangeStart}-{jobsPageRangeEnd})
+                    </p>
                 ) : null}
             </div>
         </div>

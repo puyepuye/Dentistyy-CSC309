@@ -30,6 +30,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs'); 
 const qualificationsUploadRoot = path.join(__dirname, '../../uploads/users');
+const UPLOADS_ROOT = path.resolve(path.join(__dirname, '../../uploads'));
 
 const qualificationStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
@@ -64,12 +65,22 @@ const qualificationUpload = multer({
 // GET /qualifications
 router.get('/', requireRole('admin'), async (req, res, next) => {
     try {
-        const { valid } = validateNoExtraKeys(req.query || {}, ['keyword', 'page', 'limit']);
+        const { valid } = validateNoExtraKeys(req.query || {}, [
+            'keyword',
+            'page',
+            'limit',
+            'status',
+            'order',
+        ]);
         if (!valid) return sendError(res, 400, 'Invalid query');
 
         const keyword = typeof req.query.keyword === 'string' ? req.query.keyword.trim() : '';
         const page = req.query.page === undefined ? 1 : Number(req.query.page);
         const limit = req.query.limit === undefined ? 10 : Number(req.query.limit);
+        const statusFilter =
+            typeof req.query.status === 'string' && req.query.status.trim() !== ''
+                ? req.query.status.trim()
+                : '';
 
         if (!Number.isInteger(page) || page < 1) {
             return sendError(res, 400, 'Invalid query');
@@ -78,6 +89,9 @@ router.get('/', requireRole('admin'), async (req, res, next) => {
         if (!Number.isInteger(limit) || limit < 1) {
             return sendError(res, 400, 'Invalid query');
         }
+
+        const order =
+            req.query.order === 'asc' || req.query.order === 'desc' ? req.query.order : 'desc';
 
         // Admin listing
         const where = {};
@@ -90,6 +104,10 @@ router.get('/', requireRole('admin'), async (req, res, next) => {
                 { regularUser: { account: { email: { contains: keyword } } } },
                 { positionType: { name: { contains: keyword } } },
             ];
+        }
+
+        if (statusFilter) {
+            where.status = statusFilter;
         }
 
         const count = await prisma.qualification.count({ where });
@@ -107,7 +125,7 @@ router.get('/', requireRole('admin'), async (req, res, next) => {
             skip: (page - 1) * limit,
             take: limit,
             orderBy: {
-                updatedAt: 'desc',
+                updatedAt: order,
             },
         });
 
@@ -217,6 +235,36 @@ router.post('/', requireRole('regular'), async (req, res, next) => {
             },
             updatedAt: created.updatedAt.toISOString(),
         });
+    } catch (e) {
+        next(e);
+    }
+});
+
+// GET /qualifications/:qualificationId/document — admin: PDF bytes (for embedded viewer with Authorization)
+router.get('/:qualificationId/document', requireRole('admin'), async (req, res, next) => {
+    try {
+        const qualificationId = Number(req.params.qualificationId);
+        if (!Number.isInteger(qualificationId) || qualificationId < 1) {
+            return sendError(res, 404, 'Not Found');
+        }
+
+        const qualification = await prisma.qualification.findUnique({
+            where: { id: qualificationId },
+        });
+
+        if (!qualification || !qualification.document) {
+            return sendError(res, 404, 'Not Found');
+        }
+
+        const rel = qualification.document.replace(/^\//, '');
+        const abs = path.resolve(path.join(__dirname, '../../', rel));
+        if (!abs.startsWith(UPLOADS_ROOT) || !fs.existsSync(abs)) {
+            return sendError(res, 404, 'Not Found');
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="document.pdf"');
+        return res.sendFile(abs);
     } catch (e) {
         next(e);
     }

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import '../styles/admin.css';
 
 export default function AddPositionTypeModal({ onClose, onCreated }) {
     const [name, setName] = useState('');

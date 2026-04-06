@@ -7,6 +7,7 @@
 @import "./styles/profile-modals.css";
 @import "./styles/login.css";
 @import "./styles/marketing-orphans.css";
+@import "./styles/admin.css";
 
 * {
   box-sizing: border-box;
