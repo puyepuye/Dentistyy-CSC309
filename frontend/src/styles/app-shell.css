@@ -9,6 +9,11 @@
     background: var(--color-bg-app);
 }
 
+/* Admin-only: deep teal sidebar chrome (desktop + mobile drawer share --color-bg-sidebar) */
+.app-sidebar--admin {
+    --color-bg-sidebar: #0c2e33;
+}
+
 .app-sidebar {
     width: 240px;
     flex-shrink: 0;

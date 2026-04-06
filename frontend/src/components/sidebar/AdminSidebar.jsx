@@ -10,5 +10,5 @@ const items = [
 ];
 
 export default function AdminSidebar() {
-    return <AppSidebarLayout ariaLabel="Admin navigation" items={items} />;
+    return <AppSidebarLayout variant="admin" ariaLabel="Admin navigation" items={items} />;
 }

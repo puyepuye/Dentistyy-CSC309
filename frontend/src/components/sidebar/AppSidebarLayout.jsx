@@ -25,7 +25,7 @@ function useIsMobileNav() {
  * Shared app sidebar (staff / practice / admin nav lists).
  * Desktop: persistent column. Mobile: compact bar + hamburger drawer.
  */
-export default function AppSidebarLayout({ ariaLabel, items }) {
+export default function AppSidebarLayout({ ariaLabel, items, variant = 'default' }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const isMobile = useIsMobileNav();
     const location = useLocation();
@@ -56,7 +56,9 @@ export default function AppSidebarLayout({ ariaLabel, items }) {
 
     return (
         <aside
-            className={`app-sidebar${menuOpen ? ' app-sidebar--open' : ''}`}
+            className={`app-sidebar${menuOpen ? ' app-sidebar--open' : ''}${
+                variant === 'admin' ? ' app-sidebar--admin' : ''
+            }`}
             aria-label={ariaLabel}
         >
             <div className="app-sidebar__brand-row">
