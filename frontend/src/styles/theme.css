@@ -58,6 +58,7 @@
     /* Semantic */
     --color-error: #b42318;
     --color-success: #027a48;
+    --color-success-admin: #0a9;
 
     /* Navigation states (top bar — light context) */
     --color-nav-active-bg: rgba(89, 168, 151, 0.12);

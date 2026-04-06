@@ -18,7 +18,7 @@
 .admin-businesses__search-input {
     flex: 1;
     padding: 0.6rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     font: inherit;
     background: var(--color-bg-elevated);
@@ -27,7 +27,7 @@
 
 .admin-businesses__search-btn {
     padding: 0.6rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-bg-elevated);
     font: inherit;
@@ -42,7 +42,7 @@
 
 .admin-businesses__filter {
     padding: 0.6rem 2.5rem 0.6rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-bg-elevated);
     font: inherit;
@@ -61,7 +61,7 @@
 }
 
 .admin-businesses__error {
-    color: red;
+    color: var(--color-error);
     margin-bottom: 1rem;
 }
 
@@ -100,7 +100,7 @@
 
 .admin-businesses__badge {
     padding: 0.25rem 0.75rem;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     font-size: 0.85rem;
     display: inline-block;
     width: 90px;
@@ -112,18 +112,18 @@
 }
 
 .admin-businesses__badge--verified {
-    border: 1px solid #0a9;
-    color: #0a9;
+    border: 1px solid var(--color-success-admin);
+    color: var(--color-success-admin);
 }
 
 .admin-businesses__badge--unverified {
-    border: 1px solid #e44;
-    color: #e44;
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
 }
 
 .admin-businesses__action-btn {
     padding: 0.35rem 1rem;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-bg-elevated);
     font: inherit;
@@ -150,7 +150,7 @@
 
 .admin-businesses__pagination button {
     padding: 0.35rem 0.75rem;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-bg-elevated);
     cursor: pointer;
