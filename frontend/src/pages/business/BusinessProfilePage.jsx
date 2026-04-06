@@ -4,12 +4,24 @@ import { useBusinessProfile } from '../../contexts/BusinessProfileContext.jsx';
 import EditBusinessProfileModal from '../../components/business/EditBusinessProfileModal.jsx';
 import { assetUrl, patchBusinessMe, uploadBusinessAvatar } from '../../lib/api.js';
 
+function handleAvatarTriggerKeyDown(event, inputRef, disabled = false) {
+    if (disabled) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    if (typeof inputRef.current?.showPicker === 'function') {
+        inputRef.current.showPicker();
+        return;
+    }
+    inputRef.current?.click();
+}
+
 export default function BusinessProfilePage() {
     const { token } = useAuth();
     const { profile, loading, error, refetch } = useBusinessProfile();
     const [editOpen, setEditOpen] = useState(false);
     const [publicEditing, setPublicEditing] = useState(false);
     const [avatarBusy, setAvatarBusy] = useState(false);
+    const [avatarVersion, setAvatarVersion] = useState(0);
     const [publicSaveBusy, setPublicSaveBusy] = useState(false);
     const [publicSaveErr, setPublicSaveErr] = useState(null);
     const [businessName, setBusinessName] = useState('');
@@ -62,8 +74,10 @@ export default function BusinessProfilePage() {
         try {
             await uploadBusinessAvatar(token, file);
             await refetch();
-        } catch {
-            window.alert('Upload a PNG or JPEG image.');
+            setAvatarVersion((version) => version + 1);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Upload a PNG or JPEG image.';
+            window.alert(message);
         } finally {
             setAvatarBusy(false);
         }
@@ -126,7 +140,7 @@ export default function BusinessProfilePage() {
 
     if (!profile || !token) return null;
 
-    const fullAvatar = assetUrl(profile.avatar);
+    const fullAvatar = profile.avatar ? `${assetUrl(profile.avatar)}?v=${avatarVersion}` : null;
 
     return (
         <div className="talent-profile">
@@ -148,12 +162,16 @@ export default function BusinessProfilePage() {
                         ) : null}
                         <div className="talent-profile-personal">
                             <div>
-                                <button
-                                    type="button"
+                                <label
+                                    htmlFor="public-practice-avatar-input"
                                     className="talent-avatar talent-avatar--btn"
-                                    onClick={() => publicAvatarRef.current?.click()}
-                                    disabled={avatarBusy || publicSaveBusy}
+                                    role="button"
+                                    tabIndex={avatarBusy || publicSaveBusy ? -1 : 0}
+                                    aria-disabled={avatarBusy || publicSaveBusy ? 'true' : undefined}
                                     aria-label="Replace practice logo shown to talent"
+                                    onKeyDown={(event) =>
+                                        handleAvatarTriggerKeyDown(event, publicAvatarRef, avatarBusy || publicSaveBusy)
+                                    }
                                 >
                                     {fullAvatar ? (
                                         <img className="talent-avatar__img" src={fullAvatar} alt="" />
@@ -163,12 +181,14 @@ export default function BusinessProfilePage() {
                                     <span className="talent-avatar__camera">
                                         <i className="fas fa-camera" aria-hidden />
                                     </span>
-                                </button>
+                                </label>
                                 <input
+                                    id="public-practice-avatar-input"
                                     ref={publicAvatarRef}
                                     type="file"
                                     accept="image/png,image/jpeg"
                                     className="business-visually-hidden"
+                                    disabled={avatarBusy || publicSaveBusy}
                                     onChange={onAvatarPick}
                                 />
                             </div>
@@ -333,12 +353,14 @@ export default function BusinessProfilePage() {
                 </div>
                 <div className="talent-profile-personal">
                     <div>
-                        <button
-                            type="button"
+                        <label
+                            htmlFor="manage-practice-avatar-input"
                             className="talent-avatar talent-avatar--btn"
-                            onClick={() => fileRef.current?.click()}
-                            disabled={avatarBusy}
+                            role="button"
+                            tabIndex={avatarBusy ? -1 : 0}
+                            aria-disabled={avatarBusy ? 'true' : undefined}
                             aria-label="Replace practice logo"
+                            onKeyDown={(event) => handleAvatarTriggerKeyDown(event, fileRef, avatarBusy)}
                         >
                             {fullAvatar ? (
                                 <img className="talent-avatar__img" src={fullAvatar} alt="" />
@@ -348,12 +370,14 @@ export default function BusinessProfilePage() {
                             <span className="talent-avatar__camera">
                                 <i className="fas fa-camera" aria-hidden />
                             </span>
-                        </button>
+                        </label>
                         <input
+                            id="manage-practice-avatar-input"
                             ref={fileRef}
                             type="file"
                             accept="image/png,image/jpeg"
                             className="business-visually-hidden"
+                            disabled={avatarBusy}
                             onChange={onAvatarPick}
                         />
                     </div>

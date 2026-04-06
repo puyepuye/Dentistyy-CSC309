@@ -70,7 +70,7 @@ function ActivateAccountPage() {
             footer={
                 <p className={styles.formHint}>
                     <Link to="/login">Back to login</Link> · <Link to="/signup">Talent signup</Link> ·{' '}
-                    <Link to="/signup/business">Practice signup</Link>
+                    <Link to="/signup/business">Business signup</Link>
                 </p>
             }
         >

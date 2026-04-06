@@ -189,6 +189,9 @@ function LoginPage() {
                             {' · '}
                             <Link to="/activate">Activate account</Link>
                         </p>
+                        <p className="login-card__admin-link">
+                            Need admin access? <Link to="/login/admin">Admin sign in</Link>
+                        </p>
                         <p className="login-card__placeholder-note">
                             Seeded demo: e.g. regular1@csc309.utoronto.ca, business1@csc309.utoronto.ca, or
                             admin1@csc309.utoronto.ca, password <strong>123123</strong>.

@@ -6,9 +6,9 @@
     padding: 0 1rem 2rem;
 }
 
-/* Empty state: narrower card + button than full content width */
+/* Empty state — same max width as Scheduled list cards (.staff-scheduled-list) */
 .talent-neg__empty {
-    max-width: 28rem;
+    max-width: 42rem;
     width: 100%;
     margin-inline: 0;
 }

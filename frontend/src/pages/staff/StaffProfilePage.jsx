@@ -4,7 +4,7 @@ import { useTalentProfile } from '../../contexts/TalentProfileContext.jsx';
 import EditBiographyModal from '../../components/talent/profile/EditBiographyModal.jsx';
 import EditPersonalInfoModal from '../../components/talent/profile/EditPersonalInfoModal.jsx';
 import ManageQualificationsModal from '../../components/talent/profile/ManageQualificationsModal.jsx';
-import { assetUrl, uploadUserResume } from '../../lib/api.js';
+import { assetUrl, uploadUserAvatar, uploadUserResume } from '../../lib/api.js';
 
 export default function StaffProfilePage() {
     const { token } = useAuth();
@@ -13,7 +13,10 @@ export default function StaffProfilePage() {
     const [personalOpen, setPersonalOpen] = useState(false);
     const [bioOpen, setBioOpen] = useState(false);
     const [qualsOpen, setQualsOpen] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [avatarVersion, setAvatarVersion] = useState(0);
     const [resumeUploading, setResumeUploading] = useState(false);
+    const avatarInputRef = useRef(null);
     const resumeInputRef = useRef(null);
 
     if (loading && !profile) {
@@ -38,7 +41,7 @@ export default function StaffProfilePage() {
         return null;
     }
 
-    const avatarSrc = assetUrl(profile.avatar);
+    const avatarSrc = profile.avatar ? `${assetUrl(profile.avatar)}?v=${avatarVersion}` : null;
     const resumeHref = assetUrl(profile.resume);
 
     const activityWindowSec = profile.availability_timeout_seconds ?? 300;
@@ -46,6 +49,23 @@ export default function StaffProfilePage() {
         activityWindowSec >= 120
             ? `${Math.round(activityWindowSec / 60)} minutes`
             : `${activityWindowSec} seconds`;
+
+    async function handleAvatarChange(e) {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        setAvatarUploading(true);
+        try {
+            await uploadUserAvatar(token, file);
+            await refetch();
+            setAvatarVersion((version) => version + 1);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Could not upload avatar.';
+            window.alert(message);
+        } finally {
+            setAvatarUploading(false);
+        }
+    }
 
     async function handleResumeChange(e) {
         const file = e.target.files?.[0];
@@ -104,19 +124,33 @@ export default function StaffProfilePage() {
                     </button>
                 </div>
                 <div className="talent-profile-personal">
-                    <div className="talent-avatar" aria-hidden>
-                        {avatarSrc ? (
-                            <img
-                                className="talent-avatar__img"
-                                src={avatarSrc}
-                                alt=""
-                            />
-                        ) : (
-                            <div className="talent-avatar__placeholder" />
-                        )}
-                        <span className="talent-avatar__camera">
-                            <i className="fas fa-camera" aria-hidden />
-                        </span>
+                    <div>
+                        <input
+                            ref={avatarInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg"
+                            className="talent-bio__file-input"
+                            aria-hidden
+                            tabIndex={-1}
+                            disabled={avatarUploading}
+                            onChange={handleAvatarChange}
+                        />
+                        <button
+                            type="button"
+                            className="talent-avatar talent-avatar--btn"
+                            aria-label="Upload profile photo"
+                            disabled={avatarUploading}
+                            onClick={() => avatarInputRef.current?.click()}
+                        >
+                            {avatarSrc ? (
+                                <img className="talent-avatar__img" src={avatarSrc} alt="" />
+                            ) : (
+                                <div className="talent-avatar__placeholder" />
+                            )}
+                            <span className="talent-avatar__camera">
+                                <i className="fas fa-camera" aria-hidden />
+                            </span>
+                        </button>
                     </div>
                     <div className="talent-field-grid">
                         <div>
