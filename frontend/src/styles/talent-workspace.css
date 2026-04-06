@@ -249,7 +249,7 @@
 }
 
 .talent-profile__error {
-    color: #9a1c1c;
+    color: var(--color-error);
 }
 
 .talent-bio__resume-missing {

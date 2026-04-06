@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import RequireAuth from './components/auth/RequireAuth.jsx';
 import UserAppLayout from './layouts/UserAppLayout.jsx';
@@ -14,11 +14,14 @@ import StaffProfilePage from './pages/staff/StaffProfilePage.jsx';
 import StaffJobsPage from './pages/staff/StaffJobsPage.jsx';
 import StaffNegotiationsPage from './pages/staff/StaffNegotiationsPage.jsx';
 import StaffScheduledPage from './pages/staff/StaffScheduledPage.jsx';
-import EmployerDashboardPage from './pages/employer/EmployerDashboardPage.jsx';
-import EmployerProfilePage from './pages/employer/EmployerProfilePage.jsx';
-import EmployerJobsPage from './pages/employer/EmployerJobsPage.jsx';
-import EmployerCandidatesPage from './pages/employer/EmployerCandidatesPage.jsx';
-import EmployerNegotiationsPage from './pages/employer/EmployerNegotiationsPage.jsx';
+import BusinessDashboardPage from './pages/business/BusinessDashboardPage.jsx';
+import BusinessProfilePage from './pages/business/BusinessProfilePage.jsx';
+import BusinessJobsPage from './pages/business/BusinessJobsPage.jsx';
+import BusinessJobNewPage from './pages/business/BusinessJobNewPage.jsx';
+import BusinessJobDetailPage from './pages/business/BusinessJobDetailPage.jsx';
+import BusinessJobCandidatesListPage from './pages/business/BusinessJobCandidatesListPage.jsx';
+import BusinessNegotiationsPage from './pages/business/BusinessNegotiationsPage.jsx';
+import BusinessJobSectionLayout from './layouts/BusinessJobSectionLayout.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx';
 import AdminBusinessesPage from './pages/admin/AdminBusinessesPage.jsx';
@@ -26,6 +29,11 @@ import AdminPositionsPage from './pages/admin/AdminPositionsPage.jsx';
 import AdminQualificationsPage from './pages/admin/AdminQualificationsPage.jsx';
 import AdminSystemPage from './pages/admin/AdminSystemPage.jsx';
 import marketingLayoutStyles from './styles/MarketingLayout.module.css';
+
+function BusinessJobInterestsRedirect() {
+    const { jobId } = useParams();
+    return <Navigate to={`/businesses/jobs/${jobId}/candidates?view=manage`} replace />;
+}
 
 function MarketingLayout() {
     const { pathname } = useLocation();
@@ -81,11 +89,16 @@ function App() {
                         </RequireAuth>
                     }
                 >
-                    <Route index element={<EmployerDashboardPage />} />
-                    <Route path="profile" element={<EmployerProfilePage />} />
-                    <Route path="jobs" element={<EmployerJobsPage />} />
-                    <Route path="candidates" element={<EmployerCandidatesPage />} />
-                    <Route path="negotiations" element={<EmployerNegotiationsPage />} />
+                    <Route index element={<BusinessDashboardPage />} />
+                    <Route path="profile" element={<BusinessProfilePage />} />
+                    <Route path="jobs/new" element={<BusinessJobNewPage />} />
+                    <Route path="jobs" element={<BusinessJobsPage />} />
+                    <Route path="jobs/:jobId" element={<BusinessJobSectionLayout />}>
+                        <Route index element={<BusinessJobDetailPage />} />
+                        <Route path="candidates" element={<BusinessJobCandidatesListPage />} />
+                        <Route path="interests" element={<BusinessJobInterestsRedirect />} />
+                    </Route>
+                    <Route path="negotiations" element={<BusinessNegotiationsPage />} />
                 </Route>
 
                 <Route

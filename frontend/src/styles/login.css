@@ -197,8 +197,8 @@
     margin: 0.75rem 0 0;
     padding: 0.65rem 0.75rem;
     border-radius: 10px;
-    background: rgba(180, 40, 40, 0.08);
-    color: #9a1c1c;
+    background: var(--color-error-bg-subtle);
+    color: var(--color-error);
     font-size: 0.88rem;
     line-height: 1.35;
 }
@@ -207,8 +207,8 @@
     margin: 0.75rem 0 0;
     padding: 0.65rem 0.75rem;
     border-radius: 10px;
-    background: rgba(34, 120, 80, 0.1);
-    color: #1d6b45;
+    background: var(--color-success-bg-medium);
+    color: var(--color-success);
     font-size: 0.88rem;
     line-height: 1.35;
 }

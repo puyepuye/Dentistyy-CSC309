@@ -241,8 +241,16 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       include: {
         positionType: true,
         business: true,
+        worker: {
+          select: {
+            accountId: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
         negotiations: {
           where: { status: 'SUCCESSFUL' },
+          orderBy: { id: 'asc' },
           include: {
             user: {
               select: { id: true, accountId: true, firstName: true, lastName: true },
@@ -291,13 +299,21 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
     }
 
     const winningNeg = job.negotiations[0] ?? null;
-    const worker = winningNeg
+    const workerFromNegotiation = winningNeg
       ? {
           id: winningNeg.user.accountId,
           first_name: winningNeg.user.firstName,
           last_name: winningNeg.user.lastName,
         }
       : null;
+    const workerFromJobRow = job.worker
+      ? {
+          id: job.worker.accountId,
+          first_name: job.worker.firstName,
+          last_name: job.worker.lastName,
+        }
+      : null;
+    const worker = workerFromNegotiation ?? workerFromJobRow;
 
     const response = {
       id: job.id,
@@ -353,6 +369,7 @@ router.patch('/:jobId/no-show', requireRole('business'), async (req, res, next) 
       include: {
         negotiations: {
           where: { status: 'SUCCESSFUL' },
+          orderBy: { id: 'asc' },
         },
       },
     });
@@ -367,18 +384,23 @@ router.patch('/:jobId/no-show', requireRole('business'), async (req, res, next) 
     const now = new Date();
 
     if (job.status !== 'FILLED') {
-      return sendError(res, 409, 'Conflict');
+      return sendError(
+        res,
+        409,
+        'No-show can only be recorded while the job is in filled status.',
+      );
     }
     if (now < job.startTime) {
-      return sendError(res, 409, 'Conflict');
+      return sendError(res, 409, 'No-show can only be recorded after the shift has started.');
     }
     if (now >= job.endTime) {
-      return sendError(res, 409, 'Conflict');
+      return sendError(res, 409, 'No-show cannot be recorded after the shift has ended.');
     }
 
-    const winningNeg = job.negotiations[0];
-    if (!winningNeg) {
-      return sendError(res, 409, 'Conflict');
+    const winningNeg = job.negotiations[0] ?? null;
+    const workerRegularUserId = winningNeg?.userId ?? job.workerId;
+    if (workerRegularUserId == null) {
+      return sendError(res, 409, 'This job has no assigned worker to mark as no-show.');
     }
 
     const updatedJob = await prisma.$transaction(async (tx) => {
@@ -388,7 +410,7 @@ router.patch('/:jobId/no-show', requireRole('business'), async (req, res, next) 
       });
 
       await tx.regularUser.update({
-        where: { id: winningNeg.userId },
+        where: { id: workerRegularUserId },
         data: { suspended: true },
       });
 
@@ -519,16 +541,54 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
       return sendError(res, 404, 'Not Found');
     }
 
-    const { valid } = validateNoExtraKeys(req.query || {}, ['page', 'limit']);
+    const { valid } = validateNoExtraKeys(req.query || {}, [
+      'page',
+      'limit',
+      'exclude_invited',
+      'search',
+      'expressed_interest_only',
+    ]);
     if (!valid) return sendError(res, 400, 'Invalid query');
 
     const page = req.query.page === undefined ? 1 : Number(req.query.page);
     const limit = req.query.limit === undefined ? 10 : Number(req.query.limit);
+    const searchRaw = req.query.search;
+    const searchTerm =
+      typeof searchRaw === 'string' && searchRaw.trim().length > 0
+        ? searchRaw.trim().slice(0, 120).toLowerCase()
+        : '';
+
+    const excludeInvitedRaw = req.query.exclude_invited;
+    const excludeInvited = excludeInvitedRaw === 'true' || excludeInvitedRaw === '1';
+
+    const expressedOnlyRaw = req.query.expressed_interest_only;
+    const expressedInterestOnly = expressedOnlyRaw === 'true' || expressedOnlyRaw === '1';
 
     if (!Number.isInteger(page) || page < 1) {
       return sendError(res, 400, 'Invalid query');
     }
     if (!Number.isInteger(limit) || limit < 1) {
+      return sendError(res, 400, 'Invalid query');
+    }
+    if (
+      excludeInvitedRaw !== undefined &&
+      excludeInvitedRaw !== 'true' &&
+      excludeInvitedRaw !== '1' &&
+      excludeInvitedRaw !== 'false' &&
+      excludeInvitedRaw !== '0'
+    ) {
+      return sendError(res, 400, 'Invalid query');
+    }
+    if (
+      expressedOnlyRaw !== undefined &&
+      expressedOnlyRaw !== 'true' &&
+      expressedOnlyRaw !== '1' &&
+      expressedOnlyRaw !== 'false' &&
+      expressedOnlyRaw !== '0'
+    ) {
+      return sendError(res, 400, 'Invalid query');
+    }
+    if (expressedInterestOnly && excludeInvited) {
       return sendError(res, 400, 'Invalid query');
     }
 
@@ -571,6 +631,14 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
       },
       include: {
         account: true,
+        qualifications: {
+          where: {
+            positionTypeId: job.positionTypeId,
+            approved: true,
+          },
+          select: { note: true },
+          take: 1,
+        },
         filledJobs: {
           where: {
             status: 'FILLED',
@@ -587,17 +655,43 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
 
     const invitedUserIds = new Set(job.interests.map((i) => i.userId));
 
-    const discoverable = qualifiedUsers.filter((user) => user.filledJobs.length === 0);
+    let discoverable = qualifiedUsers.filter((user) => {
+      if (user.filledJobs.length > 0) return false;
+      if (excludeInvited && invitedUserIds.has(user.id)) return false;
+      return true;
+    });
+
+    if (expressedInterestOnly) {
+      discoverable = discoverable.filter((user) => invitedUserIds.has(user.id));
+    }
+
+    if (searchTerm) {
+      discoverable = discoverable.filter((user) => {
+        const fn = (user.firstName || '').toLowerCase();
+        const ln = (user.lastName || '').toLowerCase();
+        const full = `${fn} ${ln}`.trim();
+        const qNote = (user.qualifications[0]?.note || '').toLowerCase();
+        return (
+          full.includes(searchTerm) ||
+          qNote.includes(searchTerm) ||
+          String(user.accountId).includes(searchTerm)
+        );
+      });
+    }
 
     const count = discoverable.length;
     const paginated = discoverable.slice((page - 1) * limit, page * limit);
 
-    const results = paginated.map((user) => ({
-      id: user.accountId,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      invited: invitedUserIds.has(user.id),
-    }));
+    const results = paginated.map((user) => {
+      const qNote = user.qualifications[0]?.note?.trim() || '';
+      return {
+        id: user.accountId,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        invited: invitedUserIds.has(user.id),
+        qualification_summary: qNote.length > 220 ? `${qNote.slice(0, 220)}…` : qNote,
+      };
+    });
 
     return res.status(200).json({
       count,
@@ -677,6 +771,10 @@ router.get('/:jobId/candidates/:userId', requireRole('business'), async (req, re
     const qualification = candidate.qualifications[0] || null;
     const winningNeg = job.negotiations[0] || null;
     const filledByCandidate = winningNeg && winningNeg.userId === candidate.id;
+    const assignedWorkerOnJob =
+      job.workerId != null &&
+      job.workerId === candidate.id &&
+      ['FILLED', 'COMPLETED'].includes(job.status);
 
     const settings = await prisma.systemSettings.findFirst();
     const availabilityTimeout = settings?.availabilityTimeout ?? 300;
@@ -691,19 +789,22 @@ router.get('/:jobId/candidates/:userId', requireRole('business'), async (req, re
       !!qualification &&
       candidate.filledJobs.length === 0;
 
-    const now = new Date();
+    const interestsForPair = await prisma.interest.findMany({
+      where: { jobId, userId: candidate.id },
+    });
+    const businessInterestRow = interestsForPair.find((i) => i.initiatedBy === 'BUSINESS');
+
     const exceptionVisible =
-      filledByCandidate && now < job.endTime;
+      (filledByCandidate && ['FILLED', 'COMPLETED'].includes(job.status)) ||
+      assignedWorkerOnJob ||
+      interestsForPair.length > 0;
 
     if (!discoverable && !exceptionVisible) {
       return sendError(res, 403, 'Forbidden');
     }
 
-    if (!qualification) {
-      return sendError(res, 403, 'Forbidden');
-    }
-
     const response = {
+      business_expressed_interest: !!businessInterestRow,
       user: {
         id: candidateAccount.id,
         first_name: candidate.firstName,
@@ -711,13 +812,15 @@ router.get('/:jobId/candidates/:userId', requireRole('business'), async (req, re
         avatar: candidate.avatar,
         resume: candidate.resume,
         biography: candidate.biography,
-        qualification: {
-          id: qualification.id,
-          position_type_id: qualification.positionTypeId,
-          document: qualification.document,
-          note: qualification.note,
-          updatedAt: qualification.updatedAt.toISOString(),
-        },
+        qualification: qualification
+          ? {
+              id: qualification.id,
+              position_type_id: qualification.positionTypeId,
+              document: qualification.document,
+              note: qualification.note,
+              updatedAt: qualification.updatedAt.toISOString(),
+            }
+          : null,
       },
       job: {
         id: job.id,
@@ -732,7 +835,7 @@ router.get('/:jobId/candidates/:userId', requireRole('business'), async (req, re
       },
     };
 
-    if (filledByCandidate) {
+    if (filledByCandidate || assignedWorkerOnJob) {
       response.user.email = candidateAccount.email;
       response.user.phone_number = candidate.phoneNumber;
     }
@@ -827,7 +930,16 @@ router.patch('/:jobId/candidates/:userId/interested', requireRole('business'), a
       !!qualification &&
       candidate.filledJobs.length === 0;
 
-    if (!discoverable) {
+    const userInitiatedInterest = await prisma.interest.findFirst({
+      where: {
+        jobId,
+        userId: candidate.id,
+        initiatedBy: 'USER',
+      },
+    });
+
+    // Allow reciprocating when the talent already tapped this job, even if they are no longer discoverable.
+    if (!discoverable && !userInitiatedInterest) {
       return sendError(res, 403, 'Forbidden');
     }
 
@@ -901,16 +1013,33 @@ router.get('/:jobId/interests', requireRole('business'), async (req, res, next) 
       return sendError(res, 404, 'Not Found');
     }
 
-    const { valid } = validateNoExtraKeys(req.query || {}, ['page', 'limit']);
+    const { valid } = validateNoExtraKeys(req.query || {}, ['page', 'limit', 'initiated_by', 'search']);
     if (!valid) return sendError(res, 400, 'Invalid query');
 
     const page = req.query.page === undefined ? 1 : Number(req.query.page);
     const limit = req.query.limit === undefined ? 10 : Number(req.query.limit);
+    const initiatedByRaw =
+      req.query.initiated_by === undefined
+        ? 'user'
+        : Array.isArray(req.query.initiated_by)
+        ? req.query.initiated_by[0]
+        : req.query.initiated_by;
+    const initiatedBy = String(initiatedByRaw).trim().toLowerCase();
+    const searchRaw =
+      req.query.search === undefined
+        ? ''
+        : Array.isArray(req.query.search)
+        ? req.query.search[0]
+        : req.query.search;
+    const searchTerm = String(searchRaw || '').trim().toLowerCase().slice(0, 120);
 
     if (!Number.isInteger(page) || page < 1) {
       return sendError(res, 400, 'Invalid query');
     }
     if (!Number.isInteger(limit) || limit < 1) {
+      return sendError(res, 400, 'Invalid query');
+    }
+    if (!['user', 'business'].includes(initiatedBy)) {
       return sendError(res, 400, 'Invalid query');
     }
 
@@ -936,6 +1065,24 @@ router.get('/:jobId/interests', requireRole('business'), async (req, res, next) 
         user: {
           include: {
             account: true,
+            qualifications: {
+              where: {
+                positionTypeId: job.positionTypeId,
+                approved: true,
+              },
+              select: {
+                note: true,
+              },
+              take: 1,
+            },
+            filledJobs: {
+              where: {
+                status: 'FILLED',
+                startTime: { lt: job.endTime },
+                endTime: { gt: job.startTime },
+              },
+              select: { id: true },
+            },
           },
         },
       },
@@ -948,29 +1095,102 @@ router.get('/:jobId/interests', requireRole('business'), async (req, res, next) 
       where: {
         jobId,
         initiatedBy: 'BUSINESS',
-        userId: {
-          in: userInterests.map((i) => i.userId),
+      },
+      include: {
+        user: {
+          include: {
+            account: true,
+            qualifications: {
+              where: {
+                positionTypeId: job.positionTypeId,
+                approved: true,
+              },
+              select: {
+                note: true,
+              },
+              take: 1,
+            },
+            filledJobs: {
+              where: {
+                status: 'FILLED',
+                startTime: { lt: job.endTime },
+                endTime: { gt: job.startTime },
+              },
+              select: { id: true },
+            },
+          },
         },
       },
-      select: {
-        userId: true,
-      },
+      orderBy: { id: 'asc' },
     });
 
     const businessInterestUserIds = new Set(businessInterests.map((i) => i.userId));
+    const userInterestUserIds = new Set(userInterests.map((i) => i.userId));
+    const settings = await prisma.systemSettings.findFirst();
+    const availabilityTimeout = settings?.availabilityTimeout ?? 300;
+    const cutoff = new Date(Date.now() - availabilityTimeout * 1000);
 
-    const count = userInterests.length;
-    const paginated = userInterests.slice((page - 1) * limit, page * limit);
+    const source = initiatedBy === 'user' ? userInterests : businessInterests;
+    const searched = searchTerm
+      ? source.filter((interest) => {
+          const u = interest.user;
+          const full = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
+          const note = (u.qualifications[0]?.note || '').toLowerCase();
+          return full.includes(searchTerm) || note.includes(searchTerm) || String(u.accountId).includes(searchTerm);
+        })
+      : source;
+    const count = searched.length;
+    const paginated = searched.slice((page - 1) * limit, page * limit);
 
-    const results = paginated.map((interest) => ({
-      interest_id: interest.id,
-      mutual: businessInterestUserIds.has(interest.userId),
-      user: {
-        id: interest.user.accountId,
-        first_name: interest.user.firstName,
-        last_name: interest.user.lastName,
-      },
-    }));
+    const results = paginated.map((interest) => {
+      const user = interest.user;
+      const mutual = businessInterestUserIds.has(interest.userId) && userInterestUserIds.has(interest.userId);
+      const hasQual = !!user.qualifications[0];
+      const hasOverlap = user.filledJobs.length > 0;
+      const isDiscoverable =
+        !!user.account.activated &&
+        !user.suspended &&
+        !!user.available &&
+        !!user.lastActiveAt &&
+        user.lastActiveAt >= cutoff &&
+        hasQual &&
+        !hasOverlap;
+
+      let blockReason = null;
+      if (!mutual) {
+        blockReason = 'Mutual interest not reached yet.';
+      } else if (job.status !== 'OPEN') {
+        blockReason = `Job is ${job.status.toLowerCase()}.`;
+      } else if (!user.account.activated) {
+        blockReason = 'Candidate account is not activated.';
+      } else if (user.suspended) {
+        blockReason = 'Candidate is suspended.';
+      } else if (!user.available) {
+        blockReason = 'Candidate is unavailable.';
+      } else if (!user.lastActiveAt || user.lastActiveAt < cutoff) {
+        blockReason = 'Candidate is not recently active.';
+      } else if (!hasQual) {
+        blockReason = 'Candidate no longer has an approved qualification for this role.';
+      } else if (hasOverlap) {
+        blockReason = 'Candidate has an overlapping filled shift.';
+      }
+
+      return {
+        interest_id: interest.id,
+        mutual,
+        initiated_by: interest.initiatedBy.toLowerCase(),
+        negotiation_allowed: mutual && job.status === 'OPEN' && isDiscoverable,
+        negotiation_block_reason: blockReason,
+        user: {
+          id: user.accountId,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          available: !!user.available,
+          avatar_url: user.avatar || null,
+          qualification_summary: (user.qualifications[0]?.note || '').trim(),
+        },
+      };
+    });
 
     return res.status(200).json({
       count,

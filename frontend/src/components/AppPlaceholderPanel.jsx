@@ -1,5 +1,5 @@
 /**
- * Shared empty-state / placeholder panel for authenticated app routes (staff, employer, admin).
+ * Shared empty-state / placeholder panel for authenticated app routes (staff, business, admin).
  */
 export default function AppPlaceholderPanel({ title, description }) {
     return (

@@ -152,6 +152,11 @@
     overflow: auto;
 }
 
+.app-shell__body--business-jobs-browse {
+    padding: 0 0 2.5rem;
+    overflow: auto;
+}
+
 .app-panel {
     max-width: 720px;
     background: var(--color-bg-elevated);
