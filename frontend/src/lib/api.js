@@ -161,10 +161,6 @@ export function createQualification(token, payload) {
     });
 }
 
-export function getQualificationById(token, id) {
-    return authRequest(`/qualifications/${id}`, token, { method: 'GET' });
-}
-
 export function patchQualification(token, id, payload) {
     return authRequest(`/qualifications/${id}`, token, {
         method: 'PATCH',
@@ -240,19 +236,164 @@ export function getOpenJobs(token, params = {}) {
     return authRequest(`/jobs?${q.toString()}`, token, { method: 'GET' });
 }
 
-/** Jobs the user has expressed interest in */
-export function getMyJobInterests(token, params = {}) {
-    const q = new URLSearchParams({
-        page: String(params.page ?? 1),
-        limit: String(params.limit ?? 9),
-    });
-    return authRequest(`/users/me/interests?${q}`, token, { method: 'GET' });
+/** Talent pipeline: matched, interest shown, and interested-in-you (see GET /users/me/interests). */
+export function getMyJobInterests(token) {
+    return authRequest('/users/me/interests', token, { method: 'GET' });
 }
 
 /** Business directory for filters (GET /businesses — public). */
 export function getBusinessesList(params = {}) {
-    const q = new URLSearchParams({ page: '1', limit: '50', ...params });
+    const merged = { page: '1', limit: '50', ...params };
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(merged)) {
+        // URLSearchParams(undefined) becomes the literal "undefined" in the query string,
+        // which breaks keyword search on the server.
+        if (value === undefined || value === null || value === '') continue;
+        q.set(key, String(value));
+    }
     return request(`/businesses?${q}`, { method: 'GET' });
+}
+
+/** Public business profile (GET /businesses/:businessAccountId). */
+export function getBusinessById(businessAccountId) {
+    return request(`/businesses/${businessAccountId}`, { method: 'GET' });
+}
+
+export function patchBusinessMe(token, body) {
+    return authRequest('/businesses/me', token, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+}
+
+export async function uploadBusinessAvatar(token, file) {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await fetch(`${API_BASE_URL}/businesses/me/avatar`, {
+        method: 'PUT',
+        cache: 'no-store',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+    });
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch {
+        payload = null;
+    }
+    if (!response.ok) {
+        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
+        const err = new Error(message);
+        err.status = response.status;
+        throw err;
+    }
+    return payload;
+}
+
+export function getBusinessMyJobs(token, params = {}) {
+    const q = new URLSearchParams();
+    const merged = { page: '1', limit: '10', ...params };
+    for (const [k, v] of Object.entries(merged)) {
+        if (v === undefined || v === null || v === '') continue;
+        if (Array.isArray(v)) {
+            for (const item of v) {
+                if (item !== undefined && item !== null && item !== '') q.append(k, String(item));
+            }
+        } else {
+            q.set(k, String(v));
+        }
+    }
+    return authRequest(`/businesses/me/jobs?${q}`, token, { method: 'GET' });
+}
+
+export function createBusinessJob(token, body) {
+    return authRequest('/businesses/me/jobs', token, {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+}
+
+export function patchBusinessJob(token, jobId, body) {
+    return authRequest(`/businesses/me/jobs/${jobId}`, token, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+}
+
+export function deleteBusinessJob(token, jobId) {
+    return authRequest(`/businesses/me/jobs/${jobId}`, token, { method: 'DELETE' });
+}
+
+export function getJobById(token, jobId, params = {}) {
+    const q = new URLSearchParams();
+    if (params.lat != null && params.lon != null) {
+        q.set('lat', String(params.lat));
+        q.set('lon', String(params.lon));
+    }
+    const qs = q.toString();
+    return authRequest(`/jobs/${jobId}${qs ? `?${qs}` : ''}`, token, { method: 'GET' });
+}
+
+/** Regular user: express or withdraw interest (PATCH /jobs/:jobId/interested). */
+export function patchJobInterested(token, jobId, interested) {
+    return authRequest(`/jobs/${jobId}/interested`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ interested }),
+    });
+}
+
+export function getJobCandidates(token, jobId, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '20',
+        ...params,
+    });
+    return authRequest(`/jobs/${jobId}/candidates?${q}`, token, { method: 'GET' });
+}
+
+export function getJobCandidateDetail(token, jobId, userId) {
+    return authRequest(`/jobs/${jobId}/candidates/${userId}`, token, { method: 'GET' });
+}
+
+export function patchJobCandidateInterested(token, jobId, userId, interested) {
+    return authRequest(`/jobs/${jobId}/candidates/${userId}/interested`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ interested }),
+    });
+}
+
+export function getJobInterests(token, jobId, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '20',
+        ...params,
+    });
+    return authRequest(`/jobs/${jobId}/interests?${q}`, token, { method: 'GET' });
+}
+
+export function patchJobNoShow(token, jobId) {
+    return authRequest(`/jobs/${jobId}/no-show`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({}),
+    });
+}
+
+export function startNegotiation(token, interestId) {
+    return authRequest('/negotiations', token, {
+        method: 'POST',
+        body: JSON.stringify({ interest_id: interestId }),
+    });
+}
+
+export function getMyNegotiation(token) {
+    return authRequest('/negotiations/me', token, { method: 'GET' });
+}
+
+export function patchNegotiationDecision(token, negotiationId, decision) {
+    return authRequest('/negotiations/me/decision', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ negotiation_id: negotiationId, decision }),
+    });
 }
 
 export { API_BASE_URL };

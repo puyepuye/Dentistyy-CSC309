@@ -1,42 +1,43 @@
-@import './styles/theme.css';
-@import './styles/app-shell.css';
-@import './styles/talent-workspace.css';
-@import './styles/talent-jobs.css';
-@import './styles/profile-modals.css';
-@import './styles/login.css';
-@import './styles/marketing-orphans.css';
+@import "./styles/theme.css";
+@import "./styles/app-shell.css";
+@import "./styles/talent-workspace.css";
+@import "./styles/talent-jobs.css";
+@import "./styles/business-workspace.css";
+@import "./styles/profile-modals.css";
+@import "./styles/login.css";
+@import "./styles/marketing-orphans.css";
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    margin: 0;
-    min-width: 320px;
-    font-family: var(--font-sans);
-    color: var(--color-text);
-    background: var(--color-bg-app);
+  margin: 0;
+  min-width: 320px;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg-app);
 }
 
 a {
-    color: inherit;
-    text-decoration: none;
+  color: inherit;
+  text-decoration: none;
 }
 
 #root {
-    min-height: 100vh;
+  min-height: 100vh;
 }
 
 .site-shell {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Default heading for marketing pages (module-scoped pages can override via class) */
 h1 {
-    margin: 0.4rem 0 0.8rem;
-    line-height: 1.15;
-    font-size: 2.1rem;
-    color: var(--color-text-heading);
+  margin: 0.4rem 0 0.8rem;
+  line-height: 1.15;
+  font-size: 2.1rem;
+  color: var(--color-text-heading);
 }

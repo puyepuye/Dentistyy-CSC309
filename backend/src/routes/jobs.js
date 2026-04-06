@@ -309,6 +309,7 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       business: {
         id: job.business.accountId,
         business_name: job.business.businessName,
+        postal_address: job.business.postalAddress ?? '',
       },
       worker,
       note: job.note ?? '',
@@ -318,6 +319,27 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       end_time: job.endTime.toISOString(),
       updatedAt: job.updatedAt.toISOString(),
     };
+
+    if (role === 'regular' && regularUserId) {
+      const interestRows = await prisma.interest.findMany({
+        where: { jobId: job.id, userId: regularUserId },
+        select: { id: true, initiatedBy: true },
+      });
+      const userRow = interestRows.find((r) => r.initiatedBy === 'USER');
+      const busRow = interestRows.find((r) => r.initiatedBy === 'BUSINESS');
+      response.interest = {
+        mutual: !!(userRow && busRow),
+        user_interest_id: userRow?.id ?? null,
+        business_interest_id: busRow?.id ?? null,
+        user_expressed: !!userRow,
+        business_expressed: !!busRow,
+      };
+      const pendingNeg = await prisma.negotiation.findFirst({
+        where: { jobId: job.id, userId: regularUserId, status: 'PENDING' },
+        select: { id: true },
+      });
+      response.negotiation_pending_id = pendingNeg?.id ?? null;
+    }
 
     if (role === 'regular' && hasLat && hasLon) {
       const userLat = Number(lat);
@@ -571,6 +593,14 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
       },
       include: {
         account: true,
+        qualifications: {
+          where: {
+            positionTypeId: job.positionTypeId,
+            approved: true,
+          },
+          select: { note: true },
+          take: 1,
+        },
         filledJobs: {
           where: {
             status: 'FILLED',
@@ -592,12 +622,16 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
     const count = discoverable.length;
     const paginated = discoverable.slice((page - 1) * limit, page * limit);
 
-    const results = paginated.map((user) => ({
-      id: user.accountId,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      invited: invitedUserIds.has(user.id),
-    }));
+    const results = paginated.map((user) => {
+      const qNote = user.qualifications[0]?.note?.trim() || '';
+      return {
+        id: user.accountId,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        invited: invitedUserIds.has(user.id),
+        qualification_summary: qNote.length > 220 ? `${qNote.slice(0, 220)}…` : qNote,
+      };
+    });
 
     return res.status(200).json({
       count,

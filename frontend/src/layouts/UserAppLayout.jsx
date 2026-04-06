@@ -8,6 +8,8 @@ import { talentHeaderFromPath } from '../lib/talentWorkspaceHeader.js';
 function UserAppLayoutInner() {
     const { pathname } = useLocation();
     const { profile, loading } = useTalentProfile();
+    const isTalentJobsShell =
+        pathname.startsWith('/talent/jobs') || pathname.startsWith('/talent/businesses');
 
     const { greeting, statusLine } = useMemo(() => {
         if (loading && !profile) {
@@ -27,6 +29,9 @@ function UserAppLayoutInner() {
                 : `Availability: ${profile.available ? 'Available' : 'Unavailable'}`;
             return { greeting: hello, statusLine: statusLineInner };
         }
+        if (pathname.includes('/businesses')) {
+            return { greeting: hello, statusLine: 'Business' };
+        }
         if (pathname.includes('/jobs')) {
             return { greeting: hello, statusLine: 'Jobs' };
         }
@@ -43,8 +48,12 @@ function UserAppLayoutInner() {
         <div className="app-shell">
             <UserSidebar />
             <div className="app-shell__main">
-                <TalentWorkspaceHeader greeting={greeting} statusLine={statusLine} />
-                <div className="app-shell__body">
+                {!isTalentJobsShell ? (
+                    <TalentWorkspaceHeader greeting={greeting} statusLine={statusLine} />
+                ) : null}
+                <div
+                    className={`app-shell__body${isTalentJobsShell ? ' app-shell__body--talent-jobs-browse' : ''}`}
+                >
                     <Outlet />
                 </div>
             </div>

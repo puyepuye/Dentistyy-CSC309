@@ -693,6 +693,8 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             'status',
             'page',
             'limit',
+            'order_by',
+            'order',
         ]);
         if (!valid) return sendError(res, 400, 'Invalid query');
 
@@ -705,6 +707,8 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             status,
             page = '1',
             limit = '10',
+            order_by,
+            order: orderParam,
         } = req.query;
 
         const pageNum = Number(page);
@@ -776,11 +780,17 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
                     return sendError(res, 400, 'Invalid query');
                 }
 
-                const normalized = s.toUpperCase();
-                if (!allowedStatuses.includes(normalized)) {
-                    return sendError(res, 400, 'Invalid query');
+                const pieces = s.includes(',')
+                    ? s.split(',').map((t) => t.trim()).filter(Boolean)
+                    : [s.trim()].filter(Boolean);
+
+                for (const piece of pieces) {
+                    const normalized = piece.toUpperCase();
+                    if (!allowedStatuses.includes(normalized)) {
+                        return sendError(res, 400, 'Invalid query');
+                    }
+                    statuses.push(normalized);
                 }
-                statuses.push(normalized);
             }
         }
 
@@ -804,6 +814,30 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
 
         const count = await prisma.job.count({ where });
 
+        const orderByFieldMap = {
+            updated_at: 'updatedAt',
+            start_time: 'startTime',
+            end_time: 'endTime',
+            salary_min: 'salaryMin',
+            salary_max: 'salaryMax',
+            status: 'status',
+        };
+        const orderByRaw =
+            order_by === undefined ? 'updated_at' : Array.isArray(order_by) ? order_by[0] : order_by;
+        const ob =
+            order_by === undefined ? 'updated_at' : String(orderByRaw).trim();
+        if (!Object.prototype.hasOwnProperty.call(orderByFieldMap, ob)) {
+            return sendError(res, 400, 'Invalid query');
+        }
+        const orderRaw =
+            orderParam === undefined ? 'desc' : Array.isArray(orderParam) ? orderParam[0] : orderParam;
+        const dir =
+            orderParam === undefined ? 'desc' : String(orderRaw).trim().toLowerCase();
+        if (dir !== 'asc' && dir !== 'desc') {
+            return sendError(res, 400, 'Invalid query');
+        }
+        const prismaOrderField = orderByFieldMap[ob];
+
         const jobs = await prisma.job.findMany({
             where,
             include: {
@@ -819,7 +853,7 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             skip: (pageNum - 1) * limitNum,
             take: limitNum,
             orderBy: {
-                updatedAt: 'desc',
+                [prismaOrderField]: dir,
             },
         });
 
@@ -836,7 +870,7 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
                 business_id: job.business.accountId,
                 worker: winningNeg
                     ? {
-                          id: winningNeg.user.id,
+                          id: winningNeg.user.accountId,
                           first_name: winningNeg.user.firstName,
                           last_name: winningNeg.user.lastName,
                       }

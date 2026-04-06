@@ -152,6 +152,13 @@
     overflow: auto;
 }
 
+/* Full-width browse under main column (no inset “card”); used by /businesses/jobs and /talent/jobs */
+.app-shell__body--business-jobs-browse,
+.app-shell__body--talent-jobs-browse {
+    padding: 0 0 2.5rem;
+    overflow: auto;
+}
+
 .app-panel {
     max-width: 720px;
     background: var(--color-bg-elevated);

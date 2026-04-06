@@ -243,6 +243,64 @@ async function main() {
         });
     }
 
+    // Three dedicated OPEN jobs for regular1 — fills Matched / Interest shown / Interested in you carousels
+    const r1 = regulars[0].regularUser;
+    const demoBiz = businesses[0].business;
+    const demoPt = positionTypes[4];
+    function demoWindow(dayOffset) {
+        const start = daysFromNow(dayOffset, 10);
+        const end = new Date(start);
+        end.setHours(17, 0, 0, 0);
+        return { start, end };
+    }
+    const w1 = demoWindow(5);
+    const jobMatchedDemo = await prisma.job.create({
+        data: {
+            status: 'OPEN',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            salaryMin: 32,
+            salaryMax: 48,
+            startTime: w1.start,
+            endTime: w1.end,
+            note: '[Demo] Matched — mutual interest',
+        },
+    });
+    const w2 = demoWindow(6);
+    const jobShownDemo = await prisma.job.create({
+        data: {
+            status: 'OPEN',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            salaryMin: 28,
+            salaryMax: 40,
+            startTime: w2.start,
+            endTime: w2.end,
+            note: '[Demo] Interest shown — you only',
+        },
+    });
+    const w3 = demoWindow(7);
+    const jobReachDemo = await prisma.job.create({
+        data: {
+            status: 'OPEN',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            salaryMin: 35,
+            salaryMax: 52,
+            startTime: w3.start,
+            endTime: w3.end,
+            note: '[Demo] Interested in you — practice only',
+        },
+    });
+    await prisma.interest.createMany({
+        data: [
+            { jobId: jobMatchedDemo.id, userId: r1.id, initiatedBy: 'USER' },
+            { jobId: jobMatchedDemo.id, userId: r1.id, initiatedBy: 'BUSINESS' },
+            { jobId: jobShownDemo.id, userId: r1.id, initiatedBy: 'USER' },
+            { jobId: jobReachDemo.id, userId: r1.id, initiatedBy: 'BUSINESS' },
+        ],
+    });
+
     const mutualJob = openJobs[0];
     const mutualUser = regulars[0].regularUser;
     await prisma.negotiation.create({
@@ -258,6 +316,7 @@ async function main() {
     console.log('Seed complete.');
     console.log('  Password for all accounts:', PASSWORD);
     console.log('  Try talent login: regular1@csc309.utoronto.ca');
+    console.log('  regular1 has demo interests (Matched / Interest shown / Interested in you) on Manage Job Interests.');
     console.log('  Business: business1@csc309.utoronto.ca');
     console.log('  Admin: admin1@csc309.utoronto.ca');
 }

@@ -1,11 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import JobInterestCarousel from '../../components/staff/JobInterestCarousel.jsx';
 import {
     getBusinessesList,
     getMyJobInterests,
     getOpenJobs,
     getPositionTypes,
 } from '../../lib/api.js';
+
+const EMPTY_INTEREST_BUNDLE = {
+    matched: { count: 0, results: [] },
+    interest_shown: { count: 0, results: [] },
+    interested_in_you: { count: 0, results: [] },
+};
 
 const DEFAULT_LAT = 43.6532;
 const DEFAULT_LON = -79.3832;
@@ -18,7 +26,7 @@ function formatShiftRange(startIso, endIso) {
     return `${s.toLocaleTimeString(undefined, o)} – ${e.toLocaleTimeString(undefined, o)}`;
 }
 
-function JobCard({ job, showMutual, mutual }) {
+export function JobCard({ job, showMutual, mutual }) {
     const title = job.position_type?.name ?? 'Job';
     const clinic = job.business?.business_name ?? 'Practice';
     const salary = `$${job.salary_min}–${job.salary_max}/hr`;
@@ -30,7 +38,7 @@ function JobCard({ job, showMutual, mutual }) {
     const eta = job.eta != null && typeof job.eta === 'number' ? `${job.eta} min` : null;
 
     return (
-        <article className="talent-job-card">
+        <Link to={`/talent/jobs/${job.id}`} className="talent-job-card talent-job-card--link">
             <div className="talent-job-card__accent" aria-hidden />
             <div className="talent-job-card__body">
                 <h3 className="talent-job-card__title">{title}</h3>
@@ -54,7 +62,7 @@ function JobCard({ job, showMutual, mutual }) {
                     <span className="talent-job-card__badge">Matched</span>
                 ) : null}
             </div>
-        </article>
+        </Link>
     );
 }
 
@@ -83,7 +91,7 @@ export default function StaffJobsPage() {
     const [businesses, setBusinesses] = useState([]);
 
     const [jobsData, setJobsData] = useState({ count: 0, results: [] });
-    const [interestsData, setInterestsData] = useState({ count: 0, results: [] });
+    const [interestsBundle, setInterestsBundle] = useState(EMPTY_INTEREST_BUNDLE);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -169,15 +177,19 @@ export default function StaffJobsPage() {
         setLoading(true);
         setError(null);
         try {
-            const data = await getMyJobInterests(token, { page, limit: PAGE_SIZE });
-            setInterestsData({ count: data.count ?? 0, results: data.results ?? [] });
+            const data = await getMyJobInterests(token);
+            setInterestsBundle({
+                matched: data.matched ?? EMPTY_INTEREST_BUNDLE.matched,
+                interest_shown: data.interest_shown ?? EMPTY_INTEREST_BUNDLE.interest_shown,
+                interested_in_you: data.interested_in_you ?? EMPTY_INTEREST_BUNDLE.interested_in_you,
+            });
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Failed to load interests.');
-            setInterestsData({ count: 0, results: [] });
+            setInterestsBundle(EMPTY_INTEREST_BUNDLE);
         } finally {
             setLoading(false);
         }
-    }, [token, page]);
+    }, [token]);
 
     useEffect(() => {
         if (!token) return;
@@ -199,222 +211,272 @@ export default function StaffJobsPage() {
         );
     }, [jobsData.results, searchText]);
 
-    const filterCount =
-        (positionTypeId ? 1 : 0) + (businessId ? 1 : 0) + (searchText.trim() ? 1 : 0);
+    const filterCount = useMemo(() => {
+        let n = 0;
+        if (positionTypeId) n++;
+        if (businessId) n++;
+        if (sortId !== 'closest') n++;
+        return n;
+    }, [positionTypeId, businessId, sortId]);
 
     const totalPagesSearch = Math.max(1, Math.ceil((jobsData.count || 0) / PAGE_SIZE));
-    const totalPagesInterests = Math.max(
-        1,
-        Math.ceil((interestsData.count || 0) / PAGE_SIZE)
+    const totalPages = totalPagesSearch;
+
+    const pipelineTotal = useMemo(
+        () =>
+            interestsBundle.matched.count +
+            interestsBundle.interest_shown.count +
+            interestsBundle.interested_in_you.count,
+        [interestsBundle]
     );
-    const totalPages = tab === 'search' ? totalPagesSearch : totalPagesInterests;
 
     const displayCount =
         tab === 'search'
             ? searchText.trim()
                 ? filteredJobs.length
                 : jobsData.count
-            : interestsData.count;
+            : pipelineTotal;
 
-    const openJobsPosted =
-        tab === 'search' ? jobsData.count : interestsData.count;
+    const openJobsPosted = tab === 'search' ? jobsData.count : pipelineTotal;
+
+    const heroSubtitle =
+        tab === 'search'
+            ? loading && jobsData.count === 0
+                ? 'Loading…'
+                : `${openJobsPosted} job${openJobsPosted === 1 ? '' : 's'} posted`
+            : loading && pipelineTotal === 0
+              ? 'Loading…'
+              : `${pipelineTotal} job${pipelineTotal === 1 ? '' : 's'} in your pipeline`;
+
+    const resultsLine = useMemo(() => {
+        if (searchText.trim()) {
+            const m = filteredJobs.length;
+            return `${m} match${m === 1 ? '' : 'es'} on this page`;
+        }
+        return `${Number(displayCount).toLocaleString()} results found`;
+    }, [searchText, filteredJobs.length, displayCount]);
 
     useEffect(() => {
         setPage(1);
     }, [sortId, positionTypeId, businessId]);
 
     return (
-        <div className="talent-jobs">
-            <header className="talent-jobs__hero">
-                <h1 className="talent-jobs__title">Jobs</h1>
-                <p className="talent-jobs__subtitle">
-                    {tab === 'search'
-                        ? `${openJobsPosted} job${openJobsPosted === 1 ? '' : 's'} posted`
-                        : `${interestsData.count} interested / matched`}
-                </p>
-                {geoNote ? (
-                    <p className="talent-jobs__subtitle" style={{ fontSize: '0.85rem' }}>
-                        {geoNote}
-                    </p>
-                ) : null}
+        <div className="business-job-postings business-job-postings--browse staff-jobs-page">
+            <header className="business-jobs-browse__hero">
+                <div className="business-jobs-browse__hero-inner">
+                    <div className="business-jobs-browse__hero-text">
+                        <h1 className="business-jobs-browse__title">Jobs</h1>
+                        <p className="business-jobs-browse__subtitle" aria-live="polite">
+                            {heroSubtitle}
+                        </p>
+                        {geoNote ? (
+                            <p className="business-jobs-browse__subtitle" style={{ fontSize: '0.85rem' }}>
+                                {geoNote}
+                            </p>
+                        ) : null}
+                    </div>
+                </div>
             </header>
 
-            <div className="talent-jobs__tabs" role="tablist">
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === 'search'}
-                    className={
-                        tab === 'search' ? 'talent-jobs__tab talent-jobs__tab--active' : 'talent-jobs__tab'
-                    }
-                    onClick={() => {
-                        setTab('search');
-                        setPage(1);
-                    }}
-                >
-                    Search
-                </button>
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === 'interested'}
-                    className={
-                        tab === 'interested'
-                            ? 'talent-jobs__tab talent-jobs__tab--active'
-                            : 'talent-jobs__tab'
-                    }
-                    onClick={() => {
-                        setTab('interested');
-                        setPage(1);
-                    }}
-                >
-                    Interested / Matched Jobs
-                </button>
-            </div>
-
-            {tab === 'search' ? (
-                <>
-                    <div className="talent-jobs__toolbar">
-                        <div className="talent-jobs__search-wrap">
-                            <i className="fas fa-search" aria-hidden />
-                            <input
-                                type="search"
-                                className="talent-jobs__search"
-                                placeholder="Search for a Job"
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                aria-label="Search jobs on this page"
-                            />
-                        </div>
-                        <div className="talent-jobs__sort">
-                            <span>Sort by:</span>
-                            <select
-                                value={sortId}
-                                onChange={(e) => setSortId(e.target.value)}
-                                aria-label="Sort jobs"
-                            >
-                                {SORT_OPTIONS.map((o) => (
-                                    <option key={o.id} value={o.id}>
-                                        {o.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="talent-jobs__meta-row">
-                        <button
-                            type="button"
-                            className="talent-jobs__advanced-toggle"
-                            onClick={() => setAdvancedOpen((v) => !v)}
-                            aria-expanded={advancedOpen}
-                        >
-                            Advanced Search
-                            <i className={`fas fa-chevron-${advancedOpen ? 'up' : 'down'}`} aria-hidden />
-                        </button>
-                        <span>
-                            {filterCount} filter{filterCount === 1 ? '' : 's'} applied
-                        </span>
-                        <span>
-                            {searchText.trim()
-                                ? `${filteredJobs.length} on this page (filtered)`
-                                : `${displayCount} results found`}
-                        </span>
-                    </div>
-
-                    {advancedOpen ? (
-                        <div className="talent-jobs__advanced-panel">
-                            <div className="talent-jobs__field">
-                                <label htmlFor="tj-pt">Position type</label>
-                                <select
-                                    id="tj-pt"
-                                    value={positionTypeId}
-                                    onChange={(e) => setPositionTypeId(e.target.value)}
-                                >
-                                    <option value="">Any</option>
-                                    {positionTypes.map((pt) => (
-                                        <option key={pt.id} value={String(pt.id)}>
-                                            {pt.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="talent-jobs__field">
-                                <label htmlFor="tj-bus">Business</label>
-                                <select
-                                    id="tj-bus"
-                                    value={businessId}
-                                    onChange={(e) => setBusinessId(e.target.value)}
-                                >
-                                    <option value="">Any</option>
-                                    {businesses.map((b) => (
-                                        <option key={b.id} value={String(b.id)}>
-                                            {b.business_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    ) : null}
-                </>
-            ) : null}
-
-            {error ? <p className="talent-jobs__error">{error}</p> : null}
-
-            {loading ? <p className="talent-jobs__loading">Loading…</p> : null}
-
-            {!loading && tab === 'search' ? (
-                filteredJobs.length === 0 ? (
-                    <p className="talent-jobs__empty">No jobs match your filters.</p>
-                ) : (
-                    <div className="talent-jobs__grid">
-                        {filteredJobs.map((job) => (
-                            <JobCard key={job.id} job={job} />
-                        ))}
-                    </div>
-                )
-            ) : null}
-
-            {!loading && tab === 'interested' ? (
-                interestsData.results.length === 0 ? (
-                    <p className="talent-jobs__empty">No interested jobs yet.</p>
-                ) : (
-                    <div className="talent-jobs__grid">
-                        {interestsData.results.map((row) => (
-                            <JobCard
-                                key={row.interest_id}
-                                job={row.job}
-                                showMutual
-                                mutual={row.mutual}
-                            />
-                        ))}
-                    </div>
-                )
-            ) : null}
-
-            {!loading && totalPages > 1 ? (
-                <div className="talent-jobs__pagination">
+            <div className="business-jobs-browse__content">
+                <div className="business-jobs-browse__tabs" role="tablist" aria-label="Job list views">
                     <button
                         type="button"
-                        disabled={page <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        aria-label="Previous page"
+                        role="tab"
+                        aria-selected={tab === 'search'}
+                        className={`business-jobs-browse__tab${tab === 'search' ? ' business-jobs-browse__tab--active' : ''}`}
+                        onClick={() => {
+                            setTab('search');
+                            setPage(1);
+                        }}
                     >
-                        ◀
+                        Job Search
                     </button>
-                    <span>
-                        Page {page} of {totalPages}
-                    </span>
                     <button
                         type="button"
-                        disabled={page >= totalPages}
-                        onClick={() => setPage((p) => p + 1)}
-                        aria-label="Next page"
+                        role="tab"
+                        aria-selected={tab === 'interested'}
+                        className={`business-jobs-browse__tab${tab === 'interested' ? ' business-jobs-browse__tab--active' : ''}`}
+                        onClick={() => {
+                            setTab('interested');
+                            setPage(1);
+                        }}
                     >
-                        ▶
+                        Manage Job Interests
                     </button>
                 </div>
-            ) : null}
+
+                {tab === 'search' ? (
+                    <>
+                        <div className="business-jobs-browse__toolbar">
+                            <div className="business-jobs-browse__toolbar-row business-jobs-browse__toolbar-row--top">
+                                <div className="business-job-postings__search-wrap">
+                                    <i className="fas fa-search" aria-hidden />
+                                    <input
+                                        className="business-job-postings__search business-job-postings__search--browse"
+                                        type="search"
+                                        placeholder="Search for a Job"
+                                        value={searchText}
+                                        onChange={(e) => setSearchText(e.target.value)}
+                                        aria-label="Search jobs"
+                                    />
+                                </div>
+                                <div className="business-jobs-browse__sort">
+                                    <label htmlFor="talent-jobs-sort">Sort by:</label>
+                                    <select
+                                        id="talent-jobs-sort"
+                                        value={sortId}
+                                        onChange={(e) => setSortId(e.target.value)}
+                                        aria-label="Sort jobs"
+                                    >
+                                        {SORT_OPTIONS.map((o) => (
+                                            <option key={o.id} value={o.id}>
+                                                {o.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="business-jobs-browse__toolbar-row business-jobs-browse__toolbar-row--sub">
+                                <button
+                                    type="button"
+                                    className="business-jobs-browse__advanced"
+                                    aria-expanded={advancedOpen}
+                                    onClick={() => setAdvancedOpen((o) => !o)}
+                                >
+                                    Advanced Search
+                                    <i className="fas fa-chevron-down" aria-hidden />
+                                </button>
+                                <span className="business-jobs-browse__filter-hint">
+                                    {filterCount > 0 ? `${filterCount} filters applied` : 'No filters applied'}
+                                </span>
+                                <span className="business-jobs-browse__results" aria-live="polite">
+                                    {loading ? 'Loading…' : resultsLine}
+                                </span>
+                            </div>
+                        </div>
+
+                        {advancedOpen ? (
+                            <div
+                                className="business-filters business-job-postings__filters"
+                                role="search"
+                                aria-label="Filter open jobs"
+                            >
+                                <div className="business-filters__field">
+                                    <span className="business-filters__label">Position type</span>
+                                    <select
+                                        className="business-filters__select"
+                                        value={positionTypeId}
+                                        onChange={(e) => setPositionTypeId(e.target.value)}
+                                        aria-label="Filter by position type"
+                                    >
+                                        <option value="">All types</option>
+                                        {positionTypes.map((pt) => (
+                                            <option key={pt.id} value={String(pt.id)}>
+                                                {pt.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="business-filters__field business-filters__field--grow">
+                                    <span className="business-filters__label">Business</span>
+                                    <select
+                                        className="business-filters__select"
+                                        value={businessId}
+                                        onChange={(e) => setBusinessId(e.target.value)}
+                                        aria-label="Filter by business"
+                                    >
+                                        <option value="">Any practice</option>
+                                        {businesses.map((b) => (
+                                            <option key={b.id} value={String(b.id)}>
+                                                {b.business_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        ) : null}
+                    </>
+                ) : null}
+
+                {error ? <p className="talent-jobs__error">{error}</p> : null}
+
+                {loading && tab === 'interested' ? (
+                    <p className="talent-jobs__loading">Loading…</p>
+                ) : null}
+
+                {!loading && tab === 'search' ? (
+                    filteredJobs.length === 0 ? (
+                        <p className="talent-jobs__empty">No jobs match your filters.</p>
+                    ) : (
+                        <div className="business-jobs-browse__grid">
+                            {filteredJobs.map((job) => (
+                                <JobCard key={job.id} job={job} />
+                            ))}
+                        </div>
+                    )
+                ) : null}
+
+                {!loading && tab === 'interested' ? (
+                    pipelineTotal === 0 ? (
+                        <p className="talent-jobs__empty">No jobs in your pipeline yet.</p>
+                    ) : (
+                        <div className="talent-interest-sections">
+                            <JobInterestCarousel
+                                title="Matched"
+                                subtitle="You and the practice both expressed interest."
+                                items={interestsBundle.matched.results}
+                                emptyMessage="No matches yet."
+                                renderItem={(row) => (
+                                    <JobCard job={row.job} showMutual mutual={row.mutual} />
+                                )}
+                            />
+                            <JobInterestCarousel
+                                title="Interested in you"
+                                subtitle="Practices that reached out, open the job from Job Search to respond."
+                                items={interestsBundle.interested_in_you.results}
+                                emptyMessage="No practice outreach yet."
+                                renderItem={(row) => (
+                                    <JobCard job={row.job} showMutual={false} mutual={false} />
+                                )}
+                            />
+                            <JobInterestCarousel
+                                title="Interest shown"
+                                subtitle="You expressed interest, waiting on the practice."
+                                items={interestsBundle.interest_shown.results}
+                                emptyMessage="No pending interest from you."
+                                renderItem={(row) => (
+                                    <JobCard job={row.job} showMutual mutual={row.mutual} />
+                                )}
+                            />
+                        </div>
+                    )
+                ) : null}
+
+                {tab === 'search' && !loading && totalPages > 1 ? (
+                    <div className="talent-jobs__pagination">
+                        <button
+                            type="button"
+                            disabled={page <= 1}
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            aria-label="Previous page"
+                        >
+                            ◀
+                        </button>
+                        <span>
+                            Page {page} of {totalPages}
+                        </span>
+                        <button
+                            type="button"
+                            disabled={page >= totalPages}
+                            onClick={() => setPage((p) => p + 1)}
+                            aria-label="Next page"
+                        >
+                            ▶
+                        </button>
+                    </div>
+                ) : null}
+            </div>
         </div>
     );
 }

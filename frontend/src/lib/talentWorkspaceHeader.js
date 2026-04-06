@@ -6,6 +6,9 @@ export function talentHeaderFromPath(pathname) {
             statusLine: null,
         };
     }
+    if (pathname.includes('/businesses')) {
+        return { greeting: 'Business', statusLine: null };
+    }
     if (pathname.includes('/jobs')) {
         return { greeting: 'Jobs', statusLine: null };
     }

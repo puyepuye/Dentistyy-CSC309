@@ -640,21 +640,31 @@ router.get('/me/invitations', requireRole('regular'), async (req, res, next) => 
     }
 });
 
-// GET /users/me/interests (regular)
+function formatInterestJobPayload(job) {
+    return {
+        id: job.id,
+        status: job.status.toLowerCase(),
+        position_type: {
+            id: job.positionType.id,
+            name: job.positionType.name,
+        },
+        business: {
+            id: job.business.accountId,
+            business_name: job.business.businessName,
+        },
+        salary_min: job.salaryMin,
+        salary_max: job.salaryMax,
+        start_time: job.startTime.toISOString(),
+        end_time: job.endTime.toISOString(),
+        updatedAt: job.updatedAt.toISOString(),
+    };
+}
+
+// GET /users/me/interests (regular) — matched, interest shown, and interested-in-you carousels
 router.get('/me/interests', requireRole('regular'), async (req, res, next) => {
     try {
         const { valid } = validateNoExtraKeys(req.query || {}, ['page', 'limit']);
         if (!valid) return sendError(res, 400, 'Invalid query');
-
-        const page = req.query.page === undefined ? 1 : Number(req.query.page);
-        const limit = req.query.limit === undefined ? 10 : Number(req.query.limit);
-
-        if (!Number.isInteger(page) || page < 1) {
-            return sendError(res, 400, 'Invalid query');
-        }
-        if (!Number.isInteger(limit) || limit < 1) {
-            return sendError(res, 400, 'Invalid query');
-        }
 
         const account = await prisma.account.findUnique({
             where: { id: req.account.id },
@@ -687,49 +697,70 @@ router.get('/me/interests', requireRole('regular'), async (req, res, next) => {
             },
         });
 
-        const businessInterests = await prisma.interest.findMany({
+        const userJobIds = userInterests.map((i) => i.jobId);
+
+        const businessInterestsOnUserJobs =
+            userJobIds.length === 0
+                ? []
+                : await prisma.interest.findMany({
+                      where: {
+                          userId: regularUserId,
+                          initiatedBy: 'BUSINESS',
+                          jobId: { in: userJobIds },
+                      },
+                      select: { jobId: true },
+                  });
+
+        const mutualJobIds = new Set(businessInterestsOnUserJobs.map((i) => i.jobId));
+
+        const businessOnlyInterests = await prisma.interest.findMany({
             where: {
                 userId: regularUserId,
                 initiatedBy: 'BUSINESS',
-                jobId: {
-                    in: userInterests.map((i) => i.jobId),
+                ...(userJobIds.length > 0 ? { jobId: { notIn: userJobIds } } : {}),
+            },
+            include: {
+                job: {
+                    include: {
+                        positionType: true,
+                        business: true,
+                    },
                 },
             },
-            select: {
-                jobId: true,
+            orderBy: {
+                job: {
+                    updatedAt: 'desc',
+                },
             },
         });
 
-        const businessInterestJobIds = new Set(businessInterests.map((i) => i.jobId));
-
-        const count = userInterests.length;
-        const paginated = userInterests.slice((page - 1) * limit, page * limit);
-
-        const results = paginated.map((interest) => ({
+        const mapUserInterest = (interest, mutual) => ({
             interest_id: interest.id,
-            mutual: businessInterestJobIds.has(interest.jobId),
-            job: {
-                id: interest.job.id,
-                status: interest.job.status.toLowerCase(),
-                position_type: {
-                    id: interest.job.positionType.id,
-                    name: interest.job.positionType.name,
-                },
-                business: {
-                    id: interest.job.business.accountId,
-                    business_name: interest.job.business.businessName,
-                },
-                salary_min: interest.job.salaryMin,
-                salary_max: interest.job.salaryMax,
-                start_time: interest.job.startTime.toISOString(),
-                end_time: interest.job.endTime.toISOString(),
-                updatedAt: interest.job.updatedAt.toISOString(),
-            },
+            mutual,
+            job: formatInterestJobPayload(interest.job),
+        });
+
+        const matched = userInterests
+            .filter((i) => mutualJobIds.has(i.jobId))
+            .map((i) => mapUserInterest(i, true));
+
+        const interest_shown = userInterests
+            .filter((i) => !mutualJobIds.has(i.jobId))
+            .map((i) => mapUserInterest(i, false));
+
+        const interested_in_you = businessOnlyInterests.map((interest) => ({
+            interest_id: interest.id,
+            mutual: false,
+            job: formatInterestJobPayload(interest.job),
         }));
 
+        const totalCount = matched.length + interest_shown.length + interested_in_you.length;
+
         return res.status(200).json({
-            count,
-            results,
+            count: totalCount,
+            matched: { count: matched.length, results: matched },
+            interest_shown: { count: interest_shown.length, results: interest_shown },
+            interested_in_you: { count: interested_in_you.length, results: interested_in_you },
         });
     } catch (e) {
         next(e);
