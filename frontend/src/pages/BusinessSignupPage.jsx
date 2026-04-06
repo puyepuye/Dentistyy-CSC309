@@ -20,16 +20,26 @@ function BusinessSignupPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     function updateField(event) {
         const { name, value } = event.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     }
+    
 
     async function handleSubmit(event) {
         event.preventDefault();
         setLoading(true);
         setError('');
+        setSuccessMessage('');
+        
+        if (formData.password !== passwordConfirm) {
+            setError('Passwords do not match.');
+            setLoading(false);
+            return;
+        }
 
         if (!isValidPassword(formData.password)) {
             setError(`Password does not meet requirements. ${PASSWORD_HINT}`);
@@ -63,6 +73,8 @@ function BusinessSignupPage() {
             setLoading(false);
         }
     }
+    const created = Boolean(successMessage);
+
 
     return (
         <AuthFormSection
@@ -119,7 +131,23 @@ function BusinessSignupPage() {
                     value={formData.password}
                     onChange={updateField}
                     required
+                    autoComplete="new=password"
+                    maxLength={20}
                 />
+                <label>
+                    Confirm password
+                    <input
+                        name="password_confirm"
+                        type="password"
+                        value={passwordConfirm}
+                        onChange={(e) => setPasswordConfirm(e.target.value)}
+                        required
+                        autoComplete="new-password"
+                        disabled={created}
+                        // minLength={8}
+                        maxLength={20}
+                    />
+                </label>
                 <p className={styles.formHint}>{PASSWORD_HINT}</p>
                 {error && <p className={styles.error}>{error}</p>}
                 <button className={`${styles.btn} ${styles.btnPrimary}`} type="submit" disabled={loading}>
