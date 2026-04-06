@@ -4,9 +4,16 @@ import DentistyyLogo from './DentistyyLogo.jsx';
 import styles from './Navbar.module.css';
 
 function overviewPathForRole(role) {
+    if (role === 'admin') return '/admin';
     if (role === 'business') return '/businesses';
     if (role === 'user') return '/talent/jobs';
     return null;
+}
+
+function overviewLabelForRole(role) {
+    if (role === 'admin') return 'Go back to dashboard';
+    if (role === 'business' || role === 'user') return 'Go back to your account';
+    return 'Dashboard';
 }
 
 function Navbar() {
@@ -52,7 +59,7 @@ function Navbar() {
                                     : styles.navOverviewLink
                             }
                         >
-                            Go back to overview
+                            {overviewLabelForRole(role)}
                         </NavLink>
                     ) : null}
                 </nav>
