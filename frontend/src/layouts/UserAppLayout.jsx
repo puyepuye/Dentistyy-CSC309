@@ -18,7 +18,9 @@ function UserAppLayoutInner() {
         }
     }, [pathname, refreshNegotiation]);
     const isTalentJobsShell =
-        pathname.startsWith('/talent/jobs') || pathname.startsWith('/talent/businesses');
+        pathname.startsWith('/talent/jobs') ||
+        pathname.startsWith('/talent/businesses') ||
+        pathname.startsWith('/talent/scheduled');
 
     const { greeting, statusLine } = useMemo(() => {
         if (loading && !profile) {

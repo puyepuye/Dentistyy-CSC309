@@ -668,6 +668,106 @@ function formatInterestJobPayload(job) {
     };
 }
 
+function formatWorkerJobPayload(job) {
+    return {
+        id: job.id,
+        status: job.status.toLowerCase(),
+        position_type: {
+            id: job.positionType.id,
+            name: job.positionType.name,
+            description: job.positionType.description ?? '',
+        },
+        business: {
+            id: job.business.accountId,
+            business_name: job.business.businessName,
+        },
+        salary_min: job.salaryMin,
+        salary_max: job.salaryMax,
+        start_time: job.startTime.toISOString(),
+        end_time: job.endTime.toISOString(),
+        note: (job.note ?? '').trim(),
+        updatedAt: job.updatedAt.toISOString(),
+    };
+}
+
+// GET /users/me/jobs (regular): jobs where this user is the assigned worker (upcoming vs past)
+router.get('/me/jobs', requireRole('regular'), async (req, res, next) => {
+    try {
+        const { valid } = validateNoExtraKeys(req.query || {}, ['scope', 'page', 'limit']);
+        if (!valid) return sendError(res, 400, 'Invalid query');
+
+        const { scope, page = '1', limit = '20' } = req.query;
+        if (scope !== 'upcoming' && scope !== 'past') {
+            return sendError(res, 400, 'Invalid query');
+        }
+
+        const pageNum = Number(page);
+        const limitNum = Number(limit);
+        if (!Number.isInteger(pageNum) || pageNum < 1) {
+            return sendError(res, 400, 'Invalid query');
+        }
+        if (!Number.isInteger(limitNum) || limitNum < 1 || limitNum > 100) {
+            return sendError(res, 400, 'Invalid query');
+        }
+
+        const account = await prisma.account.findUnique({
+            where: { id: req.account.id },
+            include: { regularUser: true },
+        });
+        if (!account || !account.regularUser) {
+            return sendError(res, 404, 'Not Found');
+        }
+
+        const workerId = account.regularUser.id;
+        const now = new Date();
+
+        const include = {
+            positionType: true,
+            business: true,
+        };
+
+        let where;
+        if (scope === 'upcoming') {
+            where = {
+                workerId,
+                endTime: { gt: now },
+                status: { notIn: ['CANCELLED', 'EXPIRED'] },
+            };
+        } else {
+            where = {
+                workerId,
+                OR: [
+                    { endTime: { lte: now } },
+                    { status: { in: ['CANCELLED', 'COMPLETED', 'EXPIRED'] } },
+                ],
+            };
+        }
+
+        const orderBy =
+            scope === 'upcoming'
+                ? { startTime: 'asc' }
+                : { endTime: 'desc' };
+
+        const [count, rows] = await prisma.$transaction([
+            prisma.job.count({ where }),
+            prisma.job.findMany({
+                where,
+                include,
+                orderBy,
+                skip: (pageNum - 1) * limitNum,
+                take: limitNum,
+            }),
+        ]);
+
+        return res.status(200).json({
+            count,
+            results: rows.map(formatWorkerJobPayload),
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
 // GET /users/me/interests (regular) — matched, interest shown, and interested-in-you carousels
 router.get('/me/interests', requireRole('regular'), async (req, res, next) => {
     try {
@@ -773,6 +873,11 @@ router.get('/me/interests', requireRole('regular'), async (req, res, next) => {
     } catch (e) {
         next(e);
     }
+});
+
+// Non-GET on GET /users/me/jobs — 405
+router.all('/me/jobs', (req, res) => {
+    return res.status(405).json({ error: 'Method Not Allowed' });
 });
 
 // Non-GET on GET /users/me/interests (POST) — 405
