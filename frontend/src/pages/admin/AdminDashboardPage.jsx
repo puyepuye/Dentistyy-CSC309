@@ -75,11 +75,6 @@ export default function AdminDashboardPage() {
 
     return (
         <div className="admin-dashboard">
-            <p className="admin-dashboard__lede">
-                Overview of the workspace. Jump to a section or review qualification requests that need a
-                decision.
-            </p>
-
             {error ? <p className="talent-jobs__error">{error}</p> : null}
 
             <section className="admin-dashboard__section" aria-labelledby="admin-bento-heading">

@@ -374,6 +374,39 @@ export function patchUserSuspend(token, userId, suspended) {
     });
 }
 
+/** System knobs (GET /system, PATCH /system/*) — admin only. */
+export function getSystemConfig(token) {
+    return authRequest('/system', token, { method: 'GET' });
+}
+
+export function patchSystemResetCooldown(token, resetCooldownSeconds) {
+    return authRequest('/system/reset-cooldown', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ reset_cooldown: resetCooldownSeconds }),
+    });
+}
+
+export function patchSystemNegotiationWindow(token, negotiationWindowSeconds) {
+    return authRequest('/system/negotiation-window', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ negotiation_window: negotiationWindowSeconds }),
+    });
+}
+
+export function patchSystemJobStartWindow(token, jobStartWindowHours) {
+    return authRequest('/system/job-start-window', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ job_start_window: jobStartWindowHours }),
+    });
+}
+
+export function patchSystemAvailabilityTimeout(token, availabilityTimeoutSeconds) {
+    return authRequest('/system/availability-timeout', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ availability_timeout: availabilityTimeoutSeconds }),
+    });
+}
+
 /** Admin listing (GET /qualifications). Query: keyword, page, limit, status, order (asc|desc). */
 export function getAdminQualifications(token, params = {}) {
     const q = new URLSearchParams({
