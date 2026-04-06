@@ -220,4 +220,39 @@ export async function uploadUserResume(token, file) {
     return payload;
 }
 
+/** Open job postings (regular). Query: lat, lon, position_type_id, business_id, sort, order, page, limit */
+export function getOpenJobs(token, params = {}) {
+    const q = new URLSearchParams();
+    if (params.lat != null && params.lon != null) {
+        q.set('lat', String(params.lat));
+        q.set('lon', String(params.lon));
+    }
+    if (params.position_type_id != null && params.position_type_id !== '') {
+        q.set('position_type_id', String(params.position_type_id));
+    }
+    if (params.business_id != null && params.business_id !== '') {
+        q.set('business_id', String(params.business_id));
+    }
+    if (params.sort) q.set('sort', params.sort);
+    if (params.order) q.set('order', params.order);
+    q.set('page', String(params.page ?? 1));
+    q.set('limit', String(params.limit ?? 9));
+    return authRequest(`/jobs?${q.toString()}`, token, { method: 'GET' });
+}
+
+/** Jobs the user has expressed interest in */
+export function getMyJobInterests(token, params = {}) {
+    const q = new URLSearchParams({
+        page: String(params.page ?? 1),
+        limit: String(params.limit ?? 9),
+    });
+    return authRequest(`/users/me/interests?${q}`, token, { method: 'GET' });
+}
+
+/** Business directory for filters (GET /businesses — public). */
+export function getBusinessesList(params = {}) {
+    const q = new URLSearchParams({ page: '1', limit: '50', ...params });
+    return request(`/businesses?${q}`, { method: 'GET' });
+}
+
 export { API_BASE_URL };
