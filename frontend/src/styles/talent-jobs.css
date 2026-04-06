@@ -702,3 +702,134 @@
   padding-right: 0.25rem;
   margin-bottom: 0.5rem;
 }
+
+/* Talent — scheduled (confirmed worker commitments) */
+.staff-scheduled-page__meta {
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.staff-scheduled-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 42rem;
+}
+
+.staff-scheduled-row {
+  --scheduled-accent: var(--color-accent);
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  text-decoration: none;
+  color: inherit;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  outline: none;
+  transition:
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.staff-scheduled-row:hover {
+  border-color: color-mix(in srgb, var(--scheduled-accent) 45%, var(--color-border));
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.staff-scheduled-row:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.staff-scheduled-row--accent-a {
+  --scheduled-accent: var(--color-accent);
+}
+.staff-scheduled-row--accent-b {
+  --scheduled-accent: #3d6ea3;
+}
+.staff-scheduled-row--accent-c {
+  --scheduled-accent: #c45c2a;
+}
+.staff-scheduled-row--accent-d {
+  --scheduled-accent: #6b4f9a;
+}
+
+.staff-scheduled-row__date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 4.25rem;
+  padding: 0.65rem 0.5rem;
+  border-left: 5px solid var(--scheduled-accent);
+  background: color-mix(in srgb, var(--scheduled-accent) 10%, var(--color-bg-elevated));
+}
+
+.staff-scheduled-row__month {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--scheduled-accent);
+  line-height: 1.2;
+}
+
+.staff-scheduled-row__day {
+  margin-top: 0.15rem;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--scheduled-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.staff-scheduled-row__body {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 0.35rem 0.85rem 0.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.staff-scheduled-row__primary {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--color-brand-dark);
+  line-height: 1.35;
+}
+
+.staff-scheduled-row__secondary {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+.staff-scheduled-row__status {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-subtle);
+}
+
+.staff-scheduled-row__chevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem 0 0.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+  opacity: 0.65;
+}
+
+.staff-scheduled-row:hover .staff-scheduled-row__chevron {
+  opacity: 1;
+  color: var(--scheduled-accent);
+}

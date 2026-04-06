@@ -260,6 +260,17 @@ export function getMyJobInterests(token) {
     return authRequest('/users/me/interests', token, { method: 'GET' });
 }
 
+/** Confirmed shifts where the current user is the assigned worker (`scope`: `upcoming` | `past`). */
+export function getMyWorkerJobs(token, params = {}) {
+    const q = new URLSearchParams();
+    const merged = { page: '1', limit: '50', ...params };
+    for (const [k, v] of Object.entries(merged)) {
+        if (v === undefined || v === null || v === '') continue;
+        q.set(k, String(v));
+    }
+    return authRequest(`/users/me/jobs?${q}`, token, { method: 'GET' });
+}
+
 /** Business directory for filters (GET /businesses, public). */
 export function getBusinessesList(params = {}) {
     const merged = { page: '1', limit: '50', ...params };
