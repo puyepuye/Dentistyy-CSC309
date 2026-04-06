@@ -1,5 +1,6 @@
 /**
  * Greeting + status line for practice workspace header (mirrors talent header behaviour).
+ * Negotiations route header is built in BusinessAppLayout via negotiationWorkspaceHeader.js.
  * @param {string} pathname
  * @param {{ business_name?: string, verified?: boolean } | null} profile
  * @param {string | null | undefined} jobName
@@ -20,8 +21,8 @@ export function businessHeaderFromPath(pathname, profile, jobName) {
     if (pathname.endsWith('/profile')) {
         return { greeting: hello, statusLine: 'Practice profile' };
     }
-    if (pathname.includes('/negotiations')) {
-        return { greeting: hello, statusLine: 'Negotiations' };
+    if (pathname.includes('/scheduled')) {
+        return { greeting: 'Scheduled', statusLine: null };
     }
     if (pathname.includes('/jobs/new')) {
         return { greeting: hello, statusLine: 'New job posting' };

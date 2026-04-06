@@ -4,42 +4,9 @@ import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useTalentNegotiation } from '../../contexts/TalentNegotiationContext.jsx';
 import NegotiationDecisionConfirm from '../../components/negotiation/NegotiationDecisionConfirm.jsx';
 import NegotiationChat from '../../components/negotiation/NegotiationChat.jsx';
+import NegotiationTimerDonut from '../../components/negotiation/NegotiationTimerDonut.jsx';
 import { patchNegotiationDecision } from '../../lib/api.js';
 import { celebrateNegotiationSuccess } from '../../lib/negotiationConfetti.js';
-
-function formatClock(totalSec) {
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function TimerDonut({ totalSec, leftSec }) {
-    const r = 40;
-    const c = 2 * Math.PI * r;
-    const pct = totalSec > 0 ? Math.min(1, Math.max(0, leftSec / totalSec)) : 0;
-    const offset = c * (1 - pct);
-
-    return (
-        <div className="talent-neg-timer" aria-label={`Time remaining ${formatClock(leftSec)}`}>
-            <svg className="talent-neg-timer__svg" viewBox="0 0 100 100" aria-hidden>
-                <circle className="talent-neg-timer__track" cx="50" cy="50" r={r} />
-                <circle
-                    className="talent-neg-timer__prog"
-                    cx="50"
-                    cy="50"
-                    r={r}
-                    strokeDasharray={c}
-                    strokeDashoffset={offset}
-                />
-            </svg>
-            <div>
-                <div className="talent-neg-timer__label">Time remaining</div>
-                <div className="talent-neg-timer__clock">{formatClock(leftSec)}</div>
-                <div className="talent-neg-timer__sub">Minutes · Seconds</div>
-            </div>
-        </div>
-    );
-}
 
 export default function StaffNegotiationsPage() {
     const { token } = useAuth();
@@ -75,20 +42,14 @@ export default function StaffNegotiationsPage() {
     const totalSec = neg?.negotiation_window_seconds ?? 900;
     const left = secondsRemaining;
     const chatEnded = !neg || left <= 0 || neg.status !== 'active';
+    const talentAlreadyAccepted = neg?.decisions?.candidate === 'accept';
 
     return (
         <div className="talent-neg">
-            <header>
-                <p className="talent-neg__intro">
-                    After a match, either side can start a timed negotiation: accept before it ends to confirm the shift.
-                    Chat with the practice below.
-                </p>
-            </header>
-
             {loading ? <p className="talent-jobs__loading">Loading…</p> : null}
 
             {!loading && !neg ? (
-                <section className="talent-card">
+                <section className="talent-card talent-neg__empty">
                     <p className="talent-bio__resume-missing">
                         No active negotiation. When you match with a practice, open one from the job detail page to agree
                         on terms.
@@ -105,7 +66,7 @@ export default function StaffNegotiationsPage() {
                         <div className="talent-neg__card-head">
                             <h2>{neg.job?.business?.business_name ?? 'Practice'}</h2>
                             <p>
-                                Current negotiation · Job #{neg.job?.id}: {neg.job?.position_type?.name}
+                                Current negotiation · {neg.job?.position_type?.name}
                             </p>
                         </div>
                         <NegotiationChat
@@ -117,7 +78,7 @@ export default function StaffNegotiationsPage() {
                     </div>
 
                     <div className="talent-neg__card talent-neg-side">
-                        <TimerDonut totalSec={totalSec} leftSec={left} />
+                        <NegotiationTimerDonut totalSec={totalSec} leftSec={left} />
 
                         <div className="talent-neg-status">
                             <h3>Current status</h3>
@@ -149,7 +110,9 @@ export default function StaffNegotiationsPage() {
                             <button
                                 type="button"
                                 className="business-btn business-btn--primary"
-                                disabled={busy || left <= 0 || neg.status !== 'active'}
+                                disabled={
+                                    busy || left <= 0 || neg.status !== 'active' || talentAlreadyAccepted
+                                }
                                 onClick={() => setConfirm('accept')}
                             >
                                 Accept

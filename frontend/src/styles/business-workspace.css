@@ -144,20 +144,16 @@
     max-width: 28rem;
 }
 
-/* Business jobs browse — mint hero, tabs, card grid (mock) */
+/* Business jobs browse — same mint band as .talent-workspace-header (negotiations, etc.) */
 .business-job-postings--browse {
     max-width: none;
     margin: 0;
 }
 
 .business-jobs-browse__hero {
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--color-accent) 14%, var(--color-bg-app)) 0%,
-        var(--color-bg-app) 100%
-    );
+    background: var(--color-bg-header);
     border-bottom: 1px solid var(--color-border);
-    padding: 1.5rem clamp(1rem, 3vw, 2rem) 1.35rem;
+    padding: clamp(1.15rem, 3vw, 1.65rem) clamp(1rem, 3vw, 2rem);
     margin-bottom: 0;
 }
 
@@ -1017,6 +1013,17 @@ a.business-jobs-browse__tab--active:visited {
 .business-candidate-preview-drawer__hint {
     margin: 0.5rem 0 0;
     font-size: 0.82rem;
+}
+
+.business-candidate-preview-drawer__success {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-primary-strong);
+    background: var(--color-primary-soft);
+    border: 1px solid rgb(89 168 151 / 0.35);
 }
 
 .business-candidate-preview-drawer__footer {

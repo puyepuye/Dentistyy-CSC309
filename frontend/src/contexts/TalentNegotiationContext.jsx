@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { getMyNegotiation } from '../lib/api.js';
+import { celebrateNegotiationSuccessIfJobFilled } from '../lib/negotiationConfetti.js';
 
 const TalentNegotiationContext = createContext(null);
 
@@ -14,6 +15,10 @@ export function TalentNegotiationProvider({ children }) {
     const [negotiation, setNegotiation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [clock, setClock] = useState(0);
+    const negotiationRef = useRef(null);
+    useEffect(() => {
+        negotiationRef.current = negotiation;
+    }, [negotiation]);
 
     const refresh = useCallback(async () => {
         if (!token) {
@@ -21,12 +26,14 @@ export function TalentNegotiationProvider({ children }) {
             setLoading(false);
             return;
         }
+        const priorNeg = negotiationRef.current;
         try {
             const n = await getMyNegotiation(token);
             setNegotiation(n);
         } catch (e) {
             const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
             if (status === 404) {
+                await celebrateNegotiationSuccessIfJobFilled(token, priorNeg);
                 setNegotiation(null);
             }
         } finally {

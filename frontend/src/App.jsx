@@ -24,6 +24,7 @@ import BusinessJobNewPage from './pages/business/BusinessJobNewPage.jsx';
 import BusinessJobDetailPage from './pages/business/BusinessJobDetailPage.jsx';
 import BusinessJobCandidatesListPage from './pages/business/BusinessJobCandidatesListPage.jsx';
 import BusinessNegotiationsPage from './pages/business/BusinessNegotiationsPage.jsx';
+import BusinessScheduledPage from './pages/business/BusinessScheduledPage.jsx';
 import BusinessJobSectionLayout from './layouts/BusinessJobSectionLayout.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
 import AdminUsersPage from './pages/admin/AdminUsersPage.jsx';
@@ -106,6 +107,7 @@ function App() {
                         <Route path="candidates" element={<BusinessJobCandidatesListPage />} />
                         <Route path="interests" element={<BusinessJobInterestsRedirect />} />
                     </Route>
+                    <Route path="scheduled" element={<BusinessScheduledPage />} />
                     <Route path="negotiations" element={<BusinessNegotiationsPage />} />
                 </Route>
 

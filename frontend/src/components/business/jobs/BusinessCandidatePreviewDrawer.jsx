@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext.jsx';
 import { assetUrl, getJobCandidateDetail, patchJobCandidateInterested, startNegotiation } from '../../../lib/api.js';
@@ -25,6 +25,8 @@ export default function BusinessCandidatePreviewDrawer({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [busy, setBusy] = useState(false);
+    const [interestSuccess, setInterestSuccess] = useState(false);
+    const interestSuccessTimeoutRef = useRef(null);
 
     const load = useCallback(async () => {
         if (!open || !token || !Number.isInteger(jobId) || jobId < 1) return;
@@ -45,10 +47,23 @@ export default function BusinessCandidatePreviewDrawer({
         if (!open) {
             setData(null);
             setError(null);
+            setInterestSuccess(false);
+            if (interestSuccessTimeoutRef.current) {
+                window.clearTimeout(interestSuccessTimeoutRef.current);
+                interestSuccessTimeoutRef.current = null;
+            }
             return;
         }
         load();
     }, [open, load]);
+
+    useEffect(() => {
+        return () => {
+            if (interestSuccessTimeoutRef.current) {
+                window.clearTimeout(interestSuccessTimeoutRef.current);
+            }
+        };
+    }, []);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -73,9 +88,25 @@ export default function BusinessCandidatePreviewDrawer({
         setBusy(true);
         try {
             await patchJobCandidateInterested(token, jobId, candidateAccountId, nextInterested);
+            setData((prev) =>
+                prev && typeof prev === 'object'
+                    ? { ...prev, business_expressed_interest: nextInterested }
+                    : prev
+            );
+            if (nextInterested) {
+                setInterestSuccess(true);
+                if (interestSuccessTimeoutRef.current) window.clearTimeout(interestSuccessTimeoutRef.current);
+                interestSuccessTimeoutRef.current = window.setTimeout(() => {
+                    setInterestSuccess(false);
+                    interestSuccessTimeoutRef.current = null;
+                }, 4000);
+            } else {
+                setInterestSuccess(false);
+            }
             await load();
-            onUpdated?.();
+            await Promise.resolve(onUpdated?.());
         } catch (e) {
+            await load();
             window.alert(e instanceof Error ? e.message : 'Could not update interest.');
         } finally {
             setBusy(false);
@@ -88,7 +119,7 @@ export default function BusinessCandidatePreviewDrawer({
         setBusy(true);
         try {
             await startNegotiation(token, iid);
-            onUpdated?.();
+            await Promise.resolve(onUpdated?.());
             window.alert('Negotiation started. Open Negotiations in the sidebar to review and respond.');
             onClose();
         } catch (e) {
@@ -177,9 +208,23 @@ export default function BusinessCandidatePreviewDrawer({
                                             Talent: {talentInterested ? 'Yes' : 'No'} · Practice:{' '}
                                             {practiceInterested ? 'Yes' : 'No'} · Mutual: {mutual ? 'Yes' : 'No'}
                                         </p>
+                                    ) : !hiringClosed ? (
+                                        <p className="business-candidate-preview-drawer__meta">
+                                            Practice interest: {invited ? 'Yes' : 'No'}
+                                        </p>
                                     ) : null}
                                 </div>
                             </div>
+
+                            {interestSuccess ? (
+                                <p
+                                    className="business-candidate-preview-drawer__success"
+                                    role="status"
+                                    aria-live="polite"
+                                >
+                                    Interest expressed successfully.
+                                </p>
+                            ) : null}
 
                             {u.biography?.trim() ? (
                                 <section className="business-candidate-preview-drawer__block">
@@ -281,7 +326,7 @@ export default function BusinessCandidatePreviewDrawer({
                                             : undefined
                                     }
                                 >
-                                    Express interest back
+                                    Express interest
                                 </button>
                                 {negotiationReason ? (
                                     <p className="business-interest-user__note">{negotiationReason}</p>
@@ -300,7 +345,7 @@ export default function BusinessCandidatePreviewDrawer({
                                             : undefined
                                     }
                                 >
-                                    Express interest back
+                                    Express interest
                                 </button>
                                 {invited ? (
                                     <button

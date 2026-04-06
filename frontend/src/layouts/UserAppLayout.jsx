@@ -6,11 +6,12 @@ import TalentNegotiationMiniBar from '../components/talent/TalentNegotiationMini
 import { TalentProfileProvider, useTalentProfile } from '../contexts/TalentProfileContext.jsx';
 import { TalentNegotiationProvider, useTalentNegotiation } from '../contexts/TalentNegotiationContext.jsx';
 import { talentHeaderFromPath } from '../lib/talentWorkspaceHeader.js';
+import { talentNegotiationWorkspaceHeader } from '../lib/negotiationWorkspaceHeader.js';
 
 function UserAppLayoutInner() {
     const { pathname } = useLocation();
     const { profile, loading } = useTalentProfile();
-    const { refresh: refreshNegotiation } = useTalentNegotiation();
+    const { refresh: refreshNegotiation, negotiation, loading: negotiationLoading } = useTalentNegotiation();
 
     useEffect(() => {
         if (pathname === '/talent/negotiations') {
@@ -23,6 +24,9 @@ function UserAppLayoutInner() {
         pathname.startsWith('/talent/scheduled');
 
     const { greeting, statusLine } = useMemo(() => {
+        if (pathname.includes('/negotiations')) {
+            return talentNegotiationWorkspaceHeader(negotiation, negotiationLoading);
+        }
         if (loading && !profile) {
             const base = talentHeaderFromPath(pathname);
             return { greeting: base.greeting, statusLine: 'Loading…' };
@@ -46,21 +50,26 @@ function UserAppLayoutInner() {
         if (pathname.includes('/jobs')) {
             return { greeting: hello, statusLine: 'Jobs' };
         }
-        if (pathname.includes('/negotiations')) {
-            return { greeting: 'Negotiation', statusLine: null };
-        }
         if (pathname.includes('/scheduled')) {
             return { greeting: hello, statusLine: 'Scheduled' };
         }
         return { greeting: hello, statusLine: null };
-    }, [pathname, profile, loading]);
+    }, [pathname, profile, loading, negotiation, negotiationLoading]);
 
     return (
         <div className="app-shell">
             <UserSidebar />
             <div className="app-shell__main">
                 {!isTalentJobsShell ? (
-                    <TalentWorkspaceHeader greeting={greeting} statusLine={statusLine} />
+                    <TalentWorkspaceHeader
+                        greeting={greeting}
+                        statusLine={statusLine}
+                        statusLineClassName={
+                            statusLine?.startsWith('After a match')
+                                ? 'talent-workspace-header__status--negotiation-intro'
+                                : undefined
+                        }
+                    />
                 ) : null}
                 <div
                     className={`app-shell__body${isTalentJobsShell ? ' app-shell__body--talent-jobs-browse' : ''}`}
