@@ -8,8 +8,6 @@ export const SORT_PRESETS = [
 ];
 
 export default function BusinessJobsBrowseToolbar({
-    listTab,
-    onListTabChange,
     searchQuery,
     onSearchChange,
     sortPresetId,
@@ -26,20 +24,10 @@ export default function BusinessJobsBrowseToolbar({
                 <button
                     type="button"
                     role="tab"
-                    aria-selected={listTab === 'search'}
-                    className={`business-jobs-browse__tab${listTab === 'search' ? ' business-jobs-browse__tab--active' : ''}`}
-                    onClick={() => onListTabChange('search')}
+                    aria-selected
+                    className="business-jobs-browse__tab business-jobs-browse__tab--active"
                 >
                     Search
-                </button>
-                <button
-                    type="button"
-                    role="tab"
-                    aria-selected={listTab === 'matched'}
-                    className={`business-jobs-browse__tab${listTab === 'matched' ? ' business-jobs-browse__tab--active' : ''}`}
-                    onClick={() => onListTabChange('matched')}
-                >
-                    Interested / Matched Jobs
                 </button>
             </div>
 

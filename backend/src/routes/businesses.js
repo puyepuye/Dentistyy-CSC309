@@ -843,8 +843,16 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             include: {
                 positionType: true,
                 business: true,
+                worker: {
+                    select: {
+                        accountId: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
                 negotiations: {
                     where: { status: 'SUCCESSFUL' },
+                    orderBy: { id: 'asc' },
                     include: {
                         user: true,
                     },
@@ -859,6 +867,20 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
 
         const results = jobs.map((job) => {
             const winningNeg = job.negotiations[0] ?? null;
+            const workerFromNegotiation = winningNeg
+                ? {
+                      id: winningNeg.user.accountId,
+                      first_name: winningNeg.user.firstName,
+                      last_name: winningNeg.user.lastName,
+                  }
+                : null;
+            const workerFromJobRow = job.worker
+                ? {
+                      id: job.worker.accountId,
+                      first_name: job.worker.firstName,
+                      last_name: job.worker.lastName,
+                  }
+                : null;
 
             return {
                 id: job.id,
@@ -868,13 +890,7 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
                     name: job.positionType.name,
                 },
                 business_id: job.business.accountId,
-                worker: winningNeg
-                    ? {
-                          id: winningNeg.user.accountId,
-                          first_name: winningNeg.user.firstName,
-                          last_name: winningNeg.user.lastName,
-                      }
-                    : null,
+                worker: workerFromNegotiation ?? workerFromJobRow,
                 salary_min: job.salaryMin,
                 salary_max: job.salaryMax,
                 start_time: job.startTime.toISOString(),

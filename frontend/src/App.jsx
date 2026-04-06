@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import RequireAuth from './components/auth/RequireAuth.jsx';
 import UserAppLayout from './layouts/UserAppLayout.jsx';
@@ -20,8 +20,6 @@ import BusinessJobsPage from './pages/business/BusinessJobsPage.jsx';
 import BusinessJobNewPage from './pages/business/BusinessJobNewPage.jsx';
 import BusinessJobDetailPage from './pages/business/BusinessJobDetailPage.jsx';
 import BusinessJobCandidatesListPage from './pages/business/BusinessJobCandidatesListPage.jsx';
-import BusinessJobCandidateDetailPage from './pages/business/BusinessJobCandidateDetailPage.jsx';
-import BusinessJobInterestsPage from './pages/business/BusinessJobInterestsPage.jsx';
 import BusinessNegotiationsPage from './pages/business/BusinessNegotiationsPage.jsx';
 import BusinessJobSectionLayout from './layouts/BusinessJobSectionLayout.jsx';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx';
@@ -31,6 +29,11 @@ import AdminPositionsPage from './pages/admin/AdminPositionsPage.jsx';
 import AdminQualificationsPage from './pages/admin/AdminQualificationsPage.jsx';
 import AdminSystemPage from './pages/admin/AdminSystemPage.jsx';
 import marketingLayoutStyles from './styles/MarketingLayout.module.css';
+
+function BusinessJobInterestsRedirect() {
+    const { jobId } = useParams();
+    return <Navigate to={`/businesses/jobs/${jobId}/candidates?view=manage`} replace />;
+}
 
 function MarketingLayout() {
     const { pathname } = useLocation();
@@ -93,8 +96,7 @@ function App() {
                     <Route path="jobs/:jobId" element={<BusinessJobSectionLayout />}>
                         <Route index element={<BusinessJobDetailPage />} />
                         <Route path="candidates" element={<BusinessJobCandidatesListPage />} />
-                        <Route path="candidates/:userId" element={<BusinessJobCandidateDetailPage />} />
-                        <Route path="interests" element={<BusinessJobInterestsPage />} />
+                        <Route path="interests" element={<BusinessJobInterestsRedirect />} />
                     </Route>
                     <Route path="negotiations" element={<BusinessNegotiationsPage />} />
                 </Route>

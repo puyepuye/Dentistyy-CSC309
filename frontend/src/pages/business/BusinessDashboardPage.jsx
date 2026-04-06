@@ -51,15 +51,15 @@ export default function BusinessDashboardPage() {
                     <div className="business-stat-card">
                         <span className="talent-field__label">Open postings</span>
                         <p className="business-stat-card__value">{openCount ?? '—'}</p>
-                        <Link to="/businesses/jobs" className="business-stat-card__link">
+                        <Link to="/businesses/jobs?status=open" className="business-stat-card__link">
                             Manage job postings
                         </Link>
                     </div>
                     <div className="business-stat-card">
                         <span className="talent-field__label">Filled postings</span>
                         <p className="business-stat-card__value">{filledCount ?? '—'}</p>
-                        <Link to="/businesses/jobs" className="business-stat-card__link">
-                            View schedule
+                        <Link to="/businesses/jobs?status=filled" className="business-stat-card__link">
+                            View filled positions
                         </Link>
                     </div>
                 </div>

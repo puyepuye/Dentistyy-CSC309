@@ -295,25 +295,6 @@ router.get('/me', requireRole('regular'), async (req, res, next) => {
             return sendError(res, 404, 'Not Found');
         }
 
-        const settings = await prisma.systemSettings.findFirst();
-        const timeoutSeconds = settings?.availabilityTimeout ?? 0;
-        const timeoutMs = timeoutSeconds * 1000;
-
-        let reportedAvailable = account.regularUser.available;
-
-        if (reportedAvailable) {
-            if (!account.regularUser.lastActiveAt) {
-                reportedAvailable = false;
-            } else if (timeoutMs > 0) {
-                const inactiveMs =
-                    Date.now() - new Date(account.regularUser.lastActiveAt).getTime();
-
-                if (inactiveMs > timeoutMs) {
-                    reportedAvailable = false;
-                }
-            }
-        }
-
         return res.status(200).json({
             id: account.id,
             first_name: account.regularUser.firstName,
@@ -321,7 +302,8 @@ router.get('/me', requireRole('regular'), async (req, res, next) => {
             email: account.email,
             activated: account.activated,
             suspended: account.regularUser.suspended,
-            available: reportedAvailable,
+            // Profile shows the persisted availability toggle value.
+            available: account.regularUser.available,
             role: account.role,
             phone_number: account.regularUser.phoneNumber,
             postal_address: account.regularUser.postalAddress,

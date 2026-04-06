@@ -138,21 +138,6 @@ export default function BusinessProfilePage() {
                         </h2>
                         <p className="business-card__hint">What talent sees when browsing your practice.</p>
                     </div>
-                    {publicEditing ? (
-                        <button
-                            type="button"
-                            className="talent-card__action"
-                            onClick={cancelPublicEdit}
-                            disabled={publicSaveBusy || avatarBusy}
-                        >
-                            <span>Cancel</span>
-                        </button>
-                    ) : (
-                        <button type="button" className="talent-card__action" onClick={beginPublicEdit}>
-                            <span>Edit</span>
-                            <i className="fas fa-pencil-alt" aria-hidden />
-                        </button>
-                    )}
                 </div>
                 {publicEditing ? (
                     <form className="business-public-practice" onSubmit={onPublicPracticeSave} noValidate>
@@ -388,8 +373,7 @@ export default function BusinessProfilePage() {
                     </div>
                 </div>
                 <p className="business-card__hint">
-                    Logo: PNG or JPEG. Use “Edit” on Public practice view for what talent sees; “Edit details” here for owner
-                    name.
+                    Logo: PNG or JPEG. Use “Edit details” here to update practice information.
                 </p>
             </section>
 
