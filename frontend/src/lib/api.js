@@ -374,6 +374,83 @@ export function patchUserSuspend(token, userId, suspended) {
     });
 }
 
+/** System knobs (GET /system, PATCH /system/*) — admin only. */
+export function getSystemConfig(token) {
+    return authRequest('/system', token, { method: 'GET' });
+}
+
+export function patchSystemResetCooldown(token, resetCooldownSeconds) {
+    return authRequest('/system/reset-cooldown', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ reset_cooldown: resetCooldownSeconds }),
+    });
+}
+
+export function patchSystemNegotiationWindow(token, negotiationWindowSeconds) {
+    return authRequest('/system/negotiation-window', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ negotiation_window: negotiationWindowSeconds }),
+    });
+}
+
+export function patchSystemJobStartWindow(token, jobStartWindowHours) {
+    return authRequest('/system/job-start-window', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ job_start_window: jobStartWindowHours }),
+    });
+}
+
+export function patchSystemAvailabilityTimeout(token, availabilityTimeoutSeconds) {
+    return authRequest('/system/availability-timeout', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ availability_timeout: availabilityTimeoutSeconds }),
+    });
+}
+
+/** Admin listing (GET /qualifications). Query: keyword, page, limit, status, order (asc|desc). */
+export function getAdminQualifications(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '50',
+        ...params,
+    });
+    return authRequest(`/qualifications?${q}`, token, { method: 'GET' });
+}
+
+/** Single qualification (GET /qualifications/:id) — admin, owner, or business rules on server. */
+export function getQualificationById(token, qualificationId) {
+    return authRequest(`/qualifications/${qualificationId}`, token, { method: 'GET' });
+}
+
+/**
+ * Load PDF for admin viewer (GET /qualifications/:id/document). Caller must revoke the blob URL when done.
+ * @returns {Promise<string>} object URL for the PDF blob
+ */
+export async function fetchQualificationDocumentBlobUrl(token, qualificationId) {
+    const response = await fetch(
+        `${API_BASE_URL}/qualifications/${qualificationId}/document`,
+        {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { Authorization: `Bearer ${token}` },
+        }
+    );
+    if (!response.ok) {
+        let message = `Request failed (${response.status})`;
+        try {
+            const payload = await response.json();
+            message = payload?.error || payload?.message || message;
+        } catch {
+            /* ignore */
+        }
+        const err = new Error(message);
+        err.status = response.status;
+        throw err;
+    }
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+}
+
 export function getAdminPositionTypes(token, params = {}) {
     const q = new URLSearchParams({
         page: '1',

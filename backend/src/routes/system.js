@@ -8,6 +8,20 @@ const runtimeSystem = require('../config/runtimeSystem');
 
 const router = express.Router();
 
+// GET /system (admin) — current in-memory configuration
+router.get('/', requireRole('admin'), async (req, res, next) => {
+    try {
+        return res.status(200).json({
+            reset_cooldown: runtimeSystem.getResetCooldownSeconds(),
+            negotiation_window: runtimeSystem.getNegotiationWindowSeconds(),
+            job_start_window: runtimeSystem.getJobStartWindowHours(),
+            availability_timeout: runtimeSystem.getAvailabilityTimeoutSeconds(),
+        });
+    } catch (e) {
+        next(e);
+    }
+});
+
 // PATCH /system/reset-cooldown
 router.patch('/reset-cooldown', requireRole('admin'), async (req, res, next) => {
     try {

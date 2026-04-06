@@ -9,6 +9,11 @@
     background: var(--color-bg-app);
 }
 
+/* Admin-only: deep teal sidebar chrome (desktop + mobile drawer share --color-bg-sidebar) */
+.app-sidebar--admin {
+    --color-bg-sidebar: #0c2e33;
+}
+
 .app-sidebar {
     width: 240px;
     flex-shrink: 0;
@@ -223,6 +228,12 @@
     min-height: 0;
     padding: 1.5rem clamp(1rem, 3vw, 2rem) 2.5rem;
     overflow: auto;
+}
+
+/* Admin workspace: content under mint header (same shell as talent/business body rhythm) */
+.app-shell__body--admin {
+    padding-top: 1.35rem;
+    text-align: left;
 }
 
 /* Full-width browse under main column (no inset “card”); used by /businesses/jobs and /talent/jobs */
