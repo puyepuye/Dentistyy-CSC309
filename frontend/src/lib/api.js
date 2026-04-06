@@ -254,10 +254,39 @@ export function getAdminUsers(token, params = {}) {
     });
     return authRequest(`/users?${q}`, token, { method: 'GET' });
 }
+
 export function patchUserSuspend(token, userId, suspended) {
     return authRequest(`/users/${userId}/suspended`, token, {
         method: 'PATCH',
         body: JSON.stringify({ suspended }),
+    });
+}
+
+export function getAdminPositionTypes(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        ...params,
+    });
+    return authRequest(`/position-types?${q}`, token, { method: 'GET' });
+}
+
+export function patchPositionType(token, positionTypeId, hidden) {
+    return authRequest(`/position-types/${positionTypeId}/`, token, {
+        method: 'PATCH',
+        body: JSON.stringify(hidden),
+    });
+}
+export function deletePositionType(token, positionTypeId) {
+    return authRequest(`/position-types/${positionTypeId}/`, token, {
+        method: 'DELETE'
+    });
+}
+
+export function createPositionType(token, body) {
+    return authRequest('/position-types', token, {
+        method: 'POST',
+        body: JSON.stringify(body),
     });
 }
 
