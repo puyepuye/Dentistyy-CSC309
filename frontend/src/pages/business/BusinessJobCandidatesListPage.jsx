@@ -111,9 +111,9 @@ export default function BusinessJobCandidatesListPage() {
         setPreview(null);
     }
 
-    function refreshManage() {
-        loadManage();
-    }
+    const refreshManage = useCallback(async () => {
+        await loadManage();
+    }, [loadManage]);
 
     useEffect(() => {
         const t = setTimeout(() => setDebouncedSearch(searchInput.trim()), 320);

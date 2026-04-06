@@ -4,6 +4,7 @@ const items = [
     { to: '/businesses', label: 'Overview', icon: 'fa-home', end: true },
     { to: '/businesses/profile', label: 'Practice', icon: 'fa-building' },
     { to: '/businesses/jobs', label: 'Job postings', icon: 'fa-briefcase' },
+    { to: '/businesses/scheduled', label: 'Scheduled', icon: 'fa-calendar-check' },
     { to: '/businesses/negotiations', label: 'Negotiations', icon: 'fa-handshake' },
 ];
 

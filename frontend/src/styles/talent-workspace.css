@@ -16,12 +16,29 @@
     font-weight: 700;
     line-height: 1.2;
     color: var(--color-text-heading);
+    word-break: break-word;
 }
 
 .talent-workspace-header__status {
     margin: 0.4rem 0 0;
     font-size: 0.95rem;
     color: var(--color-text-muted);
+    max-width: min(72ch, 100%);
+    line-height: 1.45;
+}
+
+/* Negotiations empty state: keep intro on one line on wide screens (both talent + business layouts). */
+@media (min-width: 1100px) {
+    .talent-workspace-header__status--negotiation-intro {
+        max-width: none;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 1099px) {
+    .talent-workspace-header__status--negotiation-intro {
+        max-width: min(72ch, 100%);
+    }
 }
 
 .talent-profile {

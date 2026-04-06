@@ -6,6 +6,13 @@
     padding: 0 1rem 2rem;
 }
 
+/* Empty state: narrower card + button than full content width */
+.talent-neg__empty {
+    max-width: 28rem;
+    width: 100%;
+    margin-inline: 0;
+}
+
 .talent-neg__intro {
     margin: 0 0 1rem;
     font-size: 0.95rem;

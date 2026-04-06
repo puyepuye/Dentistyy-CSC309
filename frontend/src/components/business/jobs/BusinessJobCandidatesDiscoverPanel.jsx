@@ -94,10 +94,10 @@ export default function BusinessJobCandidatesDiscoverPanel({ jobId, jobLabel, ac
         setPreviewAccountId(null);
     }
 
-    function handlePreviewUpdated() {
-        void load();
-        onInterestChanged?.();
-    }
+    const handlePreviewUpdated = useCallback(async () => {
+        await load();
+        await Promise.resolve(onInterestChanged?.());
+    }, [load, onInterestChanged]);
 
     const totalPages = Math.max(1, Math.ceil(count / limit));
 
