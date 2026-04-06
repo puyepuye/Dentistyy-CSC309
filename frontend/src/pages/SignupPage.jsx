@@ -23,7 +23,7 @@ function SignupPage() {
     const [successMessage, setSuccessMessage] = useState('');
     const [activationToken, setActivationToken] = useState('');
     const [activationExpiresAt, 
-        tivationExpiresAt] = useState('');
+        setActivationExpiresAt] = useState('');
 
 
     function updateField(event) {

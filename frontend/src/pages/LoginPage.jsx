@@ -49,22 +49,17 @@ function LoginPage() {
                 setSubmitError('Could not read account role from session.');
                 return;
             }
-            if (frontendRole === 'user') {
-                if (tab === 'business') {
-                    setSubmitError('This account is registered as talent, not a practice. Use “Login for Talent”.');
-                    return;
-                }
-                loginWithToken(token, expiresAt ?? null, frontendRole);
-                navigate(redirectPathForRole(frontendRole), { replace: true });
+            if (frontendRole === 'user' && tab === 'business') {
+                setSubmitError('This account is registered as talent, not a practice. Use "Login for Talent".');
+                return;
             }
-            if (frontendRole === 'business') {
-                if (tab === 'talent') {
-                    setSubmitError('This account is a practice account. Use “Login for Business”.');
-                    return;
-                }
-                loginWithToken(token, expiresAt ?? null, frontendRole);
-                navigate(redirectPathForRole(frontendRole), { replace: true })
+            if (frontendRole === 'business' && tab === 'talent') {
+                setSubmitError('This account is a practice account. Use "Login for Business".');
+                return;
             }
+            
+            loginWithToken(token, expiresAt ?? null, frontendRole);
+            navigate(redirectPathForRole(frontendRole), { replace: true });
 
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Sign-in failed.';

@@ -231,4 +231,34 @@ export async function uploadUserResume(token, file) {
     return payload;
 }
 
+export function getAdminBusinesses(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        ...params,
+    });
+    return authRequest(`/businesses?${q}`, token, { method: 'GET' });
+}
+
+export function patchBusinessVerified(token, businessId, verified) {
+    return authRequest(`/businesses/${businessId}/verified`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ verified }),
+    });
+}
+export function getAdminUsers(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        ...params,
+    });
+    return authRequest(`/users?${q}`, token, { method: 'GET' });
+}
+export function patchUserSuspend(token, userId, suspended) {
+    return authRequest(`/users/${userId}/suspended`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ suspended }),
+    });
+}
+
 export { API_BASE_URL };

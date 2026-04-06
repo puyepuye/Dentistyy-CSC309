@@ -1,0 +1,163 @@
+.admin-businesses__header {
+    margin: 0 0 1.5rem;
+}
+
+.admin-businesses__toolbar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.admin-businesses__search-form {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.admin-businesses__search-input {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    font: inherit;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+}
+
+.admin-businesses__search-btn {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    font: inherit;
+    cursor: pointer;
+}
+
+.admin-businesses__filter-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.admin-businesses__filter {
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    font: inherit;
+    color: var(--color-text);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.admin-businesses__filter-icon {
+    position: absolute;
+    right: 0.75rem;
+    pointer-events: none;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+}
+
+.admin-businesses__error {
+    color: red;
+    margin-bottom: 1rem;
+}
+
+.admin-businesses__table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.admin-businesses__table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-businesses__table th {
+    padding: 0.75rem;
+    text-align: left;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 500;
+}
+
+.admin-businesses__table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.admin-businesses__empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    padding: 1rem;
+}
+
+.admin-businesses__badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    display: inline-block;
+    width: 90px;
+    text-align: center;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-businesses__badge--verified {
+    border: 1px solid #0a9;
+    color: #0a9;
+}
+
+.admin-businesses__badge--unverified {
+    border: 1px solid #e44;
+    color: #e44;
+}
+
+.admin-businesses__action-btn {
+    padding: 0.35rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    font: inherit;
+    cursor: pointer;
+    width: 90px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.admin-businesses__action-btn:hover {
+    background: var(--color-bg-app);
+}
+
+.admin-businesses__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.admin-businesses__pagination button {
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    cursor: pointer;
+    font: inherit;
+}
+
+.admin-businesses__pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
