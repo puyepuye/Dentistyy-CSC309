@@ -52,11 +52,13 @@ function BusinessSignupPage() {
             });
         } catch (err) {
             const base = err.message || 'Request failed';
-            setError(
-                base === 'Invalid payload'
-                    ? `${base}. ${PASSWORD_HINT} Ensure phone and address are filled in.`
-                    : base
-            );
+            if (base === 'Conflict') {
+                setError('An account with this email already exists. Try logging in instead.');
+            } else if (base === 'Invalid payload') {
+            setError( `${base}. ${PASSWORD_HINT} Ensure phone and address are filled in.`);}
+            else{
+                setError(base)
+            }
         } finally {
             setLoading(false);
         }

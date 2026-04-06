@@ -94,6 +94,17 @@ export function activateWithResetToken(resetToken, body) {
         body: JSON.stringify(body),
     });
 }
+/**
+ * password reset
+ * @param {string} email 
+ */
+
+export function requestPasswordReset(email) {
+    return request('/auth/resets', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+    });
+}
 
 /**
  * @param {string} path

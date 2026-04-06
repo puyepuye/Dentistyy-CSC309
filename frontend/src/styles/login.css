@@ -233,6 +233,14 @@
     line-height: 1.4;
 }
 
+.login-card__forgot-password {
+    text-align: right;
+    margin-bottom: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--color-text-subtle);
+    line-height: 1.4;
+}
+
 @media (max-width: 880px) {
     .login-split {
         grid-template-columns: 1fr;

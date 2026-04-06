@@ -22,7 +22,8 @@ function SignupPage() {
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [activationToken, setActivationToken] = useState('');
-    const [activationExpiresAt, setActivationExpiresAt] = useState('');
+    const [activationExpiresAt, 
+        tivationExpiresAt] = useState('');
 
 
     function updateField(event) {
@@ -79,6 +80,8 @@ function SignupPage() {
                     resetToken: result.resetToken,
                 },
             });
+            setActivationToken(result.resetToken ?? '');
+            setActivationExpiresAt(result.expiresAt ?? '');
         } catch (err) {
             const msg = err.message || 'Sign up failed';
             if (msg === 'Conflict') {

@@ -54,7 +54,10 @@ function LoginPage() {
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Sign-in failed.';
             const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
-            if (status === 403 || msg === 'Forbidden') {
+            if (status === 401 || msg === 'Unauthorized') {
+                setSubmitError('Invalid email or password.');
+            }
+            else if (status === 403 || msg === 'Forbidden') {
                 setSubmitError(
                     'This account is not activated yet. After signing up, open Activate account and enter your email and activation token, then try logging in again.'
                 );
@@ -159,6 +162,10 @@ function LoginPage() {
                                 {submitError}
                             </p>
                         ) : null}
+        
+                        <p className="login-card__forgot-password" >
+                            <Link to="/forgot-password">Forgot password?</Link>
+                        </p>
 
                         <button type="submit" className="login-card__submit" disabled={submitting}>
                             {submitting ? 'Signing in…' : 'Login'}
