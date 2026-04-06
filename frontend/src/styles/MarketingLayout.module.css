@@ -4,9 +4,78 @@
     padding: 2rem 1rem 3rem;
 }
 
+.marketingGradientShell {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 16% 20%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 26%, white 62%) 0%,
+            transparent 38%
+        ),
+        radial-gradient(
+            circle at 82% 16%,
+            color-mix(in srgb, var(--color-landing-teal) 18%, white 70%) 0%,
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at 48% 78%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 10%, white 78%) 0%,
+            transparent 42%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-marketing-page-bg) 94%, white) 0%,
+            color-mix(in srgb, var(--color-marketing-page-bg) 88%, var(--color-landing-gradient-end) 12%) 100%
+        );
+}
+
+.marketingGradientShell::before,
+.marketingGradientShell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.marketingGradientShell::before {
+    opacity: 0.14;
+    background:
+        radial-gradient(circle at 14% 18%, rgb(255 255 255 / 0.22) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 72% 24%, rgb(255 255 255 / 0.12) 0 1.1px, transparent 1.9px),
+        radial-gradient(circle at 62% 70%, rgb(255 255 255 / 0.08) 0 1px, transparent 1.7px);
+    background-size: 180px 180px, 220px 220px, 240px 240px;
+    mix-blend-mode: soft-light;
+}
+
+.marketingGradientShell::after {
+    opacity: 0.04;
+    background-image:
+        radial-gradient(rgb(255 255 255 / 0.7) 0.7px, transparent 0.9px),
+        radial-gradient(rgb(148 163 184 / 0.35) 0.6px, transparent 0.85px);
+    background-size: 12px 12px, 16px 16px;
+    background-position: 0 0, 5px 3px;
+    filter: blur(0.15px);
+}
+
+.marketingGradientShell > * {
+    position: relative;
+    z-index: 1;
+}
+
 .mainLanding {
     max-width: none;
     margin: 0;
-    padding: 0 clamp(1rem, 4vw, 2.25rem) 3.5rem;
-    background: var(--color-bg-elevated);
+    padding: 0 clamp(1.25rem, 4vw, 2.75rem) clamp(2rem, 5vw, 3.25rem);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+.mainDirectory {
+    max-width: none;
+    margin: 0;
+    padding: 2rem clamp(1.25rem, 4vw, 2.75rem) 3rem;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
 }

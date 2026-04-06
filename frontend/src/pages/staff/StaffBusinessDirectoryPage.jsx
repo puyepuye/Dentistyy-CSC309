@@ -73,8 +73,8 @@ export default function StaffBusinessDirectoryPage() {
                                 <i className="fas fa-search" aria-hidden />
                                 <input
                                     type="search"
-                                    className="business-job-postings__search business-job-postings__search--browse"
-                                    placeholder="Search by practice name, address, or phone…"
+                                    className="business-job-postings__search"
+                                    placeholder="Search by practice name or address…"
                                     value={inputValue}
                                     onChange={(e) => setInputValue(e.target.value)}
                                     aria-label="Search practices"

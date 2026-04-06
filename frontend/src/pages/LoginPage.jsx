@@ -185,9 +185,12 @@ function LoginPage() {
                             No account yet?{' '}
                             <Link to="/signup">Talent signup</Link>
                             {' · '}
-                            <Link to="/signup/business">Practice signup</Link>
+                            <Link to="/signup/business">Business signup</Link>
                             {' · '}
                             <Link to="/activate">Activate account</Link>
+                        </p>
+                        <p className="login-card__admin-link">
+                            Need admin access? <Link to="/login/admin">Admin sign in</Link>
                         </p>
                         <p className="login-card__placeholder-note">
                             Seeded demo: e.g. regular1@csc309.utoronto.ca, business1@csc309.utoronto.ca, or

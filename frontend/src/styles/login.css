@@ -1,5 +1,7 @@
 /* Full-width login route (under marketing header) */
 .main--login {
+    position: relative;
+    isolation: isolate;
     max-width: none;
     margin: 0;
     padding: 0;
@@ -7,6 +9,115 @@
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 64px);
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 16% 20%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 26%, white 62%) 0%,
+            transparent 38%
+        ),
+        radial-gradient(
+            circle at 82% 16%,
+            color-mix(in srgb, var(--color-landing-teal) 18%, white 70%) 0%,
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at 48% 78%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 10%, white 78%) 0%,
+            transparent 42%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-marketing-page-bg) 94%, white) 0%,
+            color-mix(in srgb, var(--color-marketing-page-bg) 88%, var(--color-landing-gradient-end) 12%) 100%
+        );
+}
+
+.main--signup,
+.login-split {
+    position: relative;
+    isolation: isolate;
+}
+
+.main--signup {
+    max-width: none;
+    margin: 0;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 64px);
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 18% 22%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 50%, white 8%) 0%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 36%, transparent) 24%,
+            transparent 52%
+        ),
+        radial-gradient(
+            circle at 82% 18%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 40%, white 6%) 0%,
+            color-mix(in srgb, var(--color-landing-teal) 28%, transparent) 22%,
+            transparent 46%
+        ),
+        radial-gradient(
+            circle at 50% 78%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 24%, transparent) 0%,
+            transparent 44%
+        ),
+        linear-gradient(
+            140deg,
+            color-mix(in srgb, var(--color-landing-gradient-start) 94%, #000000) 0%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 72%, var(--color-landing-gradient-start))
+                52%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 84%, var(--color-landing-gradient-mid))
+                100%
+        );
+}
+
+.main--login::before,
+.main--login::after,
+.main--signup::before,
+.main--signup::after,
+.admin-login-shell::before,
+.admin-login-shell::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.main--login::before,
+.main--signup::before,
+.admin-login-shell::before {
+    opacity: 0.28;
+    background:
+        radial-gradient(circle at 14% 18%, rgb(255 255 255 / 0.22) 0 1px, transparent 1.8px),
+        radial-gradient(circle at 72% 24%, rgb(255 255 255 / 0.14) 0 1.2px, transparent 2px),
+        radial-gradient(circle at 62% 70%, rgb(255 255 255 / 0.1) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 28% 74%, rgb(255 255 255 / 0.12) 0 1.1px, transparent 1.9px);
+    background-size: 140px 140px, 180px 180px, 220px 220px, 170px 170px;
+    mix-blend-mode: soft-light;
+}
+
+.main--login::after,
+.main--signup::after,
+.admin-login-shell::after {
+    opacity: 0.1;
+    background-image:
+        radial-gradient(rgb(255 255 255 / 0.75) 0.7px, transparent 0.9px),
+        radial-gradient(rgb(13 17 31 / 0.4) 0.6px, transparent 0.85px);
+    background-size: 10px 10px, 14px 14px;
+    background-position: 0 0, 5px 3px;
+    filter: blur(0.15px);
+}
+
+.main--login > *,
+.main--signup > * {
+    position: relative;
+    z-index: 1;
 }
 
 .login-split {
@@ -54,7 +165,7 @@
     align-items: center;
     justify-content: center;
     padding: clamp(1.5rem, 4vw, 2.5rem);
-    background: var(--color-bg-app);
+    background: transparent;
 }
 
 .login-card {
@@ -225,6 +336,18 @@
     font-weight: 600;
 }
 
+.login-card__admin-link {
+    margin: 0.85rem 0 0;
+    font-size: 0.84rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.login-card__admin-link a {
+    color: var(--color-primary-strong);
+    font-weight: 600;
+}
+
 .login-card__placeholder-note {
     margin: 1rem 0 0;
     font-size: 0.78rem;
@@ -239,6 +362,120 @@
     font-size: 0.78rem;
     color: var(--color-text-subtle);
     line-height: 1.4;
+}
+
+.admin-login-shell {
+    flex: 1;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 18% 22%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 50%, white 8%) 0%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 36%, transparent) 24%,
+            transparent 52%
+        ),
+        radial-gradient(
+            circle at 82% 18%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 40%, white 6%) 0%,
+            color-mix(in srgb, var(--color-landing-teal) 28%, transparent) 22%,
+            transparent 46%
+        ),
+        radial-gradient(
+            circle at 50% 78%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 24%, transparent) 0%,
+            transparent 44%
+        ),
+        linear-gradient(
+            140deg,
+            color-mix(in srgb, var(--color-landing-gradient-start) 94%, #000000) 0%,
+            color-mix(in srgb, var(--color-landing-gradient-mid) 72%, var(--color-landing-gradient-start))
+                52%,
+            color-mix(in srgb, var(--color-landing-gradient-end) 84%, var(--color-landing-gradient-mid))
+                100%
+        );
+}
+
+.admin-login-card {
+    width: min(100%, 700px);
+    position: relative;
+    z-index: 1;
+    background: color-mix(in srgb, var(--color-bg-elevated) 94%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-bg-elevated) 72%, transparent);
+    border-radius: var(--radius-landing-hero);
+    box-shadow: 0 18px 42px color-mix(in srgb, var(--color-brand-dark) 18%, transparent);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+}
+
+.admin-login-card__bar {
+    display: none;
+}
+
+.admin-login-card__body {
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.admin-login-card__brand {
+    margin-bottom: 0.75rem;
+    color: var(--color-text-heading);
+}
+
+.admin-login-card__title {
+    margin: 0 0 1.5rem;
+    font-size: clamp(1.8rem, 3vw, 2.25rem);
+    line-height: 1.1;
+    color: var(--color-text-heading);
+    font-family: var(--font-marketing);
+    letter-spacing: -0.02em;
+}
+
+.admin-login-card__submit {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.95rem 1rem;
+    border: none;
+    border-radius: 14px;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+    font: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.admin-login-card__submit:hover:not(:disabled) {
+    background: var(--color-primary-strong);
+}
+
+.admin-login-card__submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.admin-login-card__footer {
+    margin: 1.25rem 0 0;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.admin-login-card__footer a {
+    color: var(--color-primary-strong);
+    font-weight: 600;
+}
+
+.admin-login-card__note {
+    margin: 0.9rem 0 0;
+    font-size: 0.8rem;
+    color: var(--color-text-subtle);
+    line-height: 1.5;
+    text-align: center;
 }
 
 @media (max-width: 880px) {
