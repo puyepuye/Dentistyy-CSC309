@@ -225,6 +225,12 @@
     overflow: auto;
 }
 
+/* Admin workspace: content under mint header (same shell as talent/business body rhythm) */
+.app-shell__body--admin {
+    padding-top: 1.35rem;
+    text-align: left;
+}
+
 /* Full-width browse under main column (no inset “card”); used by /businesses/jobs and /talent/jobs */
 .app-shell__body--business-jobs-browse,
 .app-shell__body--talent-jobs-browse {

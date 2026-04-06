@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import {getAdminUsers,  patchUserSuspend } from '../../lib/api.js';
-import '../../styles/admin.css';
+import { getAdminUsers, patchUserSuspend } from '../../lib/api.js';
 
 export default function AdminUsersPage() {
     const { token } = useAuth();
@@ -27,7 +26,7 @@ export default function AdminUsersPage() {
             setUsers(data.results);
             setCount(data.count);
         } catch (err) {
-            setError(err.message || 'Failed to load businesses.');
+            setError(err.message || 'Failed to load users.');
         } finally {
             setLoading(false);
         }
@@ -40,9 +39,7 @@ export default function AdminUsersPage() {
     async function handleVerify(id, suspended) {
         try {
             await patchUserSuspend(token, id, suspended);
-            setUsers((prev) =>
-                prev.map((b) => (b.id === id ? { ...b, suspended } : b))
-            );
+            setUsers((prev) => prev.map((b) => (b.id === id ? { ...b, suspended } : b)));
         } catch (err) {
             setError(err.message || 'Action failed.');
         }
@@ -57,80 +54,125 @@ export default function AdminUsersPage() {
     const totalPages = Math.ceil(count / limit);
 
     return (
-        <div>
-            <h1 className="admin-businesses__header">Users</h1>
-
-            <div className="admin-businesses__toolbar">
-                <form className="admin-businesses__search-form" onSubmit={handleSearch}>
-                    <input
-                        type="text"
-                        placeholder="Search for a User"
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        className="admin-businesses__search-input"
-                    />
-                    <button type="submit" className="admin-businesses__search-btn">Search</button>
+        <div className="admin-page">
+            <div className="business-jobs-browse__toolbar admin-page__toolbar">
+                <form
+                    className="admin-page__toolbar-form"
+                    onSubmit={handleSearch}
+                    aria-label="Search users"
+                >
+                    <div className="business-jobs-browse__toolbar-row business-jobs-browse__toolbar-row--top">
+                        <div className="business-job-postings__search-wrap">
+                            <i className="fas fa-search" aria-hidden />
+                            <input
+                                type="search"
+                                placeholder="Search for a user"
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                                className="business-job-postings__search business-job-postings__search--browse"
+                                aria-label="Keyword"
+                            />
+                        </div>
+                        <button type="submit" className="admin-page__toolbar-submit">
+                            Search
+                        </button>
+                        <div className="business-jobs-browse__sort">
+                            <label htmlFor="admin-users-suspend">Status</label>
+                            <select
+                                id="admin-users-suspend"
+                                value={filterSuspend}
+                                onChange={(e) => {
+                                    setFilterSuspend(e.target.value);
+                                    setPage(1);
+                                }}
+                            >
+                                <option value="">All</option>
+                                <option value="true">Suspended</option>
+                                <option value="false">Active</option>
+                            </select>
+                        </div>
+                    </div>
                 </form>
-
-                <div className="admin-businesses__filter-wrap">
-                    <select
-                        value={filterSuspend}
-                        onChange={(e) => { setFilterSuspend(e.target.value); setPage(1); }}
-                        className="admin-businesses__filter"
-                    >
-                        <option value="">Filter by: Status</option>
-                        <option value="true">Suspended</option>
-                        <option value="false">Active</option>
-                    </select>
-                    <i className="fas fa-chevron-down admin-businesses__filter-icon" aria-hidden />
-                </div>
             </div>
 
-            {error ? <p className="admin-businesses__error">{error}</p> : null}
+            {error ? <p className="admin-page__error">{error}</p> : null}
 
-            <table className="admin-businesses__table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {loading ? (
-                        <tr><td colSpan={4} className="admin-businesses__empty">Loading…</td></tr>
-                    ) : users.length === 0 ? (
-                        <tr><td colSpan={4} className="admin-businesses__empty">No users found.</td></tr>
-                    ) : users.map((b) => (
-                        <tr key={b.id}>
-                            <td>{b.first_name}</td>
-                            <td>{b.email}</td>
-                            <td>
-                                <span className={`admin-businesses__badge ${b.suspended ?  'admin-businesses__badge--unverified' : 'admin-businesses__badge--verified'}`}>
-                                    {b.suspended ?'Suspended':    'Active'}
-                                </span>
-                            </td>
-                            <td>
-                                <button
-                                    className="admin-businesses__action-btn"
-                                    onClick={() => handleVerify(b.id, !b.suspended)}
-                                >
-                                    {b.suspended ?  'Unsuspend' :'Suspend'}
-                                </button>
-                            </td>
+            <div className="admin-page__table-wrap">
+                <table className="admin-businesses__table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan={4} className="admin-businesses__empty">
+                                    Loading…
+                                </td>
+                            </tr>
+                        ) : users.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="admin-businesses__empty">
+                                    No users found.
+                                </td>
+                            </tr>
+                        ) : (
+                            users.map((b) => (
+                                <tr key={b.id}>
+                                    <td>{b.first_name}</td>
+                                    <td>{b.email}</td>
+                                    <td>
+                                        <span
+                                            className={`admin-businesses__badge ${
+                                                b.suspended
+                                                    ? 'admin-businesses__badge--unverified'
+                                                    : 'admin-businesses__badge--verified'
+                                            }`}
+                                        >
+                                            {b.suspended ? 'Suspended' : 'Active'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            className="admin-businesses__action-btn"
+                                            onClick={() => handleVerify(b.id, !b.suspended)}
+                                        >
+                                            {b.suspended ? 'Unsuspend' : 'Suspend'}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
-            {totalPages > 1 && (
-                <div className="admin-businesses__pagination">
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>◀</button>
-                    <span>Page {page} of {totalPages}</span>
-                    <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>▶</button>
+            {totalPages > 1 ? (
+                <div className="talent-jobs__pagination admin-page__pagination">
+                    <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                    >
+                        ◀
+                    </button>
+                    <span>
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                    >
+                        ▶
+                    </button>
                 </div>
-            )}
+            ) : null}
         </div>
     );
 }
