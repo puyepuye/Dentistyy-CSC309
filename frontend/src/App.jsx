@@ -32,6 +32,7 @@ import AdminPositionsPage from './pages/admin/AdminPositionsPage.jsx';
 import AdminQualificationsPage from './pages/admin/AdminQualificationsPage.jsx';
 import AdminSystemPage from './pages/admin/AdminSystemPage.jsx';
 import marketingLayoutStyles from './styles/MarketingLayout.module.css';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 
 function BusinessJobInterestsRedirect() {
     const { jobId } = useParams();
@@ -64,6 +65,7 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/directory" element={<BusinessesPage />} />
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/signup" element={<SignupPage />} />
                     <Route path="/signup/business" element={<BusinessSignupPage />} />
                     <Route path="/activate" element={<ActivateAccountPage />} />

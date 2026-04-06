@@ -58,6 +58,7 @@
     /* Semantic */
     --color-error: #b42318;
     --color-success: #027a48;
+    --color-success-admin: #0a9;
 
     /* Error / success — tinted surfaces on light UI (forms, badges, alerts) */
     --color-error-bg-subtle: color-mix(in srgb, var(--color-error) 9%, transparent);
