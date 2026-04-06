@@ -47,8 +47,9 @@ function ActivateAccountPage() {
             const body = changePassword
                 ? { email: trimmedEmail, password: newPassword }
                 : { email: trimmedEmail };
-            await activateWithResetToken(trimmedToken, body);
-            navigate('/login', {
+            const outcome = await activateWithResetToken(trimmedToken, body);
+            const tab = outcome.role === 'business' ? 'business' : 'talent';
+            navigate(`/login?tab=${tab}`, {
                 replace: true,
                 state: {
                     postActivationMessage:

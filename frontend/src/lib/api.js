@@ -94,6 +94,17 @@ export function activateWithResetToken(resetToken, body) {
         body: JSON.stringify(body),
     });
 }
+/**
+ * password reset
+ * @param {string} email 
+ */
+
+export function requestPasswordReset(email) {
+    return request('/auth/resets', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+    });
+}
 
 /**
  * @param {string} path
@@ -316,6 +327,65 @@ export function getBusinessMyJobs(token, params = {}) {
 
 export function createBusinessJob(token, body) {
     return authRequest('/businesses/me/jobs', token, {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+}
+
+export function getAdminBusinesses(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        ...params,
+    });
+    return authRequest(`/businesses?${q}`, token, { method: 'GET' });
+}
+
+export function patchBusinessVerified(token, businessId, verified) {
+    return authRequest(`/businesses/${businessId}/verified`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ verified }),
+    });
+}
+export function getAdminUsers(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        ...params,
+    });
+    return authRequest(`/users?${q}`, token, { method: 'GET' });
+}
+
+export function patchUserSuspend(token, userId, suspended) {
+    return authRequest(`/users/${userId}/suspended`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ suspended }),
+    });
+}
+
+export function getAdminPositionTypes(token, params = {}) {
+    const q = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        ...params,
+    });
+    return authRequest(`/position-types?${q}`, token, { method: 'GET' });
+}
+
+export function patchPositionType(token, positionTypeId, body) {
+    return authRequest(`/position-types/${positionTypeId}/`, token, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+}
+export function deletePositionType(token, positionTypeId) {
+    return authRequest(`/position-types/${positionTypeId}/`, token, {
+        method: 'DELETE'
+    });
+}
+
+export function createPositionType(token, body) {
+    return authRequest('/position-types', token, {
         method: 'POST',
         body: JSON.stringify(body),
     });
