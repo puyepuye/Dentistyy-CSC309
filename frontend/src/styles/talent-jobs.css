@@ -888,6 +888,10 @@
   color: var(--color-text-subtle);
 }
 
+.staff-scheduled-row__status--placeholder {
+  visibility: hidden;
+}
+
 .staff-scheduled-row__chevron {
   flex-shrink: 0;
   display: flex;

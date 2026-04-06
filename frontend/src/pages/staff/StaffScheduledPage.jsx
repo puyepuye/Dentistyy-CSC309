@@ -70,7 +70,11 @@ function ScheduledShiftRow({ job, variant }) {
                 </p>
                 {variant === 'past' ? (
                     <p className="staff-scheduled-row__status">{titleCaseStatus(job.status)}</p>
-                ) : null}
+                ) : (
+                    <p className="staff-scheduled-row__status staff-scheduled-row__status--placeholder" aria-hidden>
+                        Status
+                    </p>
+                )}
             </div>
             <span className="staff-scheduled-row__chevron" aria-hidden="true">
                 <i className="fas fa-chevron-right" />
