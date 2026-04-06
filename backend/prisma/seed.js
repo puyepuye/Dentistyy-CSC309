@@ -1,6 +1,10 @@
 /*
  * CSC309 A3 — seeded demo data (password for all accounts: 123123)
  * Run: npm run seed   (from backend/, after prisma migrate)
+ *
+ * Interest rows respect the same rules as the API:
+ * - USER interest: user must have an approved qualification for the job’s position type.
+ * - BUSINESS interest: candidate must have an approved qualification for that job’s position type.
  */
 'use strict';
 
@@ -95,8 +99,7 @@ async function main() {
                 postalAddress: `${10 + i} College St, Toronto, ON M5T 1K${i % 10}`,
                 birthday: `199${i % 10}-0${(i % 9) + 1}-15`,
                 suspended: i === 19,
-                // Spec: reported availability requires stored available=true; inactivity then clears it on GET.
-                // regular1 is the primary demo login — mark available with fresh lastActiveAt so /users/me shows Available.
+                // DB `available` is legacy; discovery uses lastActiveAt + admin availability window.
                 available: i === 1 || i % 4 === 0,
                 lastActiveAt: new Date(),
                 biography:
@@ -159,6 +162,12 @@ async function main() {
         },
     });
 
+    /** @type {Map<number, Set<number>>} regularUserId -> set of positionTypeIds with approved qualification */
+    const approvedPositionTypesByUser = new Map();
+    for (const r of regulars) {
+        approvedPositionTypesByUser.set(r.regularUser.id, new Set());
+    }
+
     const statuses = ['created', 'submitted', 'approved', 'rejected', 'revised'];
     for (let u = 0; u < 20; u++) {
         for (let p = 0; p < 3; p++) {
@@ -166,20 +175,39 @@ async function main() {
             if (u > 15 && p > 0) continue;
             const st = statuses[(u + p) % statuses.length];
             const approved = st === 'approved';
+            const ruId = regulars[u].regularUser.id;
+            const ptId = positionTypes[ptIndex].id;
             await prisma.qualification.create({
                 data: {
-                    regularUserId: regulars[u].regularUser.id,
-                    positionTypeId: positionTypes[ptIndex].id,
+                    regularUserId: ruId,
+                    positionTypeId: ptId,
                     status: st,
                     approved,
                     note: st === 'created' ? '' : `Qualification note for user ${u + 1} / PT ${ptIndex}`,
                     document:
                         st === 'approved' || st === 'submitted'
-                            ? `/uploads/users/${regulars[u].account.id}/position_type/${positionTypes[ptIndex].id}/document.pdf`
+                            ? `/uploads/users/${regulars[u].account.id}/position_type/${ptId}/document.pdf`
                             : null,
                 },
             });
+            if (approved) {
+                approvedPositionTypesByUser.get(ruId).add(ptId);
+            }
         }
+    }
+
+    function userApprovedForJobPosition(regularUserId, positionTypeId) {
+        return approvedPositionTypesByUser.get(regularUserId)?.has(positionTypeId) ?? false;
+    }
+
+    /** @param {{ positionTypeId: number }} job */
+    function firstRegularQualifiedForJob(job) {
+        for (const r of regulars) {
+            if (userApprovedForJobPosition(r.regularUser.id, job.positionTypeId)) {
+                return r.regularUser;
+            }
+        }
+        return null;
     }
 
     const jobs = [];
@@ -213,40 +241,74 @@ async function main() {
 
     const openJobs = await prisma.job.findMany({
         where: { status: 'OPEN' },
-        take: 20,
+        take: 24,
+        orderBy: { id: 'asc' },
     });
 
-    for (let i = 0; i < 8; i++) {
-        const job = openJobs[i].id;
-        const uid = regulars[i].regularUser.id;
-        await prisma.interest.create({ data: { jobId: job, userId: uid, initiatedBy: 'USER' } });
-        await prisma.interest.create({ data: { jobId: job, userId: uid, initiatedBy: 'BUSINESS' } });
+    /** @type {Set<string>} `${jobId}:${userId}:${'USER'|'BUSINESS'}` */
+    const interestKeys = new Set();
+
+    function interestKey(jobId, userId, role) {
+        return `${jobId}:${userId}:${role}`;
     }
 
-    for (let i = 0; i < 22; i++) {
-        await prisma.interest.create({
-            data: {
-                jobId: openJobs[i % openJobs.length].id,
-                userId: regulars[(i + 11) % 20].regularUser.id,
-                initiatedBy: 'USER',
-            },
+    async function addInterestIfEligible(jobId, userId, initiatedBy) {
+        const job = await prisma.job.findUnique({
+            where: { id: jobId },
+            select: { positionTypeId: true },
         });
-    }
-
-    for (let i = 0; i < 12; i++) {
+        if (!job) return false;
+        if (!userApprovedForJobPosition(userId, job.positionTypeId)) return false;
+        const k = interestKey(jobId, userId, initiatedBy);
+        if (interestKeys.has(k)) return false;
         await prisma.interest.create({
-            data: {
-                jobId: openJobs[(i + 3) % openJobs.length].id,
-                userId: regulars[(i + 2) % 20].regularUser.id,
-                initiatedBy: 'BUSINESS',
-            },
+            data: { jobId, userId, initiatedBy },
         });
+        interestKeys.add(k);
+        return true;
     }
 
-    // Three dedicated OPEN jobs for regular1 — fills Matched / Interest shown / Interested in you carousels
+    // Matched pairs: USER + BUSINESS for same (job, user), user qualified for job.positionTypeId
+    let mutualCount = 0;
+    for (let i = 0; i < openJobs.length && mutualCount < 8; i++) {
+        const job = openJobs[i];
+        const user = firstRegularQualifiedForJob(job);
+        if (!user) continue;
+        await addInterestIfEligible(job.id, user.id, 'USER');
+        await addInterestIfEligible(job.id, user.id, 'BUSINESS');
+        mutualCount++;
+    }
+
+    // Extra USER-only interests (user qualified for that job’s position type)
+    let userOnlyTarget = 22;
+    let userOnly = 0;
+    for (const job of openJobs) {
+        if (userOnly >= userOnlyTarget) break;
+        for (const r of regulars) {
+            if (userOnly >= userOnlyTarget) break;
+            const ok = await addInterestIfEligible(job.id, r.regularUser.id, 'USER');
+            if (ok) userOnly++;
+        }
+    }
+
+    // BUSINESS-only outreach (business expressed to qualified users only)
+    let bizOnlyTarget = 12;
+    let bizOnly = 0;
+    for (const job of openJobs) {
+        if (bizOnly >= bizOnlyTarget) break;
+        for (const r of regulars) {
+            if (bizOnly >= bizOnlyTarget) break;
+            const kUser = interestKey(job.id, r.regularUser.id, 'USER');
+            if (interestKeys.has(kUser)) continue;
+            const ok = await addInterestIfEligible(job.id, r.regularUser.id, 'BUSINESS');
+            if (ok) bizOnly++;
+        }
+    }
+
+    // Three dedicated OPEN jobs for regular1 — Matched / Interest shown / Interested in you
     const r1 = regulars[0].regularUser;
     const demoBiz = businesses[0].business;
-    const demoPt = positionTypes[4];
+    const demoPt = positionTypes[2];
     function demoWindow(dayOffset) {
         const start = daysFromNow(dayOffset, 10);
         const end = new Date(start);
@@ -292,30 +354,43 @@ async function main() {
             note: '[Demo] Interested in you — practice only',
         },
     });
-    await prisma.interest.createMany({
-        data: [
-            { jobId: jobMatchedDemo.id, userId: r1.id, initiatedBy: 'USER' },
-            { jobId: jobMatchedDemo.id, userId: r1.id, initiatedBy: 'BUSINESS' },
-            { jobId: jobShownDemo.id, userId: r1.id, initiatedBy: 'USER' },
-            { jobId: jobReachDemo.id, userId: r1.id, initiatedBy: 'BUSINESS' },
-        ],
-    });
+
+    if (!userApprovedForJobPosition(r1.id, demoPt.id)) {
+        throw new Error('Seed invariant: regular1 must be approved for demo position type (Dental Hygienist).');
+    }
+
+    const demoRows = [
+        { jobId: jobMatchedDemo.id, userId: r1.id, initiatedBy: 'USER' },
+        { jobId: jobMatchedDemo.id, userId: r1.id, initiatedBy: 'BUSINESS' },
+        { jobId: jobShownDemo.id, userId: r1.id, initiatedBy: 'USER' },
+        { jobId: jobReachDemo.id, userId: r1.id, initiatedBy: 'BUSINESS' },
+    ];
+    for (const row of demoRows) {
+        const k = interestKey(row.jobId, row.userId, row.initiatedBy);
+        if (!interestKeys.has(k)) {
+            await prisma.interest.create({ data: row });
+            interestKeys.add(k);
+        }
+    }
 
     const mutualJob = openJobs[0];
-    const mutualUser = regulars[0].regularUser;
-    await prisma.negotiation.create({
-        data: {
-            jobId: mutualJob.id,
-            userId: mutualUser.id,
-            status: 'PENDING',
-            userAccepted: false,
-            businessAccepted: false,
-        },
-    });
+    const negUser = firstRegularQualifiedForJob(mutualJob);
+    if (negUser) {
+        await prisma.negotiation.create({
+            data: {
+                jobId: mutualJob.id,
+                userId: negUser.id,
+                status: 'PENDING',
+                userAccepted: false,
+                businessAccepted: false,
+            },
+        });
+    }
 
     console.log('Seed complete.');
     console.log('  Password for all accounts:', PASSWORD);
     console.log('  Try talent login: regular1@csc309.utoronto.ca');
+    console.log('  Interests only where users have approved qualifications for that job’s position type.');
     console.log('  regular1 has demo interests (Matched / Interest shown / Interested in you) on Manage Job Interests.');
     console.log('  Business: business1@csc309.utoronto.ca');
     console.log('  Admin: admin1@csc309.utoronto.ca');

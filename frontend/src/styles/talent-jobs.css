@@ -454,6 +454,19 @@
   background: var(--color-bg-app);
 }
 
+.talent-job-detail__rail-action {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.talent-job-detail__rail-action-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--color-text-heading);
+}
+
 .talent-job-detail__rail-title {
   margin: 0 0 0.5rem;
   font-size: 1rem;

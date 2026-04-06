@@ -8,7 +8,7 @@ function BusinessesPage() {
         <div className={styles.businessesPublic}>
             <h1 className={styles.businessesPublicTitle}>For dental practices</h1>
             <p className={styles.businessesPublicLede}>
-                List shifts, review interested professionals, and run negotiations — all in one place.
+                List shifts, review interested professionals, and run negotiations, all in one place.
                 New practices can register to get started; returning users can log in.
             </p>
             <div className={styles.businessesPublicActions}>

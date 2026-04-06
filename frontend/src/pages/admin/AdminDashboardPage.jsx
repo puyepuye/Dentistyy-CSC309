@@ -4,7 +4,7 @@ export default function AdminDashboardPage() {
     return (
         <AppPlaceholderPanel
             title="Admin dashboard"
-            description="Overview and quick links — wire to A2 admin endpoints."
+            description="Overview and quick links: wire to A2 admin endpoints."
         />
     );
 }

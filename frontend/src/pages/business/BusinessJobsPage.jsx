@@ -163,7 +163,7 @@ export default function BusinessJobsPage() {
             <div className="business-jobs-browse__content">
                 {!profile?.verified ? (
                     <p className="business-card__hint business-jobs-browse__verify-hint" role="status">
-                        Your practice is not verified yet — you cannot create new postings until an administrator
+                        Your practice is not verified yet: you cannot create new postings until an administrator
                         verifies you.
                     </p>
                 ) : null}

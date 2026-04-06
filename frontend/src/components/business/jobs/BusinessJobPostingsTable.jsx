@@ -7,7 +7,7 @@ function formatSalaryRange(min, max) {
     if (Number.isFinite(a) && Number.isFinite(b)) {
         return `$${a.toLocaleString()} – $${b.toLocaleString()}`;
     }
-    return '—';
+    return '-';
 }
 
 export default function BusinessJobPostingsTable({ jobs }) {
@@ -38,7 +38,7 @@ export default function BusinessJobPostingsTable({ jobs }) {
                                 <td>
                                     <Link to={`/businesses/jobs/${j.id}`}>{j.id}</Link>
                                 </td>
-                                <td>{j.position_type?.name ?? '—'}</td>
+                                <td>{j.position_type?.name ?? '-'}</td>
                                 <td>
                                     <BusinessJobStatusBadge status={j.status} />
                                 </td>
@@ -48,7 +48,7 @@ export default function BusinessJobPostingsTable({ jobs }) {
                                             {j.worker.first_name} {j.worker.last_name}
                                         </Link>
                                     ) : (
-                                        '—'
+                                        '-'
                                     )}
                                 </td>
                                 <td>{formatSalaryRange(j.salary_min, j.salary_max)}</td>

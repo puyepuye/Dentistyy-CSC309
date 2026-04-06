@@ -186,7 +186,7 @@ export default function BusinessJobDetailPage() {
                                     {job.worker.first_name} {job.worker.last_name}
                                 </Link>
                             ) : (
-                                '—'
+                                '-'
                             )}
                         </p>
                     </div>
@@ -194,7 +194,7 @@ export default function BusinessJobDetailPage() {
                 <div className="talent-bio__body talent-bio__body--spaced">
                     <span className="talent-field__label">Note</span>
                     <p className="talent-field__value" style={{ marginTop: '0.35rem' }}>
-                        {job.note?.trim() ? job.note : '—'}
+                        {job.note?.trim() ? job.note : '-'}
                     </p>
                 </div>
                 <div className="business-stack">

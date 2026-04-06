@@ -9,7 +9,7 @@ export function assetUrl(path) {
 }
 
 /**
- * Decode JWT payload (no signature verification — role routing only).
+ * Decode JWT payload (no signature verification; role routing only).
  * @param {string | null | undefined} token
  */
 export function parseJwtPayload(token) {
@@ -140,6 +140,14 @@ export function patchRegularMe(token, body) {
     });
 }
 
+/** Legacy endpoint; discovery uses activity only. Prefer using the app (GET /users/me, jobs, etc.). */
+export function patchRegularAvailability(token, available) {
+    return authRequest('/users/me/available', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ available }),
+    });
+}
+
 /** Visible position types for dropdowns (paginated). */
 export function getPositionTypes(token, params = {}) {
     const q = new URLSearchParams({
@@ -241,7 +249,7 @@ export function getMyJobInterests(token) {
     return authRequest('/users/me/interests', token, { method: 'GET' });
 }
 
-/** Business directory for filters (GET /businesses — public). */
+/** Business directory for filters (GET /businesses, public). */
 export function getBusinessesList(params = {}) {
     const merged = { page: '1', limit: '50', ...params };
     const q = new URLSearchParams();
@@ -383,6 +391,11 @@ export function startNegotiation(token, interestId) {
         method: 'POST',
         body: JSON.stringify({ interest_id: interestId }),
     });
+}
+
+/** @returns {Promise<{ negotiation_window_seconds: number }>} */
+export function getNegotiationWindowSeconds(token) {
+    return authRequest('/negotiations/window', token, { method: 'GET' });
 }
 
 export function getMyNegotiation(token) {

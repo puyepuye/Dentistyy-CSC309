@@ -10,7 +10,9 @@ export function businessHeaderFromPath(pathname, profile) {
     if (pathname === '/businesses' || pathname === '/businesses/') {
         return {
             greeting: hello,
-            statusLine: profile?.verified ? 'Verified practice' : 'Verification pending — job creation is disabled until verified.',
+            statusLine: profile?.verified
+                ? 'Verified practice'
+                : 'Verification pending: job creation is disabled until verified.',
         };
     }
     if (pathname.endsWith('/profile')) {

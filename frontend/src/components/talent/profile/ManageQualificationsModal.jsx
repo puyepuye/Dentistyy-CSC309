@@ -10,7 +10,7 @@ import {
 } from '../../../lib/api.js';
 
 function formatDate(iso) {
-    if (!iso) return '—';
+    if (!iso) return '-';
     return iso.slice(0, 10);
 }
 
@@ -183,7 +183,7 @@ export default function ManageQualificationsModal({ open, onClose, token, onSave
                                 onChange={(e) => setPositionTypeId(e.target.value)}
                                 required
                             >
-                                <option value="">— Choose —</option>
+                                <option value="">Choose…</option>
                                 {addableTypes.map((pt) => (
                                     <option key={pt.id} value={String(pt.id)}>
                                         {pt.name}

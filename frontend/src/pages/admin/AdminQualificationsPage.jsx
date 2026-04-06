@@ -4,7 +4,7 @@ export default function AdminQualificationsPage() {
     return (
         <AppPlaceholderPanel
             title="Qualification requests"
-            description="Queue of requests needing review — approve or reject with notes."
+            description="Queue of requests needing review: approve or reject with notes."
         />
     );
 }

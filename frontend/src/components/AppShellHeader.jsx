@@ -1,5 +1,5 @@
 /**
- * Mint strip under the top bar — matches reference layout (sidebar + tinted header band).
+ * Mint strip under the top bar: matches reference layout (sidebar + tinted header band).
  */
 export default function AppShellHeader({ title }) {
     return (

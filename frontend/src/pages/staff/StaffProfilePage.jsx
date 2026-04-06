@@ -41,6 +41,12 @@ export default function StaffProfilePage() {
     const avatarSrc = assetUrl(profile.avatar);
     const resumeHref = assetUrl(profile.resume);
 
+    const activityWindowSec = profile.availability_timeout_seconds ?? 300;
+    const activityWindowLabel =
+        activityWindowSec >= 120
+            ? `${Math.round(activityWindowSec / 60)} minutes`
+            : `${activityWindowSec} seconds`;
+
     async function handleResumeChange(e) {
         const file = e.target.files?.[0];
         e.target.value = '';
@@ -59,6 +65,30 @@ export default function StaffProfilePage() {
 
     return (
         <div className="talent-profile">
+            <section className="talent-card" aria-labelledby="availability-heading">
+                <div className="talent-card__head">
+                    <h2 className="talent-card__title" id="availability-heading">
+                        Availability for shifts
+                    </h2>
+                </div>
+                <p className="talent-bio__resume-missing" style={{ marginTop: 0 }}>
+                    You are <strong>discoverable by practices</strong> when you have used the app within the last{' '}
+                    <strong>{activityWindowLabel}</strong> (set by an administrator). If you are idle longer than that,
+                    you are hidden from discovery and cannot start negotiations until you use the app again (for
+                    example open <strong>Jobs</strong> or this profile).
+                </p>
+                {profile.suspended ? (
+                    <p className="talent-profile__error" role="status" style={{ marginBottom: 0 }}>
+                        Suspended accounts are not discoverable.
+                    </p>
+                ) : (
+                    <p className="talent-field__value" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+                        Current status:{' '}
+                        <strong>{profile.available ? 'Active (within window)' : 'Not active: use the app'}</strong>
+                    </p>
+                )}
+            </section>
+
             <section className="talent-card" aria-labelledby="personal-heading">
                 <div className="talent-card__head">
                     <h2 className="talent-card__title" id="personal-heading">
@@ -99,7 +129,7 @@ export default function StaffProfilePage() {
                         </div>
                         <div>
                             <span className="talent-field__label">Postal address</span>
-                            <p className="talent-field__value">{profile.postal_address || '—'}</p>
+                            <p className="talent-field__value">{profile.postal_address || '-'}</p>
                         </div>
                         <div>
                             <span className="talent-field__label">Email address</span>
@@ -107,11 +137,11 @@ export default function StaffProfilePage() {
                         </div>
                         <div>
                             <span className="talent-field__label">Phone number</span>
-                            <p className="talent-field__value">{profile.phone_number || '—'}</p>
+                            <p className="talent-field__value">{profile.phone_number || '-'}</p>
                         </div>
                         <div>
                             <span className="talent-field__label">Birthday</span>
-                            <p className="talent-field__value">{profile.birthday || '—'}</p>
+                            <p className="talent-field__value">{profile.birthday || '-'}</p>
                         </div>
                     </div>
                 </div>

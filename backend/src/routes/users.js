@@ -296,40 +296,47 @@ router.get('/me', requireRole('regular'), async (req, res, next) => {
         }
 
         const settings = await prisma.systemSettings.findFirst();
-        const timeoutSeconds = settings?.availabilityTimeout ?? 0;
-        const timeoutMs = timeoutSeconds * 1000;
+        const timeoutSeconds = settings?.availabilityTimeout ?? 300;
+        const timeoutMs = timeoutSeconds > 0 ? timeoutSeconds * 1000 : 0;
 
-        let reportedAvailable = account.regularUser.available;
+        const ru = account.regularUser;
 
-        if (reportedAvailable) {
-            if (!account.regularUser.lastActiveAt) {
-                reportedAvailable = false;
-            } else if (timeoutMs > 0) {
-                const inactiveMs =
-                    Date.now() - new Date(account.regularUser.lastActiveAt).getTime();
-
-                if (inactiveMs > timeoutMs) {
-                    reportedAvailable = false;
-                }
+        // Reported availability = activity-based only (no manual toggle): within admin window of lastActiveAt.
+        let reportedAvailable = false;
+        if (!ru.suspended && ru.lastActiveAt) {
+            if (timeoutMs <= 0) {
+                reportedAvailable = true;
+            } else {
+                const inactiveMs = Date.now() - new Date(ru.lastActiveAt).getTime();
+                reportedAvailable = inactiveMs <= timeoutMs;
             }
+        }
+
+        // Using the app (this request) counts as activity for the next discovery / header refresh.
+        if (!ru.suspended) {
+            await prisma.regularUser.update({
+                where: { accountId: req.account.id },
+                data: { lastActiveAt: new Date() },
+            });
         }
 
         return res.status(200).json({
             id: account.id,
-            first_name: account.regularUser.firstName,
-            last_name: account.regularUser.lastName,
+            first_name: ru.firstName,
+            last_name: ru.lastName,
             email: account.email,
             activated: account.activated,
-            suspended: account.regularUser.suspended,
+            suspended: ru.suspended,
             available: reportedAvailable,
+            availability_timeout_seconds: timeoutSeconds,
             role: account.role,
-            phone_number: account.regularUser.phoneNumber,
-            postal_address: account.regularUser.postalAddress,
-            birthday: account.regularUser.birthday,
+            phone_number: ru.phoneNumber,
+            postal_address: ru.postalAddress,
+            birthday: ru.birthday,
             createdAt: account.createdAt.toISOString(),
-            avatar: account.regularUser.avatar,
-            resume: account.regularUser.resume,
-            biography: account.regularUser.biography,
+            avatar: ru.avatar,
+            resume: ru.resume,
+            biography: ru.biography,
         });
     } catch (e) {
         next(e);
@@ -647,6 +654,7 @@ function formatInterestJobPayload(job) {
         position_type: {
             id: job.positionType.id,
             name: job.positionType.name,
+            description: job.positionType.description ?? '',
         },
         business: {
             id: job.business.accountId,

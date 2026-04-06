@@ -67,7 +67,7 @@ export default function BusinessJobInterestsPage() {
                 </Link>
             </div>
             <p className="business-card__hint">
-                Talent who tapped interest on this job. When you have also expressed interest, it is mutual — start
+                Talent who tapped interest on this job. When you have also expressed interest, it is mutual: start
                 a negotiation to proceed (one active negotiation at a time per practice).
             </p>
             {error ? (

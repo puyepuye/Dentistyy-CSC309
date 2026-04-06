@@ -155,12 +155,12 @@ export default function BusinessJobCandidateDetailPage() {
 
             <section className="talent-card">
                 <h3 className="talent-card__title">Biography</h3>
-                <p className="talent-bio__body">{u.biography?.trim() ? u.biography : '—'}</p>
+                <p className="talent-bio__body">{u.biography?.trim() ? u.biography : '-'}</p>
             </section>
 
             <section className="talent-card">
                 <h3 className="talent-card__title">Qualification</h3>
-                <p className="talent-field__value">{q?.note?.trim() ? q.note : '—'}</p>
+                <p className="talent-field__value">{q?.note?.trim() ? q.note : '-'}</p>
                 <p className="business-card__hint" style={{ marginTop: '0.75rem' }}>
                     Document
                 </p>

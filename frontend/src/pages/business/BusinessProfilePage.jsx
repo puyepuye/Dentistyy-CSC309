@@ -211,7 +211,7 @@ export default function BusinessProfilePage() {
                                         title="Email is tied to your account and cannot be changed here."
                                     />
                                     <p className="business-public-practice__readonly-hint">
-                                        Sign-in email — not editable in the app.
+                                        Sign-in email: not editable in the app.
                                     </p>
                                 </div>
                                 <div className="business-public-practice__field">
@@ -313,18 +313,18 @@ export default function BusinessProfilePage() {
                                 </div>
                                 <div>
                                     <span className="talent-field__label">Phone</span>
-                                    <p className="talent-field__value">{profile.phone_number || '—'}</p>
+                                    <p className="talent-field__value">{profile.phone_number || '-'}</p>
                                 </div>
                                 <div>
                                     <span className="talent-field__label">Address</span>
-                                    <p className="talent-field__value">{profile.postal_address || '—'}</p>
+                                    <p className="talent-field__value">{profile.postal_address || '-'}</p>
                                 </div>
                                 <div>
                                     <span className="talent-field__label">Location</span>
                                     <p className="talent-field__value">
                                         {profile.location
                                             ? `${Number(profile.location.lat).toFixed(4)}, ${Number(profile.location.lon).toFixed(4)}`
-                                            : '—'}
+                                            : '-'}
                                     </p>
                                 </div>
                             </div>
