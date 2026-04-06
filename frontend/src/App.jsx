@@ -12,6 +12,9 @@ import BusinessSignupPage from './pages/BusinessSignupPage.jsx';
 import ActivateAccountPage from './pages/ActivateAccountPage.jsx';
 import StaffProfilePage from './pages/staff/StaffProfilePage.jsx';
 import StaffJobsPage from './pages/staff/StaffJobsPage.jsx';
+import StaffJobDetailPage from './pages/staff/StaffJobDetailPage.jsx';
+import StaffBusinessDirectoryPage from './pages/staff/StaffBusinessDirectoryPage.jsx';
+import StaffBusinessProfilePage from './pages/staff/StaffBusinessProfilePage.jsx';
 import StaffNegotiationsPage from './pages/staff/StaffNegotiationsPage.jsx';
 import StaffScheduledPage from './pages/staff/StaffScheduledPage.jsx';
 import BusinessDashboardPage from './pages/business/BusinessDashboardPage.jsx';
@@ -76,6 +79,9 @@ function App() {
                 >
                     <Route index element={<Navigate to="/talent/jobs" replace />} />
                     <Route path="profile" element={<StaffProfilePage />} />
+                    <Route path="businesses/:businessId" element={<StaffBusinessProfilePage />} />
+                    <Route path="businesses" element={<StaffBusinessDirectoryPage />} />
+                    <Route path="jobs/:jobId" element={<StaffJobDetailPage />} />
                     <Route path="jobs" element={<StaffJobsPage />} />
                     <Route path="negotiations" element={<StaffNegotiationsPage />} />
                     <Route path="scheduled" element={<StaffScheduledPage />} />

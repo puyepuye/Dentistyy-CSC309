@@ -429,6 +429,12 @@ a.business-jobs-browse__tab--active:visited {
     width: 5px;
     flex-shrink: 0;
     background: var(--color-bg-sidebar);
+    transition: background 0.18s ease;
+}
+
+.business-job-card:hover .business-job-card__accent,
+.business-job-card:focus-visible .business-job-card__accent {
+    background: var(--color-accent);
 }
 
 .business-job-card__body {

@@ -7,6 +7,6 @@ function badgeClass(status) {
 
 /** Status pill for a job row (theme tokens via business-workspace.css). */
 export default function BusinessJobStatusBadge({ status }) {
-    const label = (status || '—').toUpperCase();
+    const label = (status || '-').toUpperCase();
     return <span className={badgeClass(status)}>{label}</span>;
 }

@@ -1,0 +1,304 @@
+/* Talent /negotiations: chat + timer + decisions */
+
+.talent-neg {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 1rem 2rem;
+}
+
+.talent-neg__intro {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    max-width: 52ch;
+}
+
+.talent-neg__grid {
+    display: grid;
+    grid-template-columns: 1fr minmax(260px, 320px);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .talent-neg__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.talent-neg__card {
+    background: var(--color-bg-elevated);
+    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+    overflow: hidden;
+}
+
+.talent-neg__card-head {
+    padding: 1rem 1.15rem;
+    background: linear-gradient(135deg, #1e3a3a 0%, #2d5c55 100%);
+    color: var(--color-text-on-dark);
+}
+
+.talent-neg__card-head h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.talent-neg__card-head p {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    opacity: 0.92;
+}
+
+.talent-neg-chat {
+    display: flex;
+    flex-direction: column;
+    min-height: 380px;
+    max-height: min(62vh, 560px);
+}
+
+.talent-neg-chat__status {
+    min-height: 1.25rem;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.talent-neg-chat__messages {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    flex: 1;
+    overflow-y: auto;
+    background: var(--color-bg-app);
+    border-top: 1px solid var(--color-border);
+}
+
+.talent-neg-chat__msg {
+    display: flex;
+    margin-bottom: 0.65rem;
+    justify-content: flex-start;
+}
+
+.talent-neg-chat__msg--mine {
+    justify-content: flex-end;
+}
+
+.talent-neg-chat__bubble {
+    max-width: min(100%, 420px);
+    padding: 0.55rem 0.85rem;
+    border-radius: 12px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+}
+
+.talent-neg-chat__msg--mine .talent-neg-chat__bubble {
+    background: var(--color-primary-soft);
+    border-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+.talent-neg-chat__sender {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.talent-neg-chat__text {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--color-text);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.talent-neg-chat__composer {
+    padding: 0.85rem 1rem 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+}
+
+.talent-neg-chat__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.talent-neg-chat__row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.talent-neg-chat__input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.55rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-border-input);
+    font: inherit;
+    font-size: 0.92rem;
+}
+
+.talent-neg-chat__send {
+    flex-shrink: 0;
+    padding: 0.55rem 1rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.talent-neg-chat__send:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.talent-neg-side {
+    padding: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.talent-neg-timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0 0.25rem;
+}
+
+.talent-neg-timer__svg {
+    width: 160px;
+    height: 160px;
+}
+
+.talent-neg-timer__track {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 10;
+}
+
+.talent-neg-timer__prog {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50px 50px;
+    transition: stroke-dashoffset 0.35s linear;
+}
+
+.talent-neg-timer__label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-muted);
+}
+
+.talent-neg-timer__clock {
+    font-size: 1.65rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-heading);
+    margin-top: -0.25rem;
+}
+
+.talent-neg-timer__sub {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+}
+
+.talent-neg-status h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+}
+
+.talent-neg-status ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+}
+
+.talent-neg-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.talent-neg-actions .business-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.talent-neg-mini {
+    position: fixed;
+    z-index: 900;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    max-width: min(100vw - 2rem, 380px);
+    background: var(--color-bg-elevated);
+    border: 1px solid rgb(200 75 75 / 0.2);
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.12);
+    animation: talent-neg-mini-in 0.2s ease-out;
+}
+
+@keyframes talent-neg-mini-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.talent-neg-mini__timer {
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.1rem;
+    color: var(--color-primary-strong);
+}
+
+.talent-neg-mini__text {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    line-height: 1.35;
+}
+
+.talent-neg-mini__btn {
+    flex-shrink: 0;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.talent-neg-mini__btn:hover {
+    background: var(--color-primary-strong);
+}

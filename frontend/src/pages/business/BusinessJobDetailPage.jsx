@@ -205,7 +205,7 @@ export default function BusinessJobDetailPage() {
                                     </Link>
                                 )
                             ) : (
-                                '—'
+                                '-'
                             )}
                         </p>
                     </div>
@@ -213,7 +213,7 @@ export default function BusinessJobDetailPage() {
                 <div className="talent-bio__body talent-bio__body--spaced">
                     <span className="talent-field__label">Note</span>
                     <p className="talent-field__value" style={{ marginTop: '0.35rem' }}>
-                        {job.note?.trim() ? job.note : '—'}
+                        {job.note?.trim() ? job.note : '-'}
                     </p>
                 </div>
                 {canTryDelete || canNoShow ? (

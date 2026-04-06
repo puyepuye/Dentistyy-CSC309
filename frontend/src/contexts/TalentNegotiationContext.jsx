@@ -1,0 +1,83 @@
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useAuth } from './AuthContext.jsx';
+import { getMyNegotiation } from '../lib/api.js';
+
+const TalentNegotiationContext = createContext(null);
+
+function secondsRemaining(iso) {
+    if (!iso) return 0;
+    return Math.max(0, Math.floor((new Date(iso).getTime() - Date.now()) / 1000));
+}
+
+export function TalentNegotiationProvider({ children }) {
+    const { token } = useAuth();
+    const [negotiation, setNegotiation] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [clock, setClock] = useState(0);
+
+    const refresh = useCallback(async () => {
+        if (!token) {
+            setNegotiation(null);
+            setLoading(false);
+            return;
+        }
+        try {
+            const n = await getMyNegotiation(token);
+            setNegotiation(n);
+        } catch (e) {
+            const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
+            if (status === 404) {
+                setNegotiation(null);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+    /** Apply payload from POST /negotiations so UI updates before the next poll (e.g. right after “Start negotiation”). */
+    const applyNegotiationPayload = useCallback((payload) => {
+        if (payload && typeof payload === 'object' && payload.id != null) {
+            setNegotiation(payload);
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        refresh();
+    }, [refresh]);
+
+    useEffect(() => {
+        if (!token) return undefined;
+        const id = setInterval(refresh, 8000);
+        return () => clearInterval(id);
+    }, [token, refresh]);
+
+    useEffect(() => {
+        if (!negotiation) return undefined;
+        const id = setInterval(() => setClock((t) => t + 1), 1000);
+        return () => clearInterval(id);
+    }, [negotiation]);
+
+    const leftSec = useMemo(() => secondsRemaining(negotiation?.expiresAt), [negotiation?.expiresAt, clock]);
+
+    const value = useMemo(
+        () => ({
+            negotiation,
+            loading,
+            refresh,
+            applyNegotiationPayload,
+            secondsRemaining: leftSec,
+        }),
+        [negotiation, loading, refresh, applyNegotiationPayload, leftSec]
+    );
+
+    return <TalentNegotiationContext.Provider value={value}>{children}</TalentNegotiationContext.Provider>;
+}
+
+export function useTalentNegotiation() {
+    const ctx = useContext(TalentNegotiationContext);
+    if (!ctx) {
+        throw new Error('useTalentNegotiation must be used within TalentNegotiationProvider');
+    }
+    return ctx;
+}

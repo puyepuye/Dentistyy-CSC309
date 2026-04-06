@@ -30,6 +30,7 @@ function toNegotiationResponse(negotiation, windowSeconds) {
     const expiresAt = getExpiresAt(negotiation, windowSeconds);
     return {
         id: negotiation.id,
+        negotiation_window_seconds: windowSeconds,
         status: negotiation.status === 'PENDING'
             ? 'active'
             : negotiation.status === 'SUCCESSFUL'
@@ -96,15 +97,26 @@ async function getActiveNegotiationForAccount(accountId, role) {
     });
 }
 
-async function isRegularUserDiscoverableForJob(user, account, job) {
+/**
+ * @returns {Promise<string|null>} Error message if the candidate cannot negotiate, or null if OK.
+ */
+async function getDiscoverabilityFailureReason(user, account, job) {
     const settings = await prisma.systemSettings.findFirst();
     const availabilityTimeout = settings?.availabilityTimeout ?? 300;
     const cutoff = new Date(Date.now() - availabilityTimeout * 1000);
 
-    if (!account.activated) return false;
-    if (user.suspended) return false;
-    if (!user.available) return false;
-    if (!user.lastActiveAt || user.lastActiveAt < cutoff) return false;
+    if (!account.activated) {
+        return 'Your account is not activated.';
+    }
+    if (user.suspended) {
+        return 'Your account is suspended.';
+    }
+    if (!user.lastActiveAt || user.lastActiveAt < cutoff) {
+        return (
+            'You must have used the app recently (within the admin availability window) to negotiate. ' +
+            'Open jobs or your profile, then try again.'
+        );
+    }
 
     const approvedQualification = await prisma.qualification.findFirst({
         where: {
@@ -113,7 +125,9 @@ async function isRegularUserDiscoverableForJob(user, account, job) {
             approved: true,
         },
     });
-    if (!approvedQualification) return false;
+    if (!approvedQualification) {
+        return 'You need an approved qualification for this job’s position type to start a negotiation.';
+    }
 
     const overlappingFilledJob = await prisma.job.findFirst({
         where: {
@@ -123,10 +137,19 @@ async function isRegularUserDiscoverableForJob(user, account, job) {
             endTime: { gt: job.startTime },
         },
     });
-    if (overlappingFilledJob) return false;
+    if (overlappingFilledJob) {
+        return 'You have another filled shift that overlaps this job’s time.';
+    }
 
-    return true;
+    return null;
 }
+
+// GET /negotiations/window — current negotiation timer length (seconds), for UI copy before starting
+router.get('/window', requireRole('regular', 'business'), (req, res) => {
+    return res.status(200).json({
+        negotiation_window_seconds: getNegotiationWindowSeconds(),
+    });
+});
 
 // POST /negotiations, GET /negotiations/me, PATCH /negotiations/me/decision
 router.post('/', requireRole('regular', 'business'), async (req, res, next) => {
@@ -168,15 +191,33 @@ router.post('/', requireRole('regular', 'business'), async (req, res, next) => {
         const hasUser = mutualInterest.some((i) => i.initiatedBy === 'USER');
         const hasBusiness = mutualInterest.some((i) => i.initiatedBy === 'BUSINESS');
         if (!hasUser || !hasBusiness) {
-            return sendError(res, 403, 'Forbidden');
+            return sendError(
+                res,
+                403,
+                'Mutual interest from both you and the practice is required before starting a negotiation.'
+            );
         }
 
-        const discoverable = await isRegularUserDiscoverableForJob(
+        // Candidate clicking “start negotiation” counts as app activity for the activity window.
+        if (req.account.role === 'regular' && isCandidate && !req.account.regularUser?.suspended) {
+            await prisma.regularUser.update({
+                where: { accountId: req.account.id },
+                data: { lastActiveAt: new Date() },
+            });
+            interest.user = await prisma.regularUser.findUnique({
+                where: { id: interest.userId },
+                include: { account: true },
+            });
+        }
+
+        const discoverFail = await getDiscoverabilityFailureReason(
             interest.user,
             interest.user.account,
             interest.job
         );
-        if (!discoverable) return sendError(res, 403, 'Forbidden');
+        if (discoverFail) {
+            return sendError(res, 403, discoverFail);
+        }
 
         if (interest.job.status !== 'OPEN') {
             return sendError(res, 409, 'Conflict');
@@ -212,7 +253,7 @@ router.post('/', requireRole('regular', 'business'), async (req, res, next) => {
             },
         });
         if (activeForUser && !isNegotiationExpired(activeForUser, windowSeconds)) {
-            return sendError(res, 409, 'Conflict');
+            return sendError(res, 409, 'You already have an ongoing negotiation.');
         }
 
         const activeForBusiness = await prisma.negotiation.findFirst({
@@ -223,7 +264,11 @@ router.post('/', requireRole('regular', 'business'), async (req, res, next) => {
             include: { job: true },
         });
         if (activeForBusiness && !isNegotiationExpired(activeForBusiness, windowSeconds)) {
-            return sendError(res, 409, 'Conflict');
+            const busyMsg =
+                req.account.role === 'business'
+                    ? 'Your practice already has an ongoing negotiation.'
+                    : 'This practice already has an ongoing negotiation.';
+            return sendError(res, 409, busyMsg);
         }
 
         const created = await prisma.negotiation.create({
@@ -253,6 +298,13 @@ router.post('/', requireRole('regular', 'business'), async (req, res, next) => {
 
 router.get('/me', requireRole('regular', 'business'), async (req, res, next) => {
     try {
+        if (req.account.role === 'regular' && !req.account.regularUser?.suspended) {
+            await prisma.regularUser.update({
+                where: { accountId: req.account.id },
+                data: { lastActiveAt: new Date() },
+            });
+        }
+
         const negotiation = await getActiveNegotiationForAccount(req.account.id, req.account.role);
         if (!negotiation) return sendError(res, 404, 'Not Found');
 
@@ -404,6 +456,7 @@ router.patch('/me/decision', requireRole('regular', 'business'), async (req, res
 });
 
 router.all('/', (req, res) => res.sendStatus(405));
+router.all('/window', (req, res) => res.sendStatus(405));
 router.all('/me', (req, res) => res.sendStatus(405));
 router.all('/me/decision', (req, res) => res.sendStatus(405));
 

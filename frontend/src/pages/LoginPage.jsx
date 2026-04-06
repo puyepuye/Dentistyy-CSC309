@@ -72,7 +72,7 @@ function LoginPage() {
                 <div className="login-split__visual-inner">
                     <p className="login-split__visual-tag">Dentistyy</p>
                     <p className="login-split__visual-copy">
-                        Connect with practices or pick up shifts — sign in with your seeded account email.
+                        Connect with practices or pick up shifts: sign in with your seeded account email.
                     </p>
                 </div>
             </div>
@@ -174,7 +174,7 @@ function LoginPage() {
                         </p>
                         <p className="login-card__placeholder-note">
                             Seeded demo: e.g. regular1@csc309.utoronto.ca, business1@csc309.utoronto.ca, or
-                            admin1@csc309.utoronto.ca — password <strong>123123</strong>.
+                            admin1@csc309.utoronto.ca, password <strong>123123</strong>.
                         </p>
                     </form>
                 </div>

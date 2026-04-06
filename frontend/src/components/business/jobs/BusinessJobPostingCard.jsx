@@ -11,18 +11,18 @@ function formatSalarySingle(min, max) {
         return `$${Math.round(a).toLocaleString()} – $${Math.round(b).toLocaleString()}`;
     }
     if (Number.isFinite(b)) return `$${Math.round(b).toLocaleString()}`;
-    return '—';
+    return '-';
 }
 
 function formatShift(startIso, endIso) {
-    if (!startIso || !endIso) return '—';
+    if (!startIso || !endIso) return '-';
     const opts = { hour: 'numeric', minute: '2-digit' };
     const s = new Date(startIso).toLocaleTimeString(undefined, opts);
     const e = new Date(endIso).toLocaleTimeString(undefined, opts);
     return `${s} – ${e}`;
 }
 
-/** Practice job card — mock layout (navy accent, no letter badge). */
+/** Practice job card: mock layout (navy accent, no letter badge). */
 export default function BusinessJobPostingCard({ job, practiceName }) {
     const role = job.position_type?.name || 'Role';
     const clinic = practiceName || 'Your practice';

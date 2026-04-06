@@ -9,7 +9,7 @@ export function assetUrl(path) {
 }
 
 /**
- * Decode JWT payload (no signature verification — role routing only).
+ * Decode JWT payload (no signature verification; role routing only).
  * @param {string | null | undefined} token
  */
 export function parseJwtPayload(token) {
@@ -140,6 +140,14 @@ export function patchRegularMe(token, body) {
     });
 }
 
+/** Legacy endpoint; discovery uses activity only. Prefer using the app (GET /users/me, jobs, etc.). */
+export function patchRegularAvailability(token, available) {
+    return authRequest('/users/me/available', token, {
+        method: 'PATCH',
+        body: JSON.stringify({ available }),
+    });
+}
+
 /** Visible position types for dropdowns (paginated). */
 export function getPositionTypes(token, params = {}) {
     const q = new URLSearchParams({
@@ -159,10 +167,6 @@ export function createQualification(token, payload) {
         method: 'POST',
         body: JSON.stringify(payload),
     });
-}
-
-export function getQualificationById(token, id) {
-    return authRequest(`/qualifications/${id}`, token, { method: 'GET' });
 }
 
 export function patchQualification(token, id, payload) {
@@ -220,9 +224,47 @@ export async function uploadUserResume(token, file) {
     return payload;
 }
 
-/** Public business card (same shape visitors see — account id in URL). */
-export function getBusinessPublic(accountId) {
-    return request(`/businesses/${accountId}`, { method: 'GET' });
+/** Open job postings (regular). Query: lat, lon, position_type_id, business_id, sort, order, page, limit */
+export function getOpenJobs(token, params = {}) {
+    const q = new URLSearchParams();
+    if (params.lat != null && params.lon != null) {
+        q.set('lat', String(params.lat));
+        q.set('lon', String(params.lon));
+    }
+    if (params.position_type_id != null && params.position_type_id !== '') {
+        q.set('position_type_id', String(params.position_type_id));
+    }
+    if (params.business_id != null && params.business_id !== '') {
+        q.set('business_id', String(params.business_id));
+    }
+    if (params.sort) q.set('sort', params.sort);
+    if (params.order) q.set('order', params.order);
+    q.set('page', String(params.page ?? 1));
+    q.set('limit', String(params.limit ?? 9));
+    return authRequest(`/jobs?${q.toString()}`, token, { method: 'GET' });
+}
+
+/** Talent pipeline: matched, interest shown, and interested-in-you (see GET /users/me/interests). */
+export function getMyJobInterests(token) {
+    return authRequest('/users/me/interests', token, { method: 'GET' });
+}
+
+/** Business directory for filters (GET /businesses, public). */
+export function getBusinessesList(params = {}) {
+    const merged = { page: '1', limit: '50', ...params };
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(merged)) {
+        // URLSearchParams(undefined) becomes the literal "undefined" in the query string,
+        // which breaks keyword search on the server.
+        if (value === undefined || value === null || value === '') continue;
+        q.set(key, String(value));
+    }
+    return request(`/businesses?${q}`, { method: 'GET' });
+}
+
+/** Public business profile (GET /businesses/:businessAccountId). */
+export function getBusinessById(businessAccountId) {
+    return request(`/businesses/${businessAccountId}`, { method: 'GET' });
 }
 
 export function patchBusinessMe(token, body) {
@@ -290,8 +332,22 @@ export function deleteBusinessJob(token, jobId) {
     return authRequest(`/businesses/me/jobs/${jobId}`, token, { method: 'DELETE' });
 }
 
-export function getJobById(token, jobId) {
-    return authRequest(`/jobs/${jobId}`, token, { method: 'GET' });
+export function getJobById(token, jobId, params = {}) {
+    const q = new URLSearchParams();
+    if (params.lat != null && params.lon != null) {
+        q.set('lat', String(params.lat));
+        q.set('lon', String(params.lon));
+    }
+    const qs = q.toString();
+    return authRequest(`/jobs/${jobId}${qs ? `?${qs}` : ''}`, token, { method: 'GET' });
+}
+
+/** Regular user: express or withdraw interest (PATCH /jobs/:jobId/interested). */
+export function patchJobInterested(token, jobId, interested) {
+    return authRequest(`/jobs/${jobId}/interested`, token, {
+        method: 'PATCH',
+        body: JSON.stringify({ interested }),
+    });
 }
 
 export function getJobCandidates(token, jobId, params = {}) {
@@ -335,6 +391,11 @@ export function startNegotiation(token, interestId) {
         method: 'POST',
         body: JSON.stringify({ interest_id: interestId }),
     });
+}
+
+/** @returns {Promise<{ negotiation_window_seconds: number }>} */
+export function getNegotiationWindowSeconds(token) {
+    return authRequest('/negotiations/window', token, { method: 'GET' });
 }
 
 export function getMyNegotiation(token) {

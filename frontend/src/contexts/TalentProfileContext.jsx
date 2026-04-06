@@ -46,6 +46,12 @@ export function TalentProfileProvider({ children }) {
         load();
     }, [load]);
 
+    useEffect(() => {
+        const onFocus = () => load({ silent: true });
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, [load]);
+
     const refetch = useCallback(() => load({ silent: true }), [load]);
 
     const value = useMemo(

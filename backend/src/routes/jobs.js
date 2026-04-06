@@ -10,6 +10,16 @@ const { validateNoExtraKeys } = require('../utils/validation');
 
 const prisma = new PrismaClient();
 
+/** Talent browsing counts as “using the app” for activity-based discovery. */
+async function bumpTalentLastActive(req) {
+    if (req.account?.role !== 'regular') return;
+    if (req.account.regularUser?.suspended) return;
+    await prisma.regularUser.update({
+        where: { accountId: req.account.id },
+        data: { lastActiveAt: new Date() },
+    });
+}
+
 // Ensure non-numeric path segments are treated as non-existent routes (404)
 // before auth guards run on parameterized endpoints.
 router.param('jobId', (req, res, next, value) => {
@@ -49,6 +59,8 @@ function haversineKm(lat1, lon1, lat2, lon2) {
 // GET /jobs (regular list)
 router.get('/', requireRole('regular'), async (req, res, next) => {
   try {
+    await bumpTalentLastActive(req);
+
     const { valid } = validateNoExtraKeys(req.query || {}, [
       'lat',
       'lon',
@@ -154,7 +166,7 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
     const jobs = await prisma.job.findMany({
       where,
       include: {
-        positionType: { select: { id: true, name: true } },
+        positionType: { select: { id: true, name: true, description: true } },
         business: { select: { id: true, accountId: true, businessName: true, lat: true, lon: true } },
       },
       ...(!distanceSort && {
@@ -171,6 +183,7 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
         position_type: {
           id: job.positionType.id,
           name: job.positionType.name,
+          description: job.positionType.description ?? '',
         },
         business: {
           id: job.business.accountId,
@@ -212,6 +225,10 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
 // GET /jobs/:jobId
 router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next) => {
   try {
+    if (req.account.role === 'regular') {
+      await bumpTalentLastActive(req);
+    }
+
     const jobId = Number(req.params.jobId);
     if (!Number.isInteger(jobId) || jobId < 1) {
       return sendError(res, 404, 'Not Found');
@@ -229,8 +246,17 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
     }
 
     const { role } = req.account;
-    const regularUserId = req.account.regularUser?.id;
+    let regularUserId = req.account.regularUser?.id ?? null;
     const businessId = req.account.business?.id;
+
+    // Ensure we have the RegularUser id (some requests may not hydrate regularUser on req.account).
+    if (role === 'regular' && regularUserId == null) {
+      const ru = await prisma.regularUser.findUnique({
+        where: { accountId: req.account.id },
+        select: { id: true },
+      });
+      regularUserId = ru?.id ?? null;
+    }
 
     if (role === 'business' && (hasLat || hasLon)) {
       return sendError(res, 400, 'Invalid query');
@@ -264,6 +290,10 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       return sendError(res, 404, 'Not Found');
     }
 
+    if (role === 'regular' && regularUserId == null) {
+      return sendError(res, 403, 'Forbidden');
+    }
+
     if (role === 'business') {
       if (job.businessId !== businessId) {
         return sendError(res, 404, 'Not Found');
@@ -272,7 +302,7 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
 
     if (role === 'regular') {
       const winningNeg = job.negotiations[0] ?? null;
-      const isWorker = winningNeg?.user.id === regularUserId;
+      const isWorker = winningNeg?.user?.id === regularUserId;
       const allowedStatus = ['OPEN', 'FILLED', 'CANCELLED'];
 
       if (!allowedStatus.includes(job.status)) {
@@ -293,7 +323,15 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
         });
 
         if (!qualification) {
-          return sendError(res, 403, 'Forbidden');
+          // Allow pipeline jobs (e.g. business expressed interest first) where the user
+          // may not yet pass the discovery qualification gate but already has an Interest row.
+          const pipelineInterest = await prisma.interest.findFirst({
+            where: { jobId: job.id, userId: regularUserId },
+            select: { id: true },
+          });
+          if (!pipelineInterest) {
+            return sendError(res, 403, 'Forbidden');
+          }
         }
       }
     }
@@ -321,10 +359,12 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       position_type: {
         id: job.positionType.id,
         name: job.positionType.name,
+        description: job.positionType.description ?? '',
       },
       business: {
         id: job.business.accountId,
         business_name: job.business.businessName,
+        postal_address: job.business.postalAddress ?? '',
       },
       worker,
       note: job.note ?? '',
@@ -334,6 +374,27 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       end_time: job.endTime.toISOString(),
       updatedAt: job.updatedAt.toISOString(),
     };
+
+    if (role === 'regular' && regularUserId) {
+      const interestRows = await prisma.interest.findMany({
+        where: { jobId: job.id, userId: regularUserId },
+        select: { id: true, initiatedBy: true },
+      });
+      const userRow = interestRows.find((r) => String(r.initiatedBy) === 'USER');
+      const busRow = interestRows.find((r) => String(r.initiatedBy) === 'BUSINESS');
+      response.interest = {
+        mutual: !!(userRow && busRow),
+        user_interest_id: userRow?.id ?? null,
+        business_interest_id: busRow?.id ?? null,
+        user_expressed: !!userRow,
+        business_expressed: !!busRow,
+      };
+      const pendingNeg = await prisma.negotiation.findFirst({
+        where: { jobId: job.id, userId: regularUserId, status: 'PENDING' },
+        select: { id: true },
+      });
+      response.negotiation_pending_id = pendingNeg?.id ?? null;
+    }
 
     if (role === 'regular' && hasLat && hasLon) {
       const userLat = Number(lat);
@@ -438,7 +499,17 @@ router.patch(
           return sendError(res, 404, 'Not Found');
         }
   
-        const regularUserId = req.account.regularUser?.id;
+        let regularUserId = req.account.regularUser?.id ?? null;
+        if (regularUserId == null) {
+          const ru = await prisma.regularUser.findUnique({
+            where: { accountId: req.account.id },
+            select: { id: true },
+          });
+          regularUserId = ru?.id ?? null;
+        }
+        if (!regularUserId) {
+          return sendError(res, 403, 'Forbidden');
+        }
 
         const body = req.body || {};
         const { valid } = validateNoExtraKeys(body, ['interested']);
@@ -479,11 +550,17 @@ router.patch(
         const qualification = await prisma.qualification.findFirst({
           where: { regularUserId, positionTypeId: job.positionTypeId, approved: true },
         });
-        if (!qualification) {
-          return sendError(res, 403, 'You are not qualified for this position type.' );
+
+        const existingInterest = job.interests.find((i) => String(i.initiatedBy) === 'USER');
+
+        if (interested === true && !qualification) {
+          const hasUserInterest = job.interests.some((i) => String(i.initiatedBy) === 'USER');
+          const hasBusinessInterest = job.interests.some((i) => String(i.initiatedBy) === 'BUSINESS');
+          const acceptingBusinessOutreach = hasBusinessInterest && !hasUserInterest;
+          if (!hasUserInterest && !acceptingBusinessOutreach) {
+            return sendError(res, 403, 'You are not qualified for this position type.');
+          }
         }
-  
-        const existingInterest = job.interests.find((i) => i.initiatedBy === 'USER');
   
         if (interested === false && !existingInterest) {
           return sendError(res, 400, 'You have not expressed interest in this job.' );
@@ -513,7 +590,7 @@ router.patch(
           });
         }
   
-        const businessInterest = job.interests.find((i) => i.initiatedBy === 'BUSINESS');
+        const businessInterest = job.interests.find((i) => String(i.initiatedBy) === 'BUSINESS');
   
         return res.status(200).json({
           id: interest?.id ?? null,
@@ -618,7 +695,6 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
           activated: true,
         },
         suspended: false,
-        available: true,
         lastActiveAt: {
           gte: cutoff,
         },
@@ -783,7 +859,6 @@ router.get('/:jobId/candidates/:userId', requireRole('business'), async (req, re
     const discoverable =
       candidateAccount.activated &&
       !candidate.suspended &&
-      candidate.available &&
       candidate.lastActiveAt &&
       candidate.lastActiveAt >= cutoff &&
       !!qualification &&
@@ -924,7 +999,6 @@ router.patch('/:jobId/candidates/:userId/interested', requireRole('business'), a
     const discoverable =
       candidateAccount.activated &&
       !candidate.suspended &&
-      candidate.available &&
       candidate.lastActiveAt &&
       candidate.lastActiveAt >= cutoff &&
       !!qualification &&

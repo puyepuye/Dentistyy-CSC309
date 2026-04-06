@@ -1,5 +1,5 @@
 /**
- * Thick mint band for /talent/* — greeting + optional status line.
+ * Thick mint band for /talent/*: greeting + optional status line.
  */
 export default function TalentWorkspaceHeader({ greeting, statusLine }) {
     return (
