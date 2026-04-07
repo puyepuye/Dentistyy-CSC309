@@ -375,20 +375,6 @@ async function main() {
         }
     }
 
-    const mutualJob = openJobs[0];
-    const negUser = firstRegularQualifiedForJob(mutualJob);
-    if (negUser) {
-        await prisma.negotiation.create({
-            data: {
-                jobId: mutualJob.id,
-                userId: negUser.id,
-                status: 'PENDING',
-                userAccepted: false,
-                businessAccepted: false,
-            },
-        });
-    }
-
     console.log('Seed complete.');
     console.log('  Password for all accounts:', PASSWORD);
     console.log('  Try talent login: regular1@csc309.utoronto.ca');
