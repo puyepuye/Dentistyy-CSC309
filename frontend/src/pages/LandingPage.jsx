@@ -8,6 +8,24 @@ const HERO_IMAGE_SRC =
     'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 const PARTNER_SLOTS = 6;
 
+const SCHEDULED_DASH_IMG = '/static/landing-scheduled-dashboard.jpg';
+const NEGOTIATION_CHAT_IMG = '/static/landing-negotiation-chat.png';
+
+const BENTO_FACTS = [
+    {
+        title: 'Verified qualifications first',
+        body: 'Candidates only appear for roles where their credentials are approved: less noise, better matches.',
+    },
+    {
+        title: 'Negotiate without the inbox chaos',
+        body: 'Agree on a role in one place with a clear timer, chat, and accept or decline. No lost threads.',
+    },
+    {
+        title: 'Shifts you can actually plan around',
+        body: 'Once a job is filled, see upcoming and past work in Scheduled: mint header, tabs, and cards at a glance.',
+    },
+];
+
 function LandingPage() {
     const [partners, setPartners] = useState([]);
     const marqueePartners = partners.length ? [...partners, ...partners] : [];
@@ -117,6 +135,66 @@ function LandingPage() {
                         </div>
                     </div>
                 ) : null}
+            </section>
+
+            <section className={styles.bentoSection} aria-labelledby="landing-bento-heading">
+                <h2 id="landing-bento-heading" className={styles.bentoSectionTitle}>
+                    Built for real dental workflows
+                </h2>
+                <p className={styles.bentoSectionLead}>
+                    A few things that make Dentistyy feel more like a workspace.
+                </p>
+
+                <div className={styles.bentoGrid}>
+                    <article className={styles.bentoCard}>
+                        <h3 className={styles.bentoCardTitle}>{BENTO_FACTS[0].title}</h3>
+                        <p className={styles.bentoCardBody}>{BENTO_FACTS[0].body}</p>
+                        <div className={styles.bentoMini} aria-hidden>
+                            <span className={styles.bentoMiniLine}>
+                                <i className="fas fa-check-circle" /> Hygiene
+                            </span>
+                            <span className={styles.bentoMiniLine}>
+                                <i className="fas fa-check-circle" /> Assistant L2
+                            </span>
+                            <span className={styles.bentoMiniLineMuted}>+ more</span>
+                        </div>
+                    </article>
+
+                    <article className={styles.bentoCard}>
+                        <h3 className={styles.bentoCardTitle}>{BENTO_FACTS[1].title}</h3>
+                        <p className={styles.bentoCardBody}>{BENTO_FACTS[1].body}</p>
+                        <figure className={styles.bentoNegotiationFigure}>
+                            <img
+                                src={NEGOTIATION_CHAT_IMG}
+                                alt="Negotiation chat with clinic header, messages, and message input"
+                                className={styles.bentoNegotiationImg}
+                                loading="lazy"
+                            />
+                            <figcaption className={styles.bentoNegotiationCaption}>
+                                Live negotiation: chat with the practice on the open role
+                            </figcaption>
+                        </figure>
+                    </article>
+
+                    <article className={`${styles.bentoCard} ${styles.bentoCardWide}`}>
+                        <div className={styles.bentoWideCopy}>
+                            <h3 className={styles.bentoCardTitle}>{BENTO_FACTS[2].title}</h3>
+                            <p className={styles.bentoCardBody}>{BENTO_FACTS[2].body}</p>
+                        </div>
+                        <figure className={styles.bentoFigure}>
+                            <img
+                                src={SCHEDULED_DASH_IMG}
+                                alt="Dentistyy Scheduled page showing an upcoming shift card with date, time, and role"
+                                className={styles.bentoScreenshot}
+                                loading="lazy"
+                            />
+                            <figcaption className={styles.bentoCaption}>
+                                Product preview: Scheduled, upcoming and past shifts
+                            </figcaption>
+                        </figure>
+                    </article>
+
+                </div>
             </section>
         </div>
     );
