@@ -51,6 +51,21 @@ export function mapApiRoleToFrontend(apiRole) {
     return null;
 }
 
+function getApiErrorMessage(payload, status) {
+    const rawMessage = payload?.error || payload?.message || `Request failed (${status})`;
+    if (typeof rawMessage === 'string' && rawMessage.trim().toLowerCase() === 'invalid payload') {
+        return 'Some information is missing or invalid. Review the form and try again.';
+    }
+    return rawMessage;
+}
+
+function createApiError(response, payload) {
+    const err = new Error(getApiErrorMessage(payload, response.status));
+    err.status = response.status;
+    err.payload = payload;
+    return err;
+}
+
 async function request(path, options = {}) {
     const { headers: optionHeaders, ...restOptions } = options;
     const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -70,10 +85,7 @@ async function request(path, options = {}) {
     }
 
     if (!response.ok) {
-        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
-        const err = new Error(message);
-        err.status = response.status;
-        throw err;
+        throw createApiError(response, payload);
     }
 
     return payload;
@@ -221,10 +233,7 @@ export async function uploadQualificationDocument(token, qualificationId, file) 
         payload = null;
     }
     if (!response.ok) {
-        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
-        const err = new Error(message);
-        err.status = response.status;
-        throw err;
+        throw createApiError(response, payload);
     }
     return payload;
 }
@@ -245,10 +254,7 @@ export async function uploadUserResume(token, file) {
         payload = null;
     }
     if (!response.ok) {
-        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
-        const err = new Error(message);
-        err.status = response.status;
-        throw err;
+        throw createApiError(response, payload);
     }
     return payload;
 }
@@ -269,10 +275,7 @@ export async function uploadUserAvatar(token, file) {
         payload = null;
     }
     if (!response.ok) {
-        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
-        const err = new Error(message);
-        err.status = response.status;
-        throw err;
+        throw createApiError(response, payload);
     }
     return payload;
 }
@@ -357,10 +360,7 @@ export async function uploadBusinessAvatar(token, file) {
         payload = null;
     }
     if (!response.ok) {
-        const message = payload?.error || payload?.message || `Request failed (${response.status})`;
-        const err = new Error(message);
-        err.status = response.status;
-        throw err;
+        throw createApiError(response, payload);
     }
     return payload;
 }
