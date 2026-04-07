@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { getMyNegotiation } from '../lib/api.js';
-import { celebrateNegotiationSuccessIfJobFilled } from '../lib/negotiationConfetti.js';
+import { celebrateNegotiationSuccess, getClosedNegotiationNotice } from '../lib/negotiationConfetti.js';
 
 const TalentNegotiationContext = createContext(null);
 
@@ -15,6 +15,7 @@ export function TalentNegotiationProvider({ children }) {
     const [negotiation, setNegotiation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [clock, setClock] = useState(0);
+    const [lastResolution, setLastResolution] = useState(null);
     const negotiationRef = useRef(null);
     useEffect(() => {
         negotiationRef.current = negotiation;
@@ -23,6 +24,7 @@ export function TalentNegotiationProvider({ children }) {
     const refresh = useCallback(async () => {
         if (!token) {
             setNegotiation(null);
+            setLastResolution(null);
             setLoading(false);
             return;
         }
@@ -30,10 +32,15 @@ export function TalentNegotiationProvider({ children }) {
         try {
             const n = await getMyNegotiation(token);
             setNegotiation(n);
+            if (n) setLastResolution(null);
         } catch (e) {
             const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
             if (status === 404) {
-                await celebrateNegotiationSuccessIfJobFilled(token, priorNeg);
+                const notice = await getClosedNegotiationNotice(token, priorNeg);
+                if (notice?.tone === 'success') {
+                    celebrateNegotiationSuccess();
+                }
+                setLastResolution(notice);
                 setNegotiation(null);
             }
         } finally {
@@ -45,8 +52,13 @@ export function TalentNegotiationProvider({ children }) {
     const applyNegotiationPayload = useCallback((payload) => {
         if (payload && typeof payload === 'object' && payload.id != null) {
             setNegotiation(payload);
+            setLastResolution(null);
             setLoading(false);
         }
+    }, []);
+
+    const clearLastResolution = useCallback(() => {
+        setLastResolution(null);
     }, []);
 
     useEffect(() => {
@@ -73,9 +85,11 @@ export function TalentNegotiationProvider({ children }) {
             loading,
             refresh,
             applyNegotiationPayload,
+            lastResolution,
+            clearLastResolution,
             secondsRemaining: leftSec,
         }),
-        [negotiation, loading, refresh, applyNegotiationPayload, leftSec]
+        [negotiation, loading, refresh, applyNegotiationPayload, lastResolution, clearLastResolution, leftSec]
     );
 
     return <TalentNegotiationContext.Provider value={value}>{children}</TalentNegotiationContext.Provider>;

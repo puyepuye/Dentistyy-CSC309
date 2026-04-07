@@ -46,22 +46,30 @@ export function celebrateNegotiationSuccess() {
 }
 
 /**
- * When the active negotiation disappears (GET /negotiations/me → 404) because the other party
- * finished the match, there is no PATCH with status "success" on this client. If the job is now
- * filled, treat it as success and celebrate (same as talent flow when they click Accept second).
+ * When the active negotiation disappears (GET /negotiations/me → 404), inspect the job to infer
+ * whether it ended as a confirmed match or simply closed without success.
  * @param {string} token
  * @param {*} priorNegotiation last known negotiation from this client (must include job.id)
  */
-export async function celebrateNegotiationSuccessIfJobFilled(token, priorNegotiation) {
-    if (!token || !priorNegotiation?.job?.id) return;
-    if (priorNegotiation.status !== 'active') return;
+export async function getClosedNegotiationNotice(token, priorNegotiation) {
+    if (!token || !priorNegotiation?.job?.id) return null;
+    if (priorNegotiation.status !== 'active') return null;
     try {
         const job = await getJobById(token, priorNegotiation.job.id);
         const s = String(job?.status ?? '').toLowerCase();
         if (s === 'filled') {
-            celebrateNegotiationSuccess();
+            return {
+                tone: 'success',
+                title: 'Match confirmed',
+                body: 'The other side accepted. This shift has been confirmed successfully and it has been added to Scheduled.',
+            };
         }
+        return {
+            tone: 'danger',
+            title: 'Negotiation ended',
+            body: 'The negotiation is no longer active and the shift was not confirmed.',
+        };
     } catch {
-        /* ignore */
+        return null;
     }
 }
