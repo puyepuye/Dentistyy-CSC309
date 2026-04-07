@@ -254,7 +254,15 @@ export default function BusinessNegotiationsPage() {
                             </button>
                         </div>
 
-                        <Link to="/businesses/jobs" className="business-btn business-btn--ghost" style={{ textAlign: 'center' }}>
+                        <Link
+                            to={
+                                activeNeg?.job?.id != null
+                                    ? `/businesses/jobs/${activeNeg.job.id}`
+                                    : '/businesses/jobs'
+                            }
+                            className="business-btn business-btn--ghost"
+                            style={{ textAlign: 'center' }}
+                        >
                             Go to job posting
                         </Link>
                     </div>

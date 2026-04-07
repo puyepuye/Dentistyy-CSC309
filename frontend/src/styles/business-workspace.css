@@ -502,6 +502,22 @@ a.business-jobs-browse__tab--active:visited {
     line-height: 1.45;
 }
 
+/* Business job detail: edit form dimmed while a negotiation is active */
+.business-job-edit--negotiation {
+    opacity: 0.55;
+}
+
+.business-job-edit__negotiation-msg {
+    margin: 0.65rem 0 0.85rem;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-text-heading);
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-bg-app));
+    border: 1px solid color-mix(in srgb, var(--color-accent) 28%, var(--color-border));
+    border-radius: var(--radius-md);
+}
+
 /* Inline edit — public practice view (business profile) */
 .business-public-practice {
     margin-top: 0.25rem;

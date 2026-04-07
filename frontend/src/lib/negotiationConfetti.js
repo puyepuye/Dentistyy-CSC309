@@ -54,6 +54,9 @@ export function celebrateNegotiationSuccess() {
 export async function getClosedNegotiationNotice(token, priorNegotiation) {
     if (!token || !priorNegotiation?.job?.id) return null;
     if (priorNegotiation.status !== 'active') return null;
+    const expiredByTime =
+        priorNegotiation.expiresAt &&
+        Date.now() >= new Date(priorNegotiation.expiresAt).getTime();
     try {
         const job = await getJobById(token, priorNegotiation.job.id);
         const s = String(job?.status ?? '').toLowerCase();
@@ -64,10 +67,17 @@ export async function getClosedNegotiationNotice(token, priorNegotiation) {
                 body: 'The other side accepted. This shift has been confirmed successfully and it has been added to Scheduled.',
             };
         }
+        if (expiredByTime) {
+            return {
+                tone: 'danger',
+                title: 'Negotiation expired',
+                body: 'The negotiation window ended before both sides agreed. You can edit the posting again or start a new negotiation when there is mutual interest.',
+            };
+        }
         return {
             tone: 'danger',
             title: 'Negotiation ended',
-            body: 'The negotiation is no longer active and the shift was not confirmed.',
+            body: 'This negotiation was declined or cancelled. The posting is open again for edits and new interest.',
         };
     } catch {
         return null;

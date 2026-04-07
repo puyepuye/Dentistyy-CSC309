@@ -8,6 +8,7 @@ import {
     getOpenJobs,
     getPositionTypes,
 } from '../../lib/api.js';
+import { formatShiftCardLine } from '../../lib/scheduleDisplay.js';
 
 const EMPTY_INTEREST_BUNDLE = {
     matched: { count: 0, results: [] },
@@ -18,13 +19,6 @@ const EMPTY_INTEREST_BUNDLE = {
 const DEFAULT_LAT = 43.6532;
 const DEFAULT_LON = -79.3832;
 const PAGE_SIZE = 9;
-
-function formatShiftRange(startIso, endIso) {
-    const s = new Date(startIso);
-    const e = new Date(endIso);
-    const o = { hour: 'numeric', minute: '2-digit' };
-    return `${s.toLocaleTimeString(undefined, o)} – ${e.toLocaleTimeString(undefined, o)}`;
-}
 
 function formatJobsFoundLabel(n) {
     return `${n} job${n === 1 ? '' : 's'} found`;
@@ -38,7 +32,7 @@ export function JobCard({ job, showMutual, mutual, detailQuery = '' }) {
     const title = job.position_type?.name ?? 'Job';
     const clinic = job.business?.business_name ?? 'Practice';
     const salary = `$${job.salary_min}–${job.salary_max}/hr`;
-    const shift = formatShiftRange(job.start_time, job.end_time);
+    const shift = formatShiftCardLine(job.start_time, job.end_time);
     const dist =
         job.distance != null && typeof job.distance === 'number'
             ? `${job.distance.toFixed(1)} km`
@@ -97,6 +91,8 @@ export default function StaffJobsPage() {
     const [advancedOpen, setAdvancedOpen] = useState(false);
     const [positionTypeId, setPositionTypeId] = useState('');
     const [businessId, setBusinessId] = useState('');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
 
     const [positionTypes, setPositionTypes] = useState([]);
     const [businesses, setBusinesses] = useState([]);
@@ -160,6 +156,8 @@ export default function StaffJobsPage() {
                 position_type_id: positionTypeId || undefined,
                 business_id: businessId || undefined,
                 q: deferredSearch || undefined,
+                date_from: dateFrom.trim() || undefined,
+                date_to: dateTo.trim() || undefined,
             };
             if (sortConfig.sort === 'distance' || sortConfig.sort === 'eta') {
                 params.lat = lat;
@@ -183,6 +181,8 @@ export default function StaffJobsPage() {
         positionTypeId,
         businessId,
         deferredSearch,
+        dateFrom,
+        dateTo,
     ]);
 
     const loadInterests = useCallback(async () => {
@@ -217,9 +217,11 @@ export default function StaffJobsPage() {
         let n = 0;
         if (positionTypeId) n++;
         if (businessId) n++;
+        if (dateFrom.trim()) n++;
+        if (dateTo.trim()) n++;
         if (sortId !== 'closest') n++;
         return n;
-    }, [positionTypeId, businessId, sortId]);
+    }, [positionTypeId, businessId, sortId, dateFrom, dateTo]);
 
     const totalPagesSearch = Math.max(1, Math.ceil((jobsData.count || 0) / PAGE_SIZE));
     const totalPages = totalPagesSearch;
@@ -268,7 +270,7 @@ export default function StaffJobsPage() {
 
     useEffect(() => {
         setPage(1);
-    }, [sortId, positionTypeId, businessId, deferredSearch]);
+    }, [sortId, positionTypeId, businessId, deferredSearch, dateFrom, dateTo]);
 
     function setJobsTab(next) {
         if (next === 'interested') {
@@ -406,6 +408,28 @@ export default function StaffJobsPage() {
                                             </option>
                                         ))}
                                     </select>
+                                </div>
+                                <div className="business-filters__field">
+                                    <span className="business-filters__label">Shift starts from</span>
+                                    <input
+                                        className="business-filters__input"
+                                        type="date"
+                                        value={dateFrom}
+                                        max={dateTo || undefined}
+                                        onChange={(e) => setDateFrom(e.target.value)}
+                                        aria-label="Filter jobs with shift start on or after this date"
+                                    />
+                                </div>
+                                <div className="business-filters__field">
+                                    <span className="business-filters__label">Shift starts until</span>
+                                    <input
+                                        className="business-filters__input"
+                                        type="date"
+                                        value={dateTo}
+                                        min={dateFrom || undefined}
+                                        onChange={(e) => setDateTo(e.target.value)}
+                                        aria-label="Filter jobs with shift start on or before this date"
+                                    />
                                 </div>
                             </div>
                         ) : null}

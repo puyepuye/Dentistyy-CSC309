@@ -9,16 +9,10 @@ import {
     patchJobInterested,
     startNegotiation,
 } from '../../lib/api.js';
+import { formatShiftDateTimeRange } from '../../lib/scheduleDisplay.js';
 
 const DEFAULT_LAT = 43.6532;
 const DEFAULT_LON = -79.3832;
-
-function formatShiftRange(startIso, endIso) {
-    const s = new Date(startIso);
-    const e = new Date(endIso);
-    const o = { hour: 'numeric', minute: '2-digit' };
-    return `${s.toLocaleTimeString(undefined, o)} – ${e.toLocaleTimeString(undefined, o)}`;
-}
 
 /** Align client state with PATCH /jobs/:id/interested response (before optional GET refresh). */
 const EMPTY_INTEREST = {
@@ -189,7 +183,7 @@ export default function StaffJobDetailPage() {
     const salary =
         job != null ? `$${job.salary_min}–${job.salary_max}/hr` : '';
     const shift =
-        job != null ? formatShiftRange(job.start_time, job.end_time) : '';
+        job != null ? formatShiftDateTimeRange(job.start_time, job.end_time) : '';
     const dist =
         job?.distance != null && typeof job.distance === 'number'
             ? `${job.distance.toFixed(1)} km`

@@ -8,6 +8,10 @@ export default function BusinessJobPostingsFilterBar({
     onPositionTypeIdChange,
     salaryMin,
     onSalaryMinChange,
+    dateFrom,
+    onDateFromChange,
+    dateTo,
+    onDateToChange,
     orderBy,
     onOrderByChange,
     orderDir,
@@ -47,6 +51,28 @@ export default function BusinessJobPostingsFilterBar({
                     value={salaryMin}
                     onChange={(e) => onSalaryMinChange(e.target.value)}
                     aria-label="Minimum salary filter"
+                />
+            </div>
+            <div className="business-filters__field">
+                <span className="business-filters__label">Shift starts from</span>
+                <input
+                    className="business-filters__input"
+                    type="date"
+                    value={dateFrom}
+                    max={dateTo || undefined}
+                    onChange={(e) => onDateFromChange(e.target.value)}
+                    aria-label="Filter jobs with shift start on or after this date"
+                />
+            </div>
+            <div className="business-filters__field">
+                <span className="business-filters__label">Shift starts until</span>
+                <input
+                    className="business-filters__input"
+                    type="date"
+                    value={dateTo}
+                    min={dateFrom || undefined}
+                    onChange={(e) => onDateToChange(e.target.value)}
+                    aria-label="Filter jobs with shift start on or before this date"
                 />
             </div>
             {showSortFields ? (

@@ -731,7 +731,7 @@ router.get('/me/jobs', requireRole('regular'), async (req, res, next) => {
             where = {
                 workerId,
                 endTime: { gt: now },
-                status: { notIn: ['CANCELLED', 'EXPIRED'] },
+                status: { notIn: ['CANCELLED', 'EXPIRED', 'COMPLETED'] },
             };
         } else {
             where = {

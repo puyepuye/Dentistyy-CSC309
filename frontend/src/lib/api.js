@@ -296,6 +296,12 @@ export function getOpenJobs(token, params = {}) {
     if (params.q != null && String(params.q).trim() !== '') {
         q.set('q', String(params.q).trim());
     }
+    if (params.date_from != null && String(params.date_from).trim() !== '') {
+        q.set('date_from', String(params.date_from).trim());
+    }
+    if (params.date_to != null && String(params.date_to).trim() !== '') {
+        q.set('date_to', String(params.date_to).trim());
+    }
     if (params.sort) q.set('sort', params.sort);
     if (params.order) q.set('order', params.order);
     q.set('page', String(params.page ?? 1));

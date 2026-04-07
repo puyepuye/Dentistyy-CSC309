@@ -19,6 +19,37 @@ export function formatShiftDuration(startIso, endIso) {
     return `${h.toFixed(1)}h`;
 }
 
+/** Full date + time range + duration (e.g. job detail, confirmations). */
+export function formatShiftDateTimeRange(startIso, endIso) {
+    const s = new Date(startIso);
+    const e = new Date(endIso);
+    const datePart = s.toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+    const timeOpts = { hour: 'numeric', minute: '2-digit' };
+    const range = `${s.toLocaleTimeString(undefined, timeOpts)} – ${e.toLocaleTimeString(undefined, timeOpts)}`;
+    const dur = formatShiftDuration(startIso, endIso);
+    return dur ? `${datePart} · ${range} (${dur})` : `${datePart} · ${range}`;
+}
+
+/** Job browse cards: calendar date, time range, optional duration (compact). */
+export function formatShiftCardLine(startIso, endIso) {
+    const s = new Date(startIso);
+    const e = new Date(endIso);
+    const datePart = s.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+    const timeOpts = { hour: 'numeric', minute: '2-digit' };
+    const range = `${s.toLocaleTimeString(undefined, timeOpts)} – ${e.toLocaleTimeString(undefined, timeOpts)}`;
+    const dur = formatShiftDuration(startIso, endIso);
+    return dur ? `${datePart} · ${range} · ${dur}` : `${datePart} · ${range}`;
+}
+
 /** e.g. "Mon, 1:30 PM – 8:00 PM (6.5h)" */
 export function formatSchedulePrimary(startIso, endIso) {
     const s = new Date(startIso);
