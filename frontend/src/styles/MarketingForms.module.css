@@ -72,7 +72,7 @@
 }
 
 .btnPrimary {
-    background: var(--color-primary);
+    background: var(--color-brand-dark);
     color: var(--color-text-on-primary);
     border-color: var(--color-primary);
 }
