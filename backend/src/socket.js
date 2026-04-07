@@ -7,6 +7,7 @@ const { JWT_SECRET } = require('./middleware/auth');
 const runtimeSystem = require('./config/runtimeSystem');
 
 const prisma = new PrismaClient();
+let ioInstance = null;
 
 /** @type {Map<number, object[]>} */
 const chatHistoryByNegotiation = new Map();
@@ -56,6 +57,7 @@ function canAccessNegotiation(accountId, role, neg) {
 
 function attach_sockets(server) {
     const io = new Server(server, { cors: { origin: '*' } });
+    ioInstance = io;
 
     io.use((socket, next) => {
         const token = socket.handshake.auth && socket.handshake.auth.token;
@@ -157,4 +159,9 @@ function attach_sockets(server) {
     return io;
 }
 
-module.exports = { attach_sockets };
+function emitNegotiationStatus(negotiationId, payload) {
+    if (!ioInstance || !Number.isInteger(Number(negotiationId))) return;
+    ioInstance.to(`negotiation:${negotiationId}`).emit('negotiation_status', payload);
+}
+
+module.exports = { attach_sockets, emitNegotiationStatus };

@@ -10,13 +10,34 @@ import { celebrateNegotiationSuccess } from '../../lib/negotiationConfetti.js';
 
 export default function StaffNegotiationsPage() {
     const { token } = useAuth();
-    const { negotiation, loading, refresh, secondsRemaining } = useTalentNegotiation();
+    const {
+        negotiation,
+        loading,
+        refresh,
+        secondsRemaining,
+        lastResolution,
+        clearLastResolution,
+        applyNegotiationPayload,
+    } = useTalentNegotiation();
     const [busy, setBusy] = useState(false);
     const [confirm, setConfirm] = useState(null);
+    const [resultNotice, setResultNotice] = useState(null);
+
+    const neg = negotiation?.status === 'active' ? negotiation : null;
 
     useEffect(() => {
-        if (!negotiation) setConfirm(null);
-    }, [negotiation]);
+        if (neg) {
+            setResultNotice(null);
+        } else {
+            setConfirm(null);
+        }
+    }, [neg]);
+
+    useEffect(() => {
+        return () => {
+            clearLastResolution();
+        };
+    }, [clearLastResolution]);
 
     const executeDecision = useCallback(
         async (decision) => {
@@ -24,9 +45,21 @@ export default function StaffNegotiationsPage() {
             setBusy(true);
             try {
                 const next = await patchNegotiationDecision(token, negotiation.id, decision);
+                applyNegotiationPayload(next);
                 setConfirm(null);
                 if (decision === 'accept' && next.status === 'success') {
                     celebrateNegotiationSuccess();
+                    setResultNotice({
+                        tone: 'success',
+                        title: 'Match confirmed',
+                        body: 'Your negotiation was accepted, this shift has been confirmed successfully, and it has been added to Scheduled.',
+                    });
+                } else if (decision === 'decline' || next.status === 'failed') {
+                    setResultNotice({
+                        tone: 'danger',
+                        title: 'Negotiation ended',
+                        body: 'This negotiation was rejected, so it is no longer active.',
+                    });
                 }
                 await refresh();
             } catch (e) {
@@ -35,18 +68,50 @@ export default function StaffNegotiationsPage() {
                 setBusy(false);
             }
         },
-        [token, negotiation, refresh]
+        [token, negotiation, refresh, applyNegotiationPayload]
     );
 
-    const neg = negotiation;
     const totalSec = neg?.negotiation_window_seconds ?? 900;
     const left = secondsRemaining;
     const chatEnded = !neg || left <= 0 || neg.status !== 'active';
     const talentAlreadyAccepted = neg?.decisions?.candidate === 'accept';
 
+    const handleStatusChange = useCallback(
+        (next) => {
+            if (!next || typeof next !== 'object') return;
+            if (busy) return;
+            applyNegotiationPayload(next);
+            if (next.status === 'success') {
+                celebrateNegotiationSuccess();
+                setResultNotice({
+                    tone: 'success',
+                    title: 'Match confirmed',
+                    body: 'The other side accepted. This shift has been confirmed successfully and it has been added to Scheduled.',
+                });
+            } else if (next.status === 'failed') {
+                setResultNotice({
+                    tone: 'danger',
+                    title: 'Negotiation ended',
+                    body: 'This negotiation was rejected, so it is no longer active.',
+                });
+            }
+        },
+        [applyNegotiationPayload, busy]
+    );
+
     return (
         <div className="talent-neg">
             {loading ? <p className="talent-jobs__loading">Loading…</p> : null}
+
+            {!loading && !neg && (resultNotice || lastResolution) ? (
+                <section
+                    className={`talent-card talent-neg__result talent-neg__result--${(resultNotice || lastResolution).tone}`}
+                    role={(resultNotice || lastResolution).tone === 'danger' ? 'alert' : 'status'}
+                >
+                    <h2 className="talent-neg__result-title">{(resultNotice || lastResolution).title}</h2>
+                    <p className="talent-neg__result-text">{(resultNotice || lastResolution).body}</p>
+                </section>
+            ) : null}
 
             {!loading && !neg ? (
                 <section className="talent-card talent-neg__empty">
@@ -74,6 +139,7 @@ export default function StaffNegotiationsPage() {
                             token={token}
                             selfRole="talent"
                             disabled={chatEnded}
+                            onStatusChange={handleStatusChange}
                         />
                     </div>
 

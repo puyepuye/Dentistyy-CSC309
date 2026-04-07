@@ -5,6 +5,7 @@ const { PrismaClient } = require('@prisma/client');
 const { sendError } = require('../utils/errors');
 const { requireRole } = require('../middleware/auth');
 const { validateNoExtraKeys } = require('../utils/validation');
+const { emitNegotiationStatus } = require('../socket');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -448,6 +449,8 @@ router.patch('/me/decision', requireRole('regular', 'business'), async (req, res
                 response.decisions.business = 'decline';
             }
         }
+
+        emitNegotiationStatus(negotiation.id, response);
 
         return res.status(200).json(response);
     } catch (e) {

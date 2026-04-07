@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
 import { getMyNegotiation } from '../lib/api.js';
-import { celebrateNegotiationSuccessIfJobFilled } from '../lib/negotiationConfetti.js';
 
 const BusinessNegotiationContext = createContext(null);
 
@@ -34,7 +33,6 @@ export function BusinessNegotiationProvider({ children }) {
         } catch (e) {
             const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
             if (status === 404) {
-                await celebrateNegotiationSuccessIfJobFilled(token, priorNeg);
                 setNegotiation(null);
             }
         } finally {

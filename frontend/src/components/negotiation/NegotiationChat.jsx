@@ -4,9 +4,9 @@ import { API_BASE_URL } from '../../lib/api.js';
 
 /**
  * Real-time negotiation chat (Socket.IO). Messages are kept in server memory for the session.
- * @param {{ negotiationId: number, token: string, selfRole: 'talent' | 'business', disabled?: boolean }} props
+ * @param {{ negotiationId: number, token: string, selfRole: 'talent' | 'business', disabled?: boolean, onStatusChange?: (payload: any) => void }} props
  */
-export default function NegotiationChat({ negotiationId, token, selfRole, disabled = false }) {
+export default function NegotiationChat({ negotiationId, token, selfRole, disabled = false, onStatusChange }) {
     const [messages, setMessages] = useState([]);
     const [draft, setDraft] = useState('');
     const [status, setStatus] = useState('connecting');
@@ -33,6 +33,10 @@ export default function NegotiationChat({ negotiationId, token, selfRole, disabl
             });
         });
 
+        socket.on('negotiation_status', (payload) => {
+            onStatusChange?.(payload);
+        });
+
         socket.emit('join_negotiation', negotiationId, (ack) => {
             if (ack && ack.ok && Array.isArray(ack.history)) {
                 setMessages(ack.history);
@@ -43,7 +47,7 @@ export default function NegotiationChat({ negotiationId, token, selfRole, disabl
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [token, negotiationId]);
+    }, [token, negotiationId, onStatusChange]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

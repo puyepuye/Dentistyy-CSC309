@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useBusinessNegotiation } from '../../contexts/BusinessNegotiationContext.jsx';
 import NegotiationDecisionConfirm from '../../components/negotiation/NegotiationDecisionConfirm.jsx';
 import NegotiationChat from '../../components/negotiation/NegotiationChat.jsx';
 import NegotiationTimerDonut from '../../components/negotiation/NegotiationTimerDonut.jsx';
 import { getMyNegotiation, patchNegotiationDecision } from '../../lib/api.js';
 import {
     celebrateNegotiationSuccess,
-    celebrateNegotiationSuccessIfJobFilled,
+    getClosedNegotiationNotice,
 } from '../../lib/negotiationConfetti.js';
 
 function secondsRemaining(iso) {
@@ -17,12 +18,14 @@ function secondsRemaining(iso) {
 
 export default function BusinessNegotiationsPage() {
     const { token } = useAuth();
+    const { applyNegotiationPayload } = useBusinessNegotiation();
     const [neg, setNeg] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [clock, setClock] = useState(0);
     const [busy, setBusy] = useState(false);
     const [confirm, setConfirm] = useState(null);
+    const [resultNotice, setResultNotice] = useState(null);
     const negRef = useRef(null);
     useEffect(() => {
         negRef.current = neg;
@@ -39,10 +42,15 @@ export default function BusinessNegotiationsPage() {
             const n = await getMyNegotiation(token);
             setNeg(n);
             setError(null);
+            if (n) setResultNotice(null);
         } catch (e) {
             const status = e && typeof e === 'object' && 'status' in e ? e.status : undefined;
             if (status === 404) {
-                await celebrateNegotiationSuccessIfJobFilled(token, priorNeg);
+                const notice = await getClosedNegotiationNotice(token, priorNeg);
+                if (notice?.tone === 'success') {
+                    celebrateNegotiationSuccess();
+                }
+                setResultNotice(notice);
                 setNeg(null);
                 setError(null);
             } else {
@@ -70,9 +78,15 @@ export default function BusinessNegotiationsPage() {
         return () => clearInterval(id);
     }, [neg]);
 
+    const activeNeg = neg?.status === 'active' ? neg : null;
+
     useEffect(() => {
-        if (!neg) setConfirm(null);
-    }, [neg]);
+        if (activeNeg) {
+            setResultNotice(null);
+        } else {
+            setConfirm(null);
+        }
+    }, [activeNeg]);
 
     const executeDecision = useCallback(
         async (decision) => {
@@ -80,9 +94,22 @@ export default function BusinessNegotiationsPage() {
             setBusy(true);
             try {
                 const next = await patchNegotiationDecision(token, neg.id, decision);
+                setNeg(next);
+                applyNegotiationPayload(next);
                 setConfirm(null);
                 if (decision === 'accept' && next.status === 'success') {
                     celebrateNegotiationSuccess();
+                    setResultNotice({
+                        tone: 'success',
+                        title: 'Match confirmed',
+                        body: 'Your negotiation was accepted, this shift has been confirmed successfully, and it has been added to Scheduled.',
+                    });
+                } else if (decision === 'decline' || next.status === 'failed') {
+                    setResultNotice({
+                        tone: 'danger',
+                        title: 'Negotiation ended',
+                        body: 'This negotiation was rejected, so it is no longer active.',
+                    });
                 }
                 await load();
             } catch (e) {
@@ -91,17 +118,41 @@ export default function BusinessNegotiationsPage() {
                 setBusy(false);
             }
         },
-        [token, neg, load]
+        [token, neg, load, applyNegotiationPayload]
     );
 
-    const left = useMemo(() => secondsRemaining(neg?.expiresAt), [neg?.expiresAt, clock]);
-    const totalSec = neg?.negotiation_window_seconds ?? 900;
-    const chatEnded = !neg || left <= 0 || neg.status !== 'active';
-    const businessAlreadyAccepted = neg?.decisions?.business === 'accept';
+    const left = useMemo(() => secondsRemaining(activeNeg?.expiresAt), [activeNeg?.expiresAt, clock]);
+    const totalSec = activeNeg?.negotiation_window_seconds ?? 900;
+    const chatEnded = !activeNeg || left <= 0 || activeNeg.status !== 'active';
+    const businessAlreadyAccepted = activeNeg?.decisions?.business === 'accept';
 
-    const candidateLabel = neg
-        ? `${neg.user?.first_name ?? ''} ${neg.user?.last_name ?? ''}`.trim() || 'Candidate'
+    const candidateLabel = activeNeg
+        ? `${activeNeg.user?.first_name ?? ''} ${activeNeg.user?.last_name ?? ''}`.trim() || 'Candidate'
         : 'Candidate';
+
+    const handleStatusChange = useCallback(
+        (next) => {
+            if (!next || typeof next !== 'object') return;
+            if (busy) return;
+            setNeg(next);
+            applyNegotiationPayload(next);
+            if (next.status === 'success') {
+                celebrateNegotiationSuccess();
+                setResultNotice({
+                    tone: 'success',
+                    title: 'Match confirmed',
+                    body: 'The other side accepted. This shift has been confirmed successfully and it has been added to Scheduled.',
+                });
+            } else if (next.status === 'failed') {
+                setResultNotice({
+                    tone: 'danger',
+                    title: 'Negotiation ended',
+                    body: 'This negotiation was rejected, so it is no longer active.',
+                });
+            }
+        },
+        [applyNegotiationPayload, busy]
+    );
 
     return (
         <div className="talent-neg">
@@ -113,7 +164,17 @@ export default function BusinessNegotiationsPage() {
                 </p>
             ) : null}
 
-            {!loading && !neg ? (
+            {!loading && !activeNeg && resultNotice ? (
+                <section
+                    className={`talent-card talent-neg__result talent-neg__result--${resultNotice.tone}`}
+                    role={resultNotice.tone === 'danger' ? 'alert' : 'status'}
+                >
+                    <h2 className="talent-neg__result-title">{resultNotice.title}</h2>
+                    <p className="talent-neg__result-text">{resultNotice.body}</p>
+                </section>
+            ) : null}
+
+            {!loading && !activeNeg ? (
                 <section className="talent-card talent-neg__empty">
                     <p className="talent-bio__resume-missing">
                         No active negotiation. When you match with a candidate, open one from the job detail page to agree
@@ -125,20 +186,21 @@ export default function BusinessNegotiationsPage() {
                 </section>
             ) : null}
 
-            {!loading && neg ? (
+            {!loading && activeNeg ? (
                 <div className="talent-neg__grid">
                     <div className="talent-neg__card">
                         <div className="talent-neg__card-head">
                             <h2>{candidateLabel}</h2>
                             <p>
-                                Current negotiation · {neg.job?.position_type?.name}
+                                Current negotiation · {activeNeg.job?.position_type?.name}
                             </p>
                         </div>
                         <NegotiationChat
-                            negotiationId={neg.id}
+                            negotiationId={activeNeg.id}
                             token={token}
                             selfRole="business"
                             disabled={chatEnded}
+                            onStatusChange={handleStatusChange}
                         />
                     </div>
 
@@ -151,9 +213,9 @@ export default function BusinessNegotiationsPage() {
                                 <li>
                                     You:{' '}
                                     <strong>
-                                        {neg.decisions?.business === 'accept'
+                                        {activeNeg.decisions?.business === 'accept'
                                             ? 'Accepted'
-                                            : neg.decisions?.business === 'decline'
+                                            : activeNeg.decisions?.business === 'decline'
                                               ? 'Declined'
                                               : 'Pending'}
                                     </strong>
@@ -161,9 +223,9 @@ export default function BusinessNegotiationsPage() {
                                 <li>
                                     {candidateLabel}:{' '}
                                     <strong>
-                                        {neg.decisions?.candidate === 'accept'
+                                        {activeNeg.decisions?.candidate === 'accept'
                                             ? 'Accepted'
-                                            : neg.decisions?.candidate === 'decline'
+                                            : activeNeg.decisions?.candidate === 'decline'
                                               ? 'Declined'
                                               : 'Pending'}
                                     </strong>
@@ -176,7 +238,7 @@ export default function BusinessNegotiationsPage() {
                                 type="button"
                                 className="business-btn business-btn--primary"
                                 disabled={
-                                    busy || left <= 0 || neg.status !== 'active' || businessAlreadyAccepted
+                                    busy || left <= 0 || activeNeg.status !== 'active' || businessAlreadyAccepted
                                 }
                                 onClick={() => setConfirm('accept')}
                             >
@@ -185,7 +247,7 @@ export default function BusinessNegotiationsPage() {
                             <button
                                 type="button"
                                 className="business-btn business-btn--ghost"
-                                disabled={busy || left <= 0 || neg.status !== 'active'}
+                                disabled={busy || left <= 0 || activeNeg.status !== 'active'}
                                 onClick={() => setConfirm('decline')}
                             >
                                 Reject
