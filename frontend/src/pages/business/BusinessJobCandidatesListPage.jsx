@@ -111,19 +111,6 @@ export default function BusinessJobCandidatesListPage() {
         setPreview(null);
     }
 
-    const refreshManage = useCallback(async () => {
-        await loadManage();
-    }, [loadManage]);
-
-    useEffect(() => {
-        const t = setTimeout(() => setDebouncedSearch(searchInput.trim()), 320);
-        return () => clearTimeout(t);
-    }, [searchInput]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [debouncedSearch]);
-
     const loadManage = useCallback(async () => {
         if (!token || !Number.isInteger(id) || id < 1) return;
         setManageLoading(true);
@@ -149,6 +136,21 @@ export default function BusinessJobCandidatesListPage() {
             setManageLoading(false);
         }
     }, [token, id]);
+
+    const refreshManage = useCallback(async () => {
+        await loadManage();
+    }, [loadManage]);
+
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearch(searchInput.trim()), 320);
+        return () => clearTimeout(t);
+    }, [searchInput]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [debouncedSearch]);
+
+    
 
     useEffect(() => {
         if (view !== 'manage') return;
