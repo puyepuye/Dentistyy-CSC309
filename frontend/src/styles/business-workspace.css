@@ -1641,6 +1641,17 @@ a.business-jobs-browse__tab--active:visited {
     color: var(--color-text-subtle);
 }
 
+.business-scheduled-list {
+    max-width: min(100%, 58rem);
+    margin-inline: 0 auto;
+}
+
+@media (min-width: 1400px) {
+    .business-scheduled-list {
+        max-width: min(100%, 64rem);
+    }
+}
+
 .business-neg-timer {
     font-variant-numeric: tabular-nums;
     font-weight: 700;

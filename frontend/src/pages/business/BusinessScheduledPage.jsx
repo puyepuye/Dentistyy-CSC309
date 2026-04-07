@@ -146,7 +146,7 @@ export default function BusinessScheduledPage() {
                                 : 'No completed or cancelled assigned shifts yet.'}
                         </p>
                     ) : (
-                        <div className="staff-scheduled-list" role="list">
+                        <div className="staff-scheduled-list business-scheduled-list" role="list">
                             {activeList.map((job) => (
                                 <BusinessScheduleRow
                                     key={job.id}
