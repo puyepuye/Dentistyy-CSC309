@@ -1,4 +1,22 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+/** Backend origin (no trailing slash). Production: set VITE_BACKEND_URL on the frontend build (e.g. https://….up.railway.app). */
+const API_BASE_URL = (() => {
+    const raw =
+        import.meta.env.VITE_BACKEND_URL ||
+        import.meta.env.VITE_API_BASE_URL ||
+        import.meta.env.PUBLIC_API_BASE_URL ||
+        import.meta.env.API_BASE_URL ||
+        '';
+    const trimmed = typeof raw === 'string' ? raw.trim().replace(/\/$/, '') : '';
+    if (trimmed) return trimmed;
+    // Local dev only — production builds must not fall back to localhost.
+    if (import.meta.env.DEV) return 'http://localhost:3000';
+    if (import.meta.env.PROD) {
+        console.error(
+            '[api] Set VITE_BACKEND_URL (or VITE_API_BASE_URL) when building for production.'
+        );
+    }
+    return '';
+})();
 
 /** @param {string | null | undefined} path */
 export function assetUrl(path) {
