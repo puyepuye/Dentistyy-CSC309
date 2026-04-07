@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { getMyWorkerJobs } from '../../lib/api.js';
@@ -89,7 +89,18 @@ export default function StaffScheduledPage() {
         load();
     }, [load]);
 
-    const activeList = tab === 'upcoming' ? upcoming.results : past.results;
+    /** Upcoming = not ended, and not completed / cancelled / expired (aligns with GET /users/me/jobs?scope=upcoming). */
+    const upcomingRows = useMemo(() => {
+        const now = Date.now();
+        return (upcoming.results || []).filter((job) => {
+            const s = String(job.status ?? '').toLowerCase();
+            if (['cancelled', 'completed', 'expired'].includes(s)) return false;
+            const end = new Date(job.end_time).getTime();
+            return Number.isFinite(end) && end > now;
+        });
+    }, [upcoming.results]);
+
+    const activeList = tab === 'upcoming' ? upcomingRows : past.results;
     return (
         <div className="business-job-postings business-job-postings--browse staff-jobs-page staff-scheduled-page">
             <header className="business-jobs-browse__hero">
@@ -99,7 +110,7 @@ export default function StaffScheduledPage() {
                         <p className="business-jobs-browse__subtitle staff-scheduled-page__meta" aria-live="polite">
                             {loading
                                 ? 'Loading…'
-                                : `${upcoming.count} upcoming · ${past.count} past`}
+                                : `${upcomingRows.length} upcoming · ${past.count} past`}
                         </p>
                     </div>
                 </div>

@@ -18,6 +18,7 @@ const fs = require('fs');
 
 const prisma = new PrismaClient();
 const runtimeSystem = require('../config/runtimeSystem');
+const { isPendingNegotiationActive } = require('../utils/negotiationExpiry');
 const RESET_EXPIRY_DAYS = 7;
 
 const allowedRegisterKeys = [
@@ -713,6 +714,8 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             'salary_max',
             'start_time',
             'end_time',
+            'date_from',
+            'date_to',
             'status',
             'page',
             'limit',
@@ -727,12 +730,63 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             salary_max,
             start_time,
             end_time,
+            date_from: dateFromRaw,
+            date_to: dateToRaw,
             status,
             page = '1',
             limit = '10',
             order_by,
             order: orderParam,
         } = req.query;
+
+        /** @param {string | undefined} s */
+        function parseDateOnlyUtcStart(s) {
+            if (s === undefined || typeof s !== 'string') return null;
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.trim());
+            if (!m) return null;
+            const y = Number(m[1]);
+            const mo = Number(m[2]);
+            const d = Number(m[3]);
+            if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+            const dt = new Date(Date.UTC(y, mo - 1, d, 0, 0, 0, 0));
+            if (Number.isNaN(dt.getTime())) return null;
+            if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+            return dt;
+        }
+
+        /** @param {string | undefined} s */
+        function parseDateOnlyUtcEnd(s) {
+            if (s === undefined || typeof s !== 'string') return null;
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.trim());
+            if (!m) return null;
+            const y = Number(m[1]);
+            const mo = Number(m[2]);
+            const d = Number(m[3]);
+            if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+            const dt = new Date(Date.UTC(y, mo - 1, d, 23, 59, 59, 999));
+            if (Number.isNaN(dt.getTime())) return null;
+            return dt;
+        }
+
+        let dateFromDt = null;
+        let dateToDt = null;
+        if (dateFromRaw !== undefined) {
+            if (typeof dateFromRaw !== 'string' || !dateFromRaw.trim()) {
+                return sendError(res, 400, 'Invalid query');
+            }
+            dateFromDt = parseDateOnlyUtcStart(dateFromRaw);
+            if (!dateFromDt) return sendError(res, 400, 'Invalid query');
+        }
+        if (dateToRaw !== undefined) {
+            if (typeof dateToRaw !== 'string' || !dateToRaw.trim()) {
+                return sendError(res, 400, 'Invalid query');
+            }
+            dateToDt = parseDateOnlyUtcEnd(dateToRaw);
+            if (!dateToDt) return sendError(res, 400, 'Invalid query');
+        }
+        if (dateFromDt && dateToDt && dateFromDt.getTime() > dateToDt.getTime()) {
+            return sendError(res, 400, 'Invalid query');
+        }
 
         const pageNum = Number(page);
         const limitNum = Number(limit);
@@ -825,13 +879,30 @@ router.get('/me/jobs', requireRole('business'), async (req, res, next) => {
             return sendError(res, 404, 'Not Found');
         }
 
+        /** @type {{ gte?: Date; lte?: Date }} */
+        let startTimeWhere = {};
+        if (dateFromDt && dateToDt) {
+            startTimeWhere = { gte: dateFromDt, lte: dateToDt };
+        } else if (dateFromDt) {
+            startTimeWhere = { gte: dateFromDt };
+        } else if (dateToDt) {
+            startTimeWhere = { lte: dateToDt };
+        }
+        if (startTime !== undefined) {
+            const prevGte = startTimeWhere.gte;
+            const lower = prevGte
+                ? new Date(Math.max(prevGte.getTime(), startTime.getTime()))
+                : startTime;
+            startTimeWhere = { ...startTimeWhere, gte: lower };
+        }
+
         const where = {
             businessId: business.id,
             status: { in: statuses },
             ...(positionTypeIdNum !== undefined && { positionTypeId: positionTypeIdNum }),
             ...(salaryMinNum !== undefined && { salaryMin: { gte: salaryMinNum } }),
             ...(salaryMaxNum !== undefined && { salaryMax: { gte: salaryMaxNum } }),
-            ...(startTime !== undefined && { startTime: { gte: startTime } }),
+            ...(Object.keys(startTimeWhere).length > 0 && { startTime: startTimeWhere }),
             ...(endTime !== undefined && { endTime: { lte: endTime } }),
         };
 
@@ -971,6 +1042,14 @@ router.patch('/me/jobs/:jobId', requireRole('business'), async (req, res, next) 
             return sendError(res, 409, 'Conflict');
         }
 
+        const pendingNegotiation = await prisma.negotiation.findFirst({
+            where: { jobId, status: 'PENDING' },
+            select: { id: true, status: true, createdAt: true },
+        });
+        if (pendingNegotiation && isPendingNegotiationActive(pendingNegotiation)) {
+            return sendError(res, 409, 'Conflict');
+        }
+
         const updates = { };
         const response = { id: jobId };
 
@@ -1098,7 +1177,9 @@ router.delete('/me/jobs/:jobId', requireRole('business'), async (req, res, next)
             return sendError(res, 404, 'Not Found');
         }
 
-        const activeNegotiation = job.negotiations.some((n) => n.status === 'PENDING');
+        const activeNegotiation = job.negotiations.some(
+            (n) => n.status === 'PENDING' && isPendingNegotiationActive(n)
+        );
 
         const deletableStatuses = ['OPEN', 'EXPIRED'];
         if (!deletableStatuses.includes(job.status) || activeNegotiation) {

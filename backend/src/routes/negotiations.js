@@ -9,19 +9,11 @@ const { emitNegotiationStatus } = require('../socket');
 
 const router = express.Router();
 const prisma = new PrismaClient();
-const runtimeSystem = require('../config/runtimeSystem');
-
-function getNegotiationWindowSeconds() {
-    return runtimeSystem.getNegotiationWindowSeconds();
-}
-
-function getExpiresAt(negotiation, windowSeconds) {
-    return new Date(negotiation.createdAt.getTime() + windowSeconds * 1000);
-}
-
-function isNegotiationExpired(negotiation, windowSeconds) {
-    return Date.now() >= getExpiresAt(negotiation, windowSeconds).getTime();
-}
+const {
+    getExpiresAt,
+    isNegotiationExpired,
+    getNegotiationWindowSeconds,
+} = require('../utils/negotiationExpiry');
 
 function toDecisionLabel(value) {
     return value ? 'accept' : null;
@@ -311,6 +303,15 @@ router.get('/me', requireRole('regular', 'business'), async (req, res, next) => 
 
         const windowSeconds = getNegotiationWindowSeconds();
         if (isNegotiationExpired(negotiation, windowSeconds)) {
+            await prisma.$transaction(async (tx) => {
+                await tx.negotiation.update({
+                    where: { id: negotiation.id },
+                    data: { status: 'REJECTED' },
+                });
+                await tx.interest.deleteMany({
+                    where: { jobId: negotiation.jobId, userId: negotiation.userId },
+                });
+            });
             return sendError(res, 404, 'Not Found');
         }
 

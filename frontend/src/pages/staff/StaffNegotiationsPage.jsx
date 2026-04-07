@@ -193,8 +193,12 @@ export default function StaffNegotiationsPage() {
                             </button>
                         </div>
 
-                        <Link to="/talent/jobs" className="business-btn business-btn--ghost" style={{ textAlign: 'center' }}>
-                            Browse jobs
+                        <Link
+                            to={neg?.job?.id != null ? `/talent/jobs/${neg.job.id}` : '/talent/jobs'}
+                            className="business-btn business-btn--ghost"
+                            style={{ textAlign: 'center' }}
+                        >
+                            {neg?.job?.id != null ? 'View this job' : 'Browse jobs'}
                         </Link>
                     </div>
                 </div>

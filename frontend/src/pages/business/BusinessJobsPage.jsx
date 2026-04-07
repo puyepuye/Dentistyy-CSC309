@@ -21,6 +21,8 @@ export default function BusinessJobsPage() {
     const [positionTypes, setPositionTypes] = useState([]);
     const [positionTypeId, setPositionTypeId] = useState('');
     const [salaryMin, setSalaryMin] = useState('');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
     const [statusFilters, setStatusFilters] = useState(() => new Set(STATUS_KEYS));
     const [orderBy, setOrderBy] = useState('updated_at');
     const [orderDir, setOrderDir] = useState('desc');
@@ -50,6 +52,8 @@ export default function BusinessJobsPage() {
             if (salaryMin.trim() !== '' && !Number.isNaN(Number(salaryMin))) {
                 params.salary_min = salaryMin.trim();
             }
+            if (dateFrom.trim()) params.date_from = dateFrom.trim();
+            if (dateTo.trim()) params.date_to = dateTo.trim();
             const st = STATUS_KEYS.filter((k) => statusFilters.has(k));
             if (st.length > 0) params.status = st;
             const res = await getBusinessMyJobs(token, params);
@@ -65,7 +69,7 @@ export default function BusinessJobsPage() {
             if (loadId !== latestLoadIdRef.current) return;
             setLoading(false);
         }
-    }, [token, page, limit, orderBy, orderDir, positionTypeId, salaryMin, statusFilters]);
+    }, [token, page, limit, orderBy, orderDir, positionTypeId, salaryMin, dateFrom, dateTo, statusFilters]);
 
     useEffect(() => {
         load();
@@ -140,10 +144,12 @@ export default function BusinessJobsPage() {
         let n = 0;
         if (positionTypeId) n++;
         if (salaryMin.trim()) n++;
+        if (dateFrom.trim()) n++;
+        if (dateTo.trim()) n++;
         if (sortPresetId !== 'updated_desc') n++;
         if (statusFilters.size < STATUS_KEYS.length) n++;
         return n;
-    }, [positionTypeId, salaryMin, sortPresetId, statusFilters]);
+    }, [positionTypeId, salaryMin, dateFrom, dateTo, sortPresetId, statusFilters]);
 
     const resultsLine = useMemo(() => {
         if (searchQuery.trim()) {
@@ -204,6 +210,16 @@ export default function BusinessJobsPage() {
                         salaryMin={salaryMin}
                         onSalaryMinChange={(v) => {
                             setSalaryMin(v);
+                            setPage(1);
+                        }}
+                        dateFrom={dateFrom}
+                        onDateFromChange={(v) => {
+                            setDateFrom(v);
+                            setPage(1);
+                        }}
+                        dateTo={dateTo}
+                        onDateToChange={(v) => {
+                            setDateTo(v);
                             setPage(1);
                         }}
                         orderBy={orderBy}

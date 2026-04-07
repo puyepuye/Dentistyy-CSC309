@@ -9,6 +9,7 @@ const { validateNoExtraKeys } = require('../utils/validation');
 
 
 const prisma = new PrismaClient();
+const { isPendingNegotiationActive } = require('../utils/negotiationExpiry');
 
 /** Talent browsing counts as “using the app” for activity-based discovery. */
 async function bumpTalentLastActive(req) {
@@ -71,6 +72,8 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
       'page',
       'limit',
       'q',
+      'date_from',
+      'date_to',
     ]);
     if (!valid) return sendError(res, 400, 'Invalid query');
 
@@ -84,7 +87,58 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
       page = '1',
       limit = '10',
       q: qRaw,
+      date_from: dateFromRaw,
+      date_to: dateToRaw,
     } = req.query;
+
+    /** @param {string | undefined} s */
+    function parseDateOnlyUtcStart(s) {
+      if (s === undefined || typeof s !== 'string') return null;
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.trim());
+      if (!m) return null;
+      const y = Number(m[1]);
+      const mo = Number(m[2]);
+      const d = Number(m[3]);
+      if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+      const dt = new Date(Date.UTC(y, mo - 1, d, 0, 0, 0, 0));
+      if (Number.isNaN(dt.getTime())) return null;
+      if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+      return dt;
+    }
+
+    /** @param {string | undefined} s */
+    function parseDateOnlyUtcEnd(s) {
+      if (s === undefined || typeof s !== 'string') return null;
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.trim());
+      if (!m) return null;
+      const y = Number(m[1]);
+      const mo = Number(m[2]);
+      const d = Number(m[3]);
+      if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+      const dt = new Date(Date.UTC(y, mo - 1, d, 23, 59, 59, 999));
+      if (Number.isNaN(dt.getTime())) return null;
+      return dt;
+    }
+
+    let dateFromDt = null;
+    let dateToDt = null;
+    if (dateFromRaw !== undefined) {
+      if (typeof dateFromRaw !== 'string' || !dateFromRaw.trim()) {
+        return sendError(res, 400, 'Invalid query');
+      }
+      dateFromDt = parseDateOnlyUtcStart(dateFromRaw);
+      if (!dateFromDt) return sendError(res, 400, 'Invalid query');
+    }
+    if (dateToRaw !== undefined) {
+      if (typeof dateToRaw !== 'string' || !dateToRaw.trim()) {
+        return sendError(res, 400, 'Invalid query');
+      }
+      dateToDt = parseDateOnlyUtcEnd(dateToRaw);
+      if (!dateToDt) return sendError(res, 400, 'Invalid query');
+    }
+    if (dateFromDt && dateToDt && dateFromDt.getTime() > dateToDt.getTime()) {
+      return sendError(res, 400, 'Invalid query');
+    }
 
     let qTrim = '';
     if (qRaw !== undefined) {
@@ -155,6 +209,16 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
     const regularUserId = req.account.regularUser.id;
     const distanceSort = sort === 'distance' || sort === 'eta';
 
+    /** Shift start falls within optional inclusive calendar range (UTC date boundaries). */
+    let startTimeWhere = {};
+    if (dateFromDt && dateToDt) {
+      startTimeWhere = { gte: dateFromDt, lte: dateToDt };
+    } else if (dateFromDt) {
+      startTimeWhere = { gte: dateFromDt };
+    } else if (dateToDt) {
+      startTimeWhere = { lte: dateToDt };
+    }
+
     const where = {
       status: 'OPEN',
       positionType: {
@@ -164,6 +228,7 @@ router.get('/', requireRole('regular'), async (req, res, next) => {
       },
       ...(positionTypeIdNum !== undefined && { positionTypeId: positionTypeIdNum }),
       ...(businessIdNum !== undefined && { business: { accountId: businessIdNum } }),
+      ...(Object.keys(startTimeWhere).length > 0 && { startTime: startTimeWhere }),
       ...(qTrim.length > 0 && {
         OR: [
           { positionType: { name: { contains: qTrim, mode: 'insensitive' } } },
@@ -408,9 +473,10 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       };
       const pendingNeg = await prisma.negotiation.findFirst({
         where: { jobId: job.id, userId: regularUserId, status: 'PENDING' },
-        select: { id: true },
+        select: { id: true, status: true, createdAt: true },
       });
-      response.negotiation_pending_id = pendingNeg?.id ?? null;
+      response.negotiation_pending_id =
+        pendingNeg && isPendingNegotiationActive(pendingNeg) ? pendingNeg.id : null;
     }
 
     if (role === 'regular' && hasLat && hasLon) {
@@ -424,6 +490,14 @@ router.get('/:jobId', requireRole('regular', 'business'), async (req, res, next)
       const distKm = haversineKm(userLat, userLon, job.business.lat, job.business.lon);
       response.distance = distKm;
       response.eta = etaMinutes(distKm);
+    }
+
+    if (role === 'business') {
+      const pendingNeg = await prisma.negotiation.findFirst({
+        where: { jobId: job.id, status: 'PENDING' },
+        select: { id: true, status: true, createdAt: true },
+      });
+      response.has_pending_negotiation = pendingNeg != null && isPendingNegotiationActive(pendingNeg);
     }
 
     return res.status(200).json(response);
@@ -560,7 +634,7 @@ router.patch(
           return sendError(res, 409, 'Job is no longer available.');
         }
   
-        if (job.negotiations.length > 0) {
+        if (job.negotiations.some((n) => isPendingNegotiationActive(n))) {
           return sendError(res, 409, 'You are currently in a negotiation for this job.' );
         }
   

@@ -74,8 +74,9 @@ export default function BusinessJobDetailPage() {
     }, [load]);
 
     const now = new Date();
-    const canEdit =
+    const showEditSection =
         job && job.status === 'open' && now < new Date(job.start_time);
+    const editBlockedByNegotiation = Boolean(job?.has_pending_negotiation);
     const canNoShow =
         job &&
         job.status === 'filled' &&
@@ -251,14 +252,23 @@ export default function BusinessJobDetailPage() {
                 ) : null}
             </section>
 
-            {canEdit ? (
-                <section className="talent-card" aria-labelledby="edit-job-heading">
+            {showEditSection ? (
+                <section
+                    className={`talent-card${editBlockedByNegotiation ? ' business-job-edit--negotiation' : ''}`}
+                    aria-labelledby="edit-job-heading"
+                    aria-disabled={editBlockedByNegotiation ? 'true' : undefined}
+                >
                     <h2 className="talent-card__title" id="edit-job-heading">
                         Edit posting
                     </h2>
                     <p className="business-card__hint">
                         Changes are only allowed while the job is open and before the shift start time.
                     </p>
+                    {editBlockedByNegotiation ? (
+                        <p className="business-job-edit__negotiation-msg" role="status">
+                            Job in negotiation cannot be edited.
+                        </p>
+                    ) : null}
                     <form onSubmit={handleSaveEdit}>
                         {editErr ? (
                             <p className="talent-profile__error" role="alert">
@@ -282,6 +292,7 @@ export default function BusinessJobDetailPage() {
                                         clearEditFieldError('salaryMax');
                                     }}
                                     aria-invalid={editFieldErrors.salaryMin ? 'true' : 'false'}
+                                    disabled={editBlockedByNegotiation}
                                     required
                                 />
                                 {editFieldErrors.salaryMin ? (
@@ -305,6 +316,7 @@ export default function BusinessJobDetailPage() {
                                         clearEditFieldError('salaryMax');
                                     }}
                                     aria-invalid={editFieldErrors.salaryMax ? 'true' : 'false'}
+                                    disabled={editBlockedByNegotiation}
                                     required
                                 />
                                 {editFieldErrors.salaryMax ? (
@@ -330,6 +342,7 @@ export default function BusinessJobDetailPage() {
                                         clearEditFieldError('endLocal');
                                     }}
                                     aria-invalid={editFieldErrors.startLocal ? 'true' : 'false'}
+                                    disabled={editBlockedByNegotiation}
                                     required
                                 />
                                 {editFieldErrors.startLocal ? (
@@ -352,6 +365,7 @@ export default function BusinessJobDetailPage() {
                                         clearEditFieldError('endLocal');
                                     }}
                                     aria-invalid={editFieldErrors.endLocal ? 'true' : 'false'}
+                                    disabled={editBlockedByNegotiation}
                                     required
                                 />
                                 {editFieldErrors.endLocal ? (
@@ -375,6 +389,7 @@ export default function BusinessJobDetailPage() {
                                     clearEditFieldError('note');
                                 }}
                                 aria-invalid={editFieldErrors.note ? 'true' : 'false'}
+                                disabled={editBlockedByNegotiation}
                             />
                             {editFieldErrors.note ? (
                                 <p className="business-form__field-error" role="alert">
@@ -386,7 +401,7 @@ export default function BusinessJobDetailPage() {
                             <button
                                 type="submit"
                                 className="business-btn business-btn--primary"
-                                disabled={editBusy}
+                                disabled={editBusy || editBlockedByNegotiation}
                             >
                                 {editBusy ? 'Saving…' : 'Save changes'}
                             </button>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { formatShiftCardLine } from '../../../lib/scheduleDisplay.js';
 import BusinessJobStatusBadge from './BusinessJobStatusBadge.jsx';
 
 function formatSalarySingle(min, max) {
@@ -12,14 +13,6 @@ function formatSalarySingle(min, max) {
     }
     if (Number.isFinite(b)) return `$${Math.round(b).toLocaleString()}`;
     return '-';
-}
-
-function formatShift(startIso, endIso) {
-    if (!startIso || !endIso) return '-';
-    const opts = { hour: 'numeric', minute: '2-digit' };
-    const s = new Date(startIso).toLocaleTimeString(undefined, opts);
-    const e = new Date(endIso).toLocaleTimeString(undefined, opts);
-    return `${s} – ${e}`;
 }
 
 /** Practice job card: mock layout (navy accent, no letter badge). */
@@ -52,7 +45,11 @@ export default function BusinessJobPostingCard({ job, practiceName }) {
                     <i className="fas fa-wallet" aria-hidden />
                     <span>{formatSalarySingle(job.salary_min, job.salary_max)}</span>
                 </p>
-                <p className="business-job-card__shift">{formatShift(job.start_time, job.end_time)}</p>
+                <p className="business-job-card__shift">
+                    {job.start_time && job.end_time
+                        ? formatShiftCardLine(job.start_time, job.end_time)
+                        : '-'}
+                </p>
             </div>
         </Link>
     );
