@@ -9,6 +9,7 @@ import {
 } from '../../lib/api.js';
 import BusinessCandidatePreviewDrawer from '../../components/business/jobs/BusinessCandidatePreviewDrawer.jsx';
 import { isJobFilledOrCompleted, isJobPeopleTabDisabled } from '../../lib/businessJobStatus.js';
+import { validateBusinessJobDraft } from '../../lib/businessJobValidation.js';
 
 function toLocalDatetimeValue(iso) {
     const d = new Date(iso);
@@ -38,7 +39,17 @@ export default function BusinessJobDetailPage() {
     const [startLocal, setStartLocal] = useState('');
     const [endLocal, setEndLocal] = useState('');
     const [note, setNote] = useState('');
+    const [editFieldErrors, setEditFieldErrors] = useState({});
     const [workerPreviewAccountId, setWorkerPreviewAccountId] = useState(null);
+
+    function clearEditFieldError(name) {
+        setEditFieldErrors((prev) => {
+            if (!prev[name]) return prev;
+            const next = { ...prev };
+            delete next[name];
+            return next;
+        });
+    }
     const load = useCallback(async () => {
         if (!token || !Number.isInteger(id) || id < 1) return;
         setLoading(true);
@@ -51,6 +62,7 @@ export default function BusinessJobDetailPage() {
             setStartLocal(toLocalDatetimeValue(j.start_time));
             setEndLocal(toLocalDatetimeValue(j.end_time));
             setNote(j.note ?? '');
+            setEditFieldErrors({});
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Failed to load job');
             setJob(null);
@@ -104,20 +116,27 @@ export default function BusinessJobDetailPage() {
         e.preventDefault();
         if (!token) return;
         setEditErr(null);
-        const smin = Number(salaryMin);
-        const smax = Number(salaryMax);
-        if (Number.isNaN(smin) || smin < 0 || Number.isNaN(smax) || smax < smin) {
-            setEditErr('Enter a valid salary range.');
+        const validation = validateBusinessJobDraft({
+            salaryMin,
+            salaryMax,
+            startLocal,
+            endLocal,
+            note,
+        });
+        if (validation.hasErrors) {
+            setEditFieldErrors(validation.fieldErrors);
+            setEditErr('Please fix the highlighted fields and try again.');
             return;
         }
+        setEditFieldErrors({});
         setEditBusy(true);
         try {
             await patchBusinessJob(token, id, {
-                salary_min: smin,
-                salary_max: smax,
-                start_time: new Date(startLocal).toISOString(),
-                end_time: new Date(endLocal).toISOString(),
-                note,
+                salary_min: validation.parsed.salaryMin,
+                salary_max: validation.parsed.salaryMax,
+                start_time: validation.parsed.startIso,
+                end_time: validation.parsed.endIso,
+                note: validation.parsed.note,
             });
             await load();
         } catch (err) {
@@ -257,9 +276,19 @@ export default function BusinessJobDetailPage() {
                                     type="number"
                                     min="0"
                                     value={salaryMin}
-                                    onChange={(e) => setSalaryMin(e.target.value)}
+                                    onChange={(e) => {
+                                        setSalaryMin(e.target.value);
+                                        clearEditFieldError('salaryMin');
+                                        clearEditFieldError('salaryMax');
+                                    }}
+                                    aria-invalid={editFieldErrors.salaryMin ? 'true' : 'false'}
                                     required
                                 />
+                                {editFieldErrors.salaryMin ? (
+                                    <p className="business-form__field-error" role="alert">
+                                        {editFieldErrors.salaryMin}
+                                    </p>
+                                ) : null}
                             </div>
                             <div className="business-filters__field">
                                 <label className="business-filters__label" htmlFor="ed-smax">
@@ -271,9 +300,18 @@ export default function BusinessJobDetailPage() {
                                     type="number"
                                     min="0"
                                     value={salaryMax}
-                                    onChange={(e) => setSalaryMax(e.target.value)}
+                                    onChange={(e) => {
+                                        setSalaryMax(e.target.value);
+                                        clearEditFieldError('salaryMax');
+                                    }}
+                                    aria-invalid={editFieldErrors.salaryMax ? 'true' : 'false'}
                                     required
                                 />
+                                {editFieldErrors.salaryMax ? (
+                                    <p className="business-form__field-error" role="alert">
+                                        {editFieldErrors.salaryMax}
+                                    </p>
+                                ) : null}
                             </div>
                         </div>
                         <div className="pm-field-row">
@@ -286,9 +324,19 @@ export default function BusinessJobDetailPage() {
                                     className="business-filters__input"
                                     type="datetime-local"
                                     value={startLocal}
-                                    onChange={(e) => setStartLocal(e.target.value)}
+                                    onChange={(e) => {
+                                        setStartLocal(e.target.value);
+                                        clearEditFieldError('startLocal');
+                                        clearEditFieldError('endLocal');
+                                    }}
+                                    aria-invalid={editFieldErrors.startLocal ? 'true' : 'false'}
                                     required
                                 />
+                                {editFieldErrors.startLocal ? (
+                                    <p className="business-form__field-error" role="alert">
+                                        {editFieldErrors.startLocal}
+                                    </p>
+                                ) : null}
                             </div>
                             <div className="business-filters__field">
                                 <label className="business-filters__label" htmlFor="ed-end">
@@ -299,9 +347,18 @@ export default function BusinessJobDetailPage() {
                                     className="business-filters__input"
                                     type="datetime-local"
                                     value={endLocal}
-                                    onChange={(e) => setEndLocal(e.target.value)}
+                                    onChange={(e) => {
+                                        setEndLocal(e.target.value);
+                                        clearEditFieldError('endLocal');
+                                    }}
+                                    aria-invalid={editFieldErrors.endLocal ? 'true' : 'false'}
                                     required
                                 />
+                                {editFieldErrors.endLocal ? (
+                                    <p className="business-form__field-error" role="alert">
+                                        {editFieldErrors.endLocal}
+                                    </p>
+                                ) : null}
                             </div>
                         </div>
                         <div className="business-filters__field">
@@ -313,8 +370,17 @@ export default function BusinessJobDetailPage() {
                                 className="pm-field__input pm-field__textarea"
                                 rows={3}
                                 value={note}
-                                onChange={(e) => setNote(e.target.value)}
+                                onChange={(e) => {
+                                    setNote(e.target.value);
+                                    clearEditFieldError('note');
+                                }}
+                                aria-invalid={editFieldErrors.note ? 'true' : 'false'}
                             />
+                            {editFieldErrors.note ? (
+                                <p className="business-form__field-error" role="alert">
+                                    {editFieldErrors.note}
+                                </p>
+                            ) : null}
                         </div>
                         <div className="business-stack">
                             <button
