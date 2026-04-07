@@ -196,28 +196,32 @@
     font-weight: 600;
 }
 
-.partnersList {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+.partnersMarquee {
+    position: relative;
+    overflow: hidden;
     margin-top: 2rem;
+    padding: 0.3rem 0;
 }
 
-.partnerCard {
-    width: 100%;
-    border-radius: 28px;
-    background: var(--color-bg-elevated);
-    border: 1px solid var(--color-landing-partner-border-subtle);
-    box-shadow: 0 12px 30px color-mix(in srgb, var(--color-brand-dark) 6%, transparent);
-}
-
-.partnerCard {
+.partnersTrack {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0;
-    min-height: 8.75rem;
-    padding: 1.25rem 1.4rem 1.15rem;
+    align-items: center;
+    gap: 1rem;
+    width: max-content;
+    animation: partnerMarquee 34s linear infinite;
+}
+
+.partnerChip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16rem;
+    min-height: 4.7rem;
+    padding: 1.15rem 1.4rem;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--color-bg-elevated) 96%, white);
+    border: 1px solid var(--color-landing-partner-border-subtle);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-dark) 5%, transparent);
     text-decoration: none;
     color: inherit;
     transition:
@@ -226,54 +230,30 @@
         border-color 0.18s ease;
 }
 
-.partnerCard:hover {
-    transform: translateY(-3px);
+.partnerChip:hover {
+    transform: translateY(-2px);
     border-color: var(--color-landing-partner-border);
-    box-shadow:
-        0 16px 36px color-mix(in srgb, var(--color-accent) 22%, transparent),
-        inset 0 -3px 0 var(--color-accent);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
-.partnerCardHeader {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    width: 100%;
-    margin-bottom: 0.45rem;
-}
-
-.partnerLogo {
-    color: var(--color-landing-partner-logo);
-    flex-shrink: 0;
-}
-
-.partnerCardHead {
-    flex: 1;
-    min-width: 0;
-}
-
-.partnerName {
-    margin: 0;
-    font-size: 1.25rem;
-    line-height: 1.18;
+.partnerChipName {
+    display: block;
+    font-size: 1.12rem;
+    line-height: 1.24;
     font-weight: 600;
     color: var(--color-landing-partner-title);
-    text-align: left;
     font-family: var(--font-marketing);
+    white-space: nowrap;
 }
 
-.partnerAddress {
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.94rem;
-    color: var(--color-text-muted);
-    line-height: 1.4;
-}
+@keyframes partnerMarquee {
+    from {
+        transform: translateX(0);
+    }
 
-.partnerAddress :global(.fa-map-marker-alt) {
-    color: var(--color-accent);
+    to {
+        transform: translateX(calc(-50% - 0.425rem));
+    }
 }
 
 @media (max-width: 980px) {
@@ -306,16 +286,19 @@
         padding: 0.5rem 0.25rem;
     }
 
-    .partnerCard {
-        min-height: auto;
-        padding: 1.1rem 1.05rem 1rem;
+    .partnersTrack {
+        gap: 0.8rem;
+        animation-duration: 28s;
     }
 
-    .partnerCardHeader {
-        align-items: flex-start;
+    .partnerChip {
+        min-width: 12.5rem;
+        min-height: 4rem;
+        padding: 0.95rem 1.1rem;
+        border-radius: 16px;
     }
 
-    .partnerName {
-        font-size: 1.1rem;
+    .partnerChipName {
+        font-size: 0.98rem;
     }
 }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext.jsx';
+import { useBusinessNegotiation } from '../../../contexts/BusinessNegotiationContext.jsx';
 import { assetUrl, getJobCandidateDetail, patchJobCandidateInterested, startNegotiation } from '../../../lib/api.js';
 import { isJobPeopleTabDisabled } from '../../../lib/businessJobStatus.js';
 
@@ -17,6 +18,7 @@ export default function BusinessCandidatePreviewDrawer({
     onUpdated,
 }) {
     const { token } = useAuth();
+    const { applyNegotiationPayload } = useBusinessNegotiation();
     const titleId = useId();
     const open =
         candidateAccountId != null && Number.isInteger(candidateAccountId) && candidateAccountId > 0;
@@ -118,7 +120,8 @@ export default function BusinessCandidatePreviewDrawer({
         if (!token || !iid) return;
         setBusy(true);
         try {
-            await startNegotiation(token, iid);
+            const created = await startNegotiation(token, iid);
+            applyNegotiationPayload(created);
             await Promise.resolve(onUpdated?.());
             window.alert('Negotiation started. Open Negotiations in the sidebar to review and respond.');
             onClose();

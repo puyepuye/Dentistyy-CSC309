@@ -103,18 +103,6 @@ export default function BusinessJobCandidatesListPage() {
         };
     }, [token, id]);
 
-    function openPreview(accountId, interestContext) {
-        setPreview({ accountId, interestContext });
-    }
-
-    function closePreview() {
-        setPreview(null);
-    }
-
-    const refreshManage = useCallback(async () => {
-        await loadManage();
-    }, [loadManage]);
-
     useEffect(() => {
         const t = setTimeout(() => setDebouncedSearch(searchInput.trim()), 320);
         return () => clearTimeout(t);
@@ -149,6 +137,18 @@ export default function BusinessJobCandidatesListPage() {
             setManageLoading(false);
         }
     }, [token, id]);
+
+    function openPreview(accountId, interestContext) {
+        setPreview({ accountId, interestContext });
+    }
+
+    function closePreview() {
+        setPreview(null);
+    }
+
+    const refreshManage = useCallback(async () => {
+        await loadManage();
+    }, [loadManage]);
 
     useEffect(() => {
         if (view !== 'manage') return;

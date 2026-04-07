@@ -30,6 +30,7 @@ function BusinessScheduleRow({ job, variant }) {
     const workerLabel = job.worker
         ? `${job.worker.first_name ?? ''} ${job.worker.last_name ?? ''}`.trim() || 'Worker'
         : 'Unassigned';
+    const statusLabel = titleCaseStatus(job.status);
     const accentClass = DATE_ACCENT_CLASSES[job.id % DATE_ACCENT_CLASSES.length];
 
     return (
@@ -48,9 +49,7 @@ function BusinessScheduleRow({ job, variant }) {
                 <p className="staff-scheduled-row__secondary">
                     {workerLabel} · {title}
                 </p>
-                {variant === 'past' ? (
-                    <p className="staff-scheduled-row__status">{titleCaseStatus(job.status)}</p>
-                ) : null}
+                <p className="staff-scheduled-row__status">{statusLabel}</p>
             </div>
             <span className="staff-scheduled-row__chevron" aria-hidden="true">
                 <i className="fas fa-chevron-right" />

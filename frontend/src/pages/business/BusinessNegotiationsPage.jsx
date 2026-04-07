@@ -120,7 +120,7 @@ export default function BusinessNegotiationsPage() {
                         on terms.
                     </p>
                     <Link to="/businesses/jobs" className="talent-job-detail__btn talent-job-detail__btn--primary">
-                        Browse jobs
+                        Go to job posting
                     </Link>
                 </section>
             ) : null}
@@ -193,7 +193,7 @@ export default function BusinessNegotiationsPage() {
                         </div>
 
                         <Link to="/businesses/jobs" className="business-btn business-btn--ghost" style={{ textAlign: 'center' }}>
-                            Browse jobs
+                            Go to job posting
                         </Link>
                     </div>
                 </div>

@@ -814,6 +814,7 @@ a.business-jobs-browse__tab--active:visited {
     line-height: 1.45;
     color: var(--color-text-muted);
     display: -webkit-box;
+    line-clamp: 4;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -912,21 +913,51 @@ a.business-jobs-browse__tab--active:visited {
 }
 
 .business-candidates-discover-inline__body {
-    max-height: min(60vh, 28rem);
-    overflow-y: auto;
-    padding-right: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 }
 
 .business-candidates-discover-inline__card-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.35rem;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
 }
 
 .business-candidates-discover-inline__card-actions .business-candidates-drawer__action {
-    flex: 1 1 9rem;
+    flex: 0 0 auto;
+    min-width: 10.5rem;
+}
+
+.business-candidates-discover-inline__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.05rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+}
+
+.business-candidates-discover-inline__row-main {
+    flex: 1 1 auto;
     min-width: 0;
+}
+
+.business-candidates-discover-inline__row-copy {
+    min-width: 0;
+}
+
+.business-candidates-discover-inline__row-head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.18rem;
 }
 
 .business-candidates-discover-inline__footer {
@@ -937,6 +968,21 @@ a.business-jobs-browse__tab--active:visited {
 
 .business-candidates-discover-inline__footer .business-candidates-drawer__pager {
     margin-bottom: 0.5rem;
+}
+
+@media (max-width: 760px) {
+    .business-candidates-discover-inline__row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .business-candidates-discover-inline__card-actions {
+        justify-content: stretch;
+    }
+
+    .business-candidates-discover-inline__card-actions .business-candidates-drawer__action {
+        flex: 1 1 10rem;
+    }
 }
 
 /* Candidate preview (People tab sidebar) */

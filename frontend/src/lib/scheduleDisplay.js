@@ -32,11 +32,11 @@ export function formatSchedulePrimary(startIso, endIso) {
 
 /**
  * Mirrors talent GET /users/me/jobs scope split for business-owned jobs:
- * upcoming = not terminal status and shift end in the future.
+ * upcoming = active future work only; terminal / ended jobs go to past.
  */
 export function isBusinessScheduleUpcoming(job, now = new Date()) {
     const status = (job.status || '').toLowerCase();
-    if (status === 'cancelled' || status === 'expired' || status === 'completed') return false;
+    if (status !== 'open' && status !== 'filled') return false;
     return new Date(job.end_time) > now;
 }
 

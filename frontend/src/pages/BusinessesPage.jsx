@@ -102,18 +102,20 @@ export default function BusinessesPage() {
                         return (
                             <li key={b.id}>
                                 <Link to={`/directory/${b.id}`} className={styles.directoryCard}>
-                                    <div className={styles.directoryCardTop}>
-                                        <div className={styles.directoryCardIcon} aria-hidden>
-                                            <DentistyyLogo size={26} />
+                                    <div className={styles.directoryCardBody}>
+                                        <div className={styles.directoryCardTop}>
+                                            <div className={styles.directoryCardIcon} aria-hidden>
+                                                <DentistyyLogo size={26} />
+                                            </div>
+                                            <div className={styles.directoryCardHead}>
+                                                <h2 className={styles.directoryCardTitle}>{b.business_name}</h2>
+                                            </div>
                                         </div>
-                                        <div className={styles.directoryCardHead}>
-                                            <h2 className={styles.directoryCardTitle}>{b.business_name}</h2>
-                                        </div>
+                                        <p className={styles.directoryCardLine}>
+                                            <i className="fas fa-map-marker-alt" aria-hidden />
+                                            <span>{addr || 'Location on file'}</span>
+                                        </p>
                                     </div>
-                                    <p className={styles.directoryCardLine}>
-                                        <i className="fas fa-map-marker-alt" aria-hidden />
-                                        <span>{addr || 'Location on file'}</span>
-                                    </p>
                                     <p className={styles.directoryCardSummary}>
                                         {bioPreview ||
                                             'View this public business profile to see practice details, location, and background information.'}

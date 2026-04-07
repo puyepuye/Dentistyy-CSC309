@@ -1,5 +1,5 @@
 .directory {
-    width: min(75vw, 1120px);
+    width: min(68vw, 980px);
     margin: 0 auto;
 }
 
@@ -147,18 +147,31 @@
 }
 
 .directoryCard {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
     text-decoration: none;
     color: inherit;
     background: var(--color-bg-elevated);
     border: 1px solid var(--color-landing-partner-border-subtle);
     border-radius: var(--radius-landing-hero);
-    padding: 1.6rem 1.7rem 1.45rem;
+    min-height: 9.5rem;
+    padding: 1.35rem 1.5rem;
     box-shadow: 0 10px 24px color-mix(in srgb, var(--color-brand-dark) 5%, transparent);
     transition:
         transform 0.15s ease,
         border-color 0.15s ease,
         box-shadow 0.15s ease;
+}
+
+.directoryCardBody {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.45rem;
+    padding-top: 0.35rem;
 }
 
 .directoryCard:hover {
@@ -171,9 +184,10 @@
 
 .directoryCardTop {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.8rem;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0;
+    min-width: 0;
 }
 
 .directoryCardIcon {
@@ -188,7 +202,7 @@
 
 .directoryCardTitle {
     margin: 0;
-    font-size: 1.55rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--color-text-heading);
     line-height: 1.18;
@@ -196,11 +210,11 @@
 }
 
 .directoryCardLine {
-    margin: 0 0 0.65rem;
+    margin: 0;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.98rem;
+    font-size: 1.08rem;
     color: var(--color-text-muted);
     line-height: 1.4;
 }
@@ -210,23 +224,20 @@
 }
 
 .directoryCardSummary {
-    margin: 0 0 1rem;
-    max-width: 60ch;
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--color-text-muted);
+    display: none;
 }
 
 .directoryCardMeta {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    align-self: center;
+    flex-shrink: 0;
 }
 
 .directoryTag {
-    font-size: 0.82rem;
+    font-size: 0.88rem;
     font-weight: 600;
     padding: 0.5rem 0.9rem;
     border-radius: var(--radius-full);
@@ -307,11 +318,21 @@
     }
 
     .directoryCard {
-        padding: 1.3rem 1.2rem 1.15rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 8.25rem;
+        padding: 1.2rem 1.1rem 1.05rem;
+        row-gap: 0.45rem;
+    }
+
+    .directoryCardBody {
+        width: 100%;
     }
 
     .directoryCardTitle {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
     }
 
     .directoryCardMeta {
