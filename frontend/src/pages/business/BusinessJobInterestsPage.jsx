@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { useBusinessNegotiation } from '../../contexts/BusinessNegotiationContext.jsx';
 import { getJobInterests, startNegotiation } from '../../lib/api.js';
 
 export default function BusinessJobInterestsPage() {
     const { jobId } = useParams();
     const id = Number(jobId);
     const { token } = useAuth();
+    const { applyNegotiationPayload } = useBusinessNegotiation();
     const [rows, setRows] = useState([]);
     const [count, setCount] = useState(0);
     const [page, setPage] = useState(1);
@@ -38,7 +40,8 @@ export default function BusinessJobInterestsPage() {
         if (!token) return;
         setBusyId(interestId);
         try {
-            await startNegotiation(token, interestId);
+            const created = await startNegotiation(token, interestId);
+            applyNegotiationPayload(created);
             window.alert('Negotiation started. Open Negotiations in the sidebar to review and respond.');
         } catch (e) {
             window.alert(e instanceof Error ? e.message : 'Could not start negotiation.');

@@ -692,8 +692,7 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
       where: { id: jobId },
       include: {
         interests: {
-          where: { initiatedBy: 'BUSINESS' },
-          select: { userId: true },
+          select: { userId: true, initiatedBy: true },
         },
       },
     });
@@ -746,16 +745,24 @@ router.get('/:jobId/candidates', requireRole('business'), async (req, res, next)
       },
     });
 
-    const invitedUserIds = new Set(job.interests.map((i) => i.userId));
+    const invitedUserIds = new Set(
+      job.interests.filter((i) => i.initiatedBy === 'BUSINESS').map((i) => i.userId)
+    );
+    const expressedInterestUserIds = new Set(
+      job.interests.filter((i) => i.initiatedBy === 'USER').map((i) => i.userId)
+    );
 
     let discoverable = qualifiedUsers.filter((user) => {
       if (user.filledJobs.length > 0) return false;
+      if (expressedInterestUserIds.has(user.id)) return false;
       if (excludeInvited && invitedUserIds.has(user.id)) return false;
       return true;
     });
 
     if (expressedInterestOnly) {
-      discoverable = discoverable.filter((user) => invitedUserIds.has(user.id));
+      discoverable = qualifiedUsers.filter(
+        (user) => user.filledJobs.length === 0 && expressedInterestUserIds.has(user.id)
+      );
     }
 
     if (searchTerm) {

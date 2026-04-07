@@ -19,7 +19,7 @@ export function businessHeaderFromPath(pathname, profile, jobName) {
         };
     }
     if (pathname.endsWith('/profile')) {
-        return { greeting: hello, statusLine: 'Practice profile' };
+        return { greeting: 'Practice profile', statusLine: name };
     }
     if (pathname.includes('/jobs/new')) {
         return { greeting: hello, statusLine: 'New job posting' };

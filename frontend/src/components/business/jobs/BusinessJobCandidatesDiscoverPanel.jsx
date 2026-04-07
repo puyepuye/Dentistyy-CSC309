@@ -103,10 +103,7 @@ export default function BusinessJobCandidatesDiscoverPanel({ jobId, jobLabel, ac
 
     return (
         <>
-        <section className="business-candidates-discover-inline" aria-labelledby="discover-candidates-heading">
-            <h3 className="business-candidates-discover-inline__title" id="discover-candidates-heading">
-                Discover candidates
-            </h3>
+        <section className="business-candidates-discover-inline">
             {jobLabel ? <p className="business-candidates-discover-inline__subtitle">{jobLabel}</p> : null}
 
             <div className="business-candidates-discover-inline__toolbar">
@@ -147,22 +144,31 @@ export default function BusinessJobCandidatesDiscoverPanel({ jobId, jobLabel, ac
                 ) : null}
                 {!loading && !error
                     ? rows.map((r) => (
-                          <article key={r.id} className="business-candidates-drawer__card">
-                              <div className="business-candidates-drawer__card-head">
-                                  <span className="business-candidates-drawer__name business-candidates-drawer__name--static">
-                                      {r.first_name} {r.last_name}
-                                  </span>
-                                  <span
-                                      className={`business-candidates-drawer__pill${r.invited ? ' business-candidates-drawer__pill--on' : ''}`}
-                                  >
-                                      {r.invited ? 'Interested' : 'Not invited'}
-                                  </span>
+                          <article key={r.id} className="business-candidates-discover-inline__row">
+                              <div className="business-candidates-discover-inline__row-main">
+                                  <div className="business-interest-user">
+                                      <span className="business-interest-user__avatar" aria-hidden>
+                                          <i className="fas fa-user" />
+                                      </span>
+                                      <div className="business-candidates-discover-inline__row-copy">
+                                          <div className="business-candidates-discover-inline__row-head">
+                                              <span className="business-candidates-drawer__name business-candidates-drawer__name--static">
+                                                  {r.first_name} {r.last_name}
+                                              </span>
+                                              <span
+                                                  className={`business-candidates-drawer__pill${r.invited ? ' business-candidates-drawer__pill--on' : ''}`}
+                                              >
+                                                  {r.invited ? 'Interested' : 'Not invited'}
+                                              </span>
+                                          </div>
+                                          <p className="business-interest-user__summary">
+                                              {r.qualification_summary?.trim()
+                                                  ? r.qualification_summary
+                                                  : 'Approved for this position.'}
+                                          </p>
+                                      </div>
+                                  </div>
                               </div>
-                              <p className="business-candidates-drawer__summary">
-                                  {r.qualification_summary?.trim()
-                                      ? r.qualification_summary
-                                      : 'Approved for this position.'}
-                              </p>
                               <div className="business-candidates-discover-inline__card-actions">
                                   <button
                                       type="button"

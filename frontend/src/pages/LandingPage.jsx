@@ -10,6 +10,7 @@ const PARTNER_SLOTS = 6;
 
 function LandingPage() {
     const [partners, setPartners] = useState([]);
+    const marqueePartners = partners.length ? [...partners, ...partners] : [];
 
     useEffect(() => {
         let cancelled = false;
@@ -75,19 +76,19 @@ function LandingPage() {
             <section className={styles.statsBand}>
                 <div className={styles.statsFeature}>
                     <div className={styles.statsFeatureInner}>
-                        <div className={styles.statsFeatureNumber}>Built for</div>
-                        <div className={styles.statsFeatureText}>dental hiring</div>
+                        <div className={styles.statsFeatureNumber}>#1</div>
+                        <div className={styles.statsFeatureText}>Platform for Dentists</div>
                     </div>
                 </div>
 
                 <div className={styles.statsItem}>
-                    <div className={styles.statsBig}>{Math.max(partners.length, PARTNER_SLOTS)} practices</div>
-                    <div className={styles.statsSmall}>featured in the public directory</div>
+                    <div className={styles.statsBig}>40,000+</div>
+                    <div className={styles.statsSmall}>connections made across the platform</div>
                 </div>
 
                 <div className={styles.statsItem}>
-                    <div className={styles.statsBig}>Talent + clinics</div>
-                    <div className={styles.statsSmall}>connected in one place</div>
+                    <div className={styles.statsBig}>15 years</div>
+                    <div className={styles.statsSmall}>of recruiting and staffing insight</div>
                 </div>
             </section>
 
@@ -99,32 +100,23 @@ function LandingPage() {
                         more
                     </Link>
                 </p>
-                <div className={styles.partnersList}>
-                    {partners.map((business) => {
-                        const address = business.postal_address || '';
-
-                        return (
-                            <Link
-                                key={business.id}
-                                to={`/directory/${business.id}`}
-                                className={styles.partnerCard}
-                            >
-                                <div className={styles.partnerCardHeader}>
-                                    <span className={styles.partnerLogo}>
-                                        <DentistyyLogo size={26} />
-                                    </span>
-                                    <div className={styles.partnerCardHead}>
-                                        <h3 className={styles.partnerName}>{business.business_name}</h3>
-                                    </div>
-                                </div>
-                                <p className={styles.partnerAddress}>
-                                    <i className="fas fa-map-marker-alt" aria-hidden />
-                                    <span>{address || 'Location on file'}</span>
-                                </p>
-                            </Link>
-                        );
-                    })}
-                </div>
+                {partners.length ? (
+                    <div className={styles.partnersMarquee}>
+                        <div className={styles.partnersTrack}>
+                            {marqueePartners.map((business, index) => (
+                                <Link
+                                    key={`${business.id}-${index}`}
+                                    to={`/directory/${business.id}`}
+                                    className={styles.partnerChip}
+                                    tabIndex={index >= partners.length ? -1 : undefined}
+                                    aria-hidden={index >= partners.length ? 'true' : undefined}
+                                >
+                                    <span className={styles.partnerChipName}>{business.business_name}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
             </section>
         </div>
     );
