@@ -123,7 +123,7 @@ export default function AdminUsersPage() {
                         ) : (
                             users.map((b) => (
                                 <tr key={b.id}>
-                                    <td>{b.first_name}</td>
+                                    <td>{`${b.first_name ?? ''} ${b.last_name ?? ''}`.trim() || '-'}</td>
                                     <td>{b.email}</td>
                                     <td>
                                         <span

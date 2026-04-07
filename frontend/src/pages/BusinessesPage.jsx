@@ -5,6 +5,7 @@ import DentistyyLogo from '../components/DentistyyLogo.jsx';
 import { getBusinessesList } from '../lib/api.js';
 import formStyles from '../styles/MarketingForms.module.css';
 import styles from './BusinessesPage.module.css';
+import Footer from '../components/Footer.jsx';
 
 const PAGE_SIZE = 12;
 
@@ -48,6 +49,7 @@ export default function BusinessesPage() {
     const totalPages = Math.max(1, Math.ceil((data.count || 0) / PAGE_SIZE));
 
     return (
+        <div>
         <div className={styles.directory}>
             <header className={styles.directoryHeader}>
                 <section className={styles.directoryHero}>
@@ -170,6 +172,9 @@ export default function BusinessesPage() {
                     <Link to="/">Return home</Link>
                 </p>
             </section>
+            
+        </div>
+        <Footer/>
         </div>
     );
 }

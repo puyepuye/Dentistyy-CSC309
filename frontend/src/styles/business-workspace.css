@@ -1045,8 +1045,16 @@ a.business-jobs-browse__tab--active:visited {
 
 .business-candidate-preview-drawer__meta {
     margin: 0.25rem 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
     font-size: 0.82rem;
     color: var(--color-text-muted);
+}
+
+.business-candidate-preview-drawer__meta-item {
+    white-space: nowrap;
 }
 
 .business-candidate-preview-drawer__block {
@@ -1466,6 +1474,24 @@ a.business-jobs-browse__tab--active:visited {
 .business-badge--filled {
     background: var(--color-success-bg-subtle);
     color: var(--color-success);
+}
+
+.business-badge--expired {
+    background: color-mix(in srgb, var(--color-warning) 14%, var(--color-bg-tabs));
+    color: var(--color-warning);
+    border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+}
+
+.business-badge--cancelled {
+    background: color-mix(in srgb, var(--color-error) 10%, var(--color-bg-tabs));
+    color: var(--color-error);
+    border: 1px solid color-mix(in srgb, var(--color-error) 24%, transparent);
+}
+
+.business-badge--completed {
+    background: color-mix(in srgb, var(--color-navy) 8%, var(--color-bg-tabs));
+    color: var(--color-navy);
+    border: 1px solid color-mix(in srgb, var(--color-navy) 18%, transparent);
 }
 
 .business-badge--muted {

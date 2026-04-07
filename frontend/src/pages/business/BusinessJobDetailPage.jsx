@@ -8,20 +8,18 @@ import {
     patchJobNoShow,
 } from '../../lib/api.js';
 import BusinessCandidatePreviewDrawer from '../../components/business/jobs/BusinessCandidatePreviewDrawer.jsx';
-import { isJobFilledOrCompleted, isJobPeopleTabDisabled } from '../../lib/businessJobStatus.js';
+import {
+    formatJobStatusLabel,
+    getBusinessJobBadgeClass,
+    isJobFilledOrCompleted,
+    isJobPeopleTabDisabled,
+} from '../../lib/businessJobStatus.js';
 import { validateBusinessJobDraft } from '../../lib/businessJobValidation.js';
 
 function toLocalDatetimeValue(iso) {
     const d = new Date(iso);
     const pad = (n) => String(n).padStart(2, '0');
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function statusBadgeClass(status) {
-    const s = (status || '').toLowerCase();
-    if (s === 'open') return 'business-badge business-badge--open';
-    if (s === 'filled') return 'business-badge business-badge--filled';
-    return 'business-badge business-badge--muted';
 }
 
 export default function BusinessJobDetailPage() {
@@ -183,7 +181,9 @@ export default function BusinessJobDetailPage() {
                     <h2 className="talent-card__title">
                         {job.position_type?.name}
                     </h2>
-                    <span className={statusBadgeClass(job.status)}>{job.status}</span>
+                    <span className={getBusinessJobBadgeClass(job.status)}>
+                        {formatJobStatusLabel(job.status)}
+                    </span>
                 </div>
                 <div className="talent-field-grid">
                     <div>

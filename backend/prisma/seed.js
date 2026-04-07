@@ -168,7 +168,7 @@ async function main() {
         approvedPositionTypesByUser.set(r.regularUser.id, new Set());
     }
 
-    const statuses = ['created', 'submitted', 'approved', 'rejected', 'revised'];
+    const statuses = ['pending', 'approved', 'rejected'];
     for (let u = 0; u < 20; u++) {
         for (let p = 0; p < 3; p++) {
             const ptIndex = (u + p) % positionTypes.length;
@@ -183,9 +183,9 @@ async function main() {
                     positionTypeId: ptId,
                     status: st,
                     approved,
-                    note: st === 'created' ? '' : `Qualification note for user ${u + 1} / PT ${ptIndex}`,
+                    note: `Qualification note for user ${u + 1} / PT ${ptIndex}`,
                     document:
-                        st === 'approved' || st === 'submitted'
+                        st === 'approved' || st === 'pending'
                             ? `/uploads/users/${regulars[u].account.id}/position_type/${ptId}/document.pdf`
                             : null,
                 },
@@ -195,6 +195,33 @@ async function main() {
             }
         }
     }
+
+    // Keep demo user/role wiring stable for seeded job-interest scenarios.
+    const regular1Id = regulars[0].regularUser.id;
+    const demoPositionTypeId = positionTypes[2].id;
+    await prisma.qualification.upsert({
+        where: {
+            regularUserId_positionTypeId: {
+                regularUserId: regular1Id,
+                positionTypeId: demoPositionTypeId,
+            },
+        },
+        update: {
+            status: 'approved',
+            approved: true,
+            note: 'Demo qualification for seeded job-interest flows.',
+            document: `/uploads/users/${regulars[0].account.id}/position_type/${demoPositionTypeId}/document.pdf`,
+        },
+        create: {
+            regularUserId: regular1Id,
+            positionTypeId: demoPositionTypeId,
+            status: 'approved',
+            approved: true,
+            note: 'Demo qualification for seeded job-interest flows.',
+            document: `/uploads/users/${regulars[0].account.id}/position_type/${demoPositionTypeId}/document.pdf`,
+        },
+    });
+    approvedPositionTypesByUser.get(regular1Id)?.add(demoPositionTypeId);
 
     function userApprovedForJobPosition(regularUserId, positionTypeId) {
         return approvedPositionTypesByUser.get(regularUserId)?.has(positionTypeId) ?? false;
@@ -216,9 +243,24 @@ async function main() {
         const b = businesses[j % businesses.length].business;
         const pt = positionTypes[j % positionTypes.length];
         const status = jobStatuses[j % jobStatuses.length];
-        const start = daysFromNow(3 + (j % 10), 10 + (j % 5));
-        const end = new Date(start);
-        end.setHours(end.getHours() + 8);
+        let start;
+        let end;
+        if (status === 'EXPIRED') {
+            start = daysFromNow(-2 - (j % 2), 9);
+            end = daysFromNow(-2 - (j % 2), 17);
+        } else if (status === 'CANCELLED') {
+            start = daysFromNow(-1 - (j % 2), 10);
+            end = new Date(start);
+            end.setHours(end.getHours() + 8);
+        } else if (status === 'COMPLETED') {
+            start = daysFromNow(-3 - (j % 3), 8 + (j % 3));
+            end = new Date(start);
+            end.setHours(end.getHours() + 8);
+        } else {
+            start = daysFromNow(3 + (j % 10), 10 + (j % 5));
+            end = new Date(start);
+            end.setHours(end.getHours() + 8);
+        }
 
         // Only assign workers on FILLED/COMPLETED jobs when someone is qualified for this position type.
         const qualifiedWorker = firstRegularQualifiedForJob({ positionTypeId: pt.id });
@@ -234,8 +276,8 @@ async function main() {
                 note: j % 4 === 0 ? 'Weekend coverage preferred.' : 'Weekday shift.',
                 salaryMin: 22 + (j % 8),
                 salaryMax: 32 + (j % 10),
-                startTime: status === 'EXPIRED' ? daysFromNow(-2, 9) : start,
-                endTime: status === 'EXPIRED' ? daysFromNow(-2, 17) : end,
+                startTime: start,
+                endTime: end,
             },
         });
         jobs.push(job);
@@ -354,6 +396,65 @@ async function main() {
             startTime: w3.start,
             endTime: w3.end,
             note: '[Demo] Interested in you — practice only',
+        },
+    });
+    const expiredDemoStart = daysFromNow(-2, 9);
+    const expiredDemoEnd = daysFromNow(-2, 17);
+    await prisma.job.create({
+        data: {
+            status: 'EXPIRED',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            salaryMin: 29,
+            salaryMax: 41,
+            startTime: expiredDemoStart,
+            endTime: expiredDemoEnd,
+            note: '[Demo] Expired posting',
+        },
+    });
+    const canceledDemoStart = daysFromNow(-1, 11);
+    const canceledDemoEnd = new Date(canceledDemoStart);
+    canceledDemoEnd.setHours(canceledDemoEnd.getHours() + 8);
+    await prisma.job.create({
+        data: {
+            status: 'CANCELLED',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            salaryMin: 30,
+            salaryMax: 42,
+            startTime: canceledDemoStart,
+            endTime: canceledDemoEnd,
+            note: '[Demo] Canceled shift',
+        },
+    });
+    const filledDemo = demoWindow(4);
+    await prisma.job.create({
+        data: {
+            status: 'FILLED',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            workerId: r1.id,
+            salaryMin: 34,
+            salaryMax: 46,
+            startTime: filledDemo.start,
+            endTime: filledDemo.end,
+            note: '[Demo] Filled upcoming shift',
+        },
+    });
+    const completedDemoStart = daysFromNow(-4, 8);
+    const completedDemoEnd = new Date(completedDemoStart);
+    completedDemoEnd.setHours(completedDemoEnd.getHours() + 8);
+    await prisma.job.create({
+        data: {
+            status: 'COMPLETED',
+            positionTypeId: demoPt.id,
+            businessId: demoBiz.id,
+            workerId: r1.id,
+            salaryMin: 33,
+            salaryMax: 45,
+            startTime: completedDemoStart,
+            endTime: completedDemoEnd,
+            note: '[Demo] Completed shift',
         },
     });
 

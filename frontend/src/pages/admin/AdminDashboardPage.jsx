@@ -8,7 +8,7 @@ import {
     getAdminUsers,
 } from '../../lib/api.js';
 
-const REVIEW_STATUSES = new Set(['submitted', 'revised']);
+const REVIEW_STATUSES = new Set(['pending']);
 
 const QUICK_LINKS = [
     { to: '/admin/users', label: 'Users', desc: 'Accounts & suspension', icon: 'fa-users' },

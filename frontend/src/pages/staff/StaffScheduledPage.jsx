@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { getMyWorkerJobs } from '../../lib/api.js';
-import { formatSchedulePrimary, titleCaseStatus } from '../../lib/scheduleDisplay.js';
+import { formatJobStatusLabel } from '../../lib/businessJobStatus.js';
+import { formatSchedulePrimary } from '../../lib/scheduleDisplay.js';
 
 const DATE_ACCENT_CLASSES = [
     'staff-scheduled-row--accent-a',
@@ -42,7 +43,7 @@ function ScheduledShiftRow({ job, variant }) {
                     {place} · {title}
                 </p>
                 {variant === 'past' ? (
-                    <p className="staff-scheduled-row__status">{titleCaseStatus(job.status)}</p>
+                    <p className="staff-scheduled-row__status">{formatJobStatusLabel(job.status)}</p>
                 ) : (
                     <p className="staff-scheduled-row__status staff-scheduled-row__status--placeholder" aria-hidden>
                         Status

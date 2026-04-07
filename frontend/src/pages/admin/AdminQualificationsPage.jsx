@@ -20,10 +20,11 @@ function formatDate(iso) {
 
 function statusBadgeClass(status) {
     const s = (status || '').toLowerCase();
+    if (s === 'pending' || s === 'created' || s === 'submitted' || s === 'revised') {
+        return 'admin-qual-row__badge admin-qual-row__badge--pending';
+    }
     if (s === 'approved') return 'admin-qual-row__badge admin-qual-row__badge--approved';
     if (s === 'rejected') return 'admin-qual-row__badge admin-qual-row__badge--rejected';
-    if (s === 'revised') return 'admin-qual-row__badge admin-qual-row__badge--revised';
-    if (s === 'submitted') return 'admin-qual-row__badge admin-qual-row__badge--submitted';
     return 'admin-qual-row__badge';
 }
 
@@ -77,7 +78,7 @@ export default function AdminQualificationsPage() {
 
     return (
         <div className="admin-page admin-page--qualifications">
-            <div className="business-jobs-browse__toolbar admin-page__toolbar">
+            <div className="business-jobs-browse__toolbar admin-page__toolbar admin-page__toolbar--qualifications">
                 <form
                     className="admin-page__toolbar-form"
                     onSubmit={handleSearch}
@@ -123,9 +124,7 @@ export default function AdminQualificationsPage() {
                                 }}
                             >
                                 <option value="">All</option>
-                                <option value="created">Created</option>
-                                <option value="submitted">Submitted</option>
-                                <option value="revised">Revised</option>
+                                <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
                             </select>
@@ -154,24 +153,24 @@ export default function AdminQualificationsPage() {
                                         <span className="admin-qual-row__label">User</span>
                                         <span className="admin-qual-row__value">{fullName}</span>
                                     </div>
-                                    <div className="admin-qual-row__cell">
+                                    <div className="admin-qual-row__cell admin-qual-row__cell--position">
                                         <span className="admin-qual-row__label">Position type</span>
                                         <span className="admin-qual-row__value">
                                             {row.position_type?.name ?? '—'}
                                         </span>
                                     </div>
-                                    <div className="admin-qual-row__cell">
+                                    <div className="admin-qual-row__cell admin-qual-row__cell--status">
                                         <span className="admin-qual-row__label">Status</span>
                                         <span
                                             className={statusBadgeClass(row.status)}
                                         >
-                                            {row.status
-                                                ? row.status.charAt(0).toUpperCase() +
-                                                  row.status.slice(1)
-                                                : '—'}
+                                            {(row.status || '').toLowerCase() === 'approved' ||
+                                            (row.status || '').toLowerCase() === 'rejected'
+                                                ? row.status.charAt(0).toUpperCase() + row.status.slice(1)
+                                                : 'Pending'}
                                         </span>
                                     </div>
-                                    <div className="admin-qual-row__cell">
+                                    <div className="admin-qual-row__cell admin-qual-row__cell--updated">
                                         <span className="admin-qual-row__label">Updated</span>
                                         <span className="admin-qual-row__value">
                                             {formatDate(row.updatedAt)}
