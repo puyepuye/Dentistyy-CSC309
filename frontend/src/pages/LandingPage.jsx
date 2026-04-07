@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import DentistyyLogo from '../components/DentistyyLogo.jsx';
 import { getBusinessesList } from '../lib/api.js';
 import styles from './LandingPage.module.css';
+import Footer from '../components/Footer.jsx';
 
 const HERO_IMAGE_SRC =
     'https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
@@ -196,7 +197,10 @@ function LandingPage() {
 
                 </div>
             </section>
+            <Footer />
+            
         </div>
+        
     );
 }
 
