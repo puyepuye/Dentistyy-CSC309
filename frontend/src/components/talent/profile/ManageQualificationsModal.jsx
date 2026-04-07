@@ -16,15 +16,17 @@ function formatDate(iso) {
 
 function statusLabel(status) {
     switch (status) {
+        case 'pending':
+        case 'created':
+        case 'submitted':
+        case 'revised':
+            return 'Pending';
         case 'approved':
             return 'Approved';
         case 'rejected':
             return 'Rejected';
-        case 'submitted':
-        case 'revised':
-        case 'created':
         default:
-            return 'Pending';
+            return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Pending';
     }
 }
 
@@ -135,7 +137,7 @@ export default function ManageQualificationsModal({ open, onClose, token, onSave
         setResubmitting(true);
         try {
             await uploadQualificationDocument(token, resubmitRow.id, resubmitFile);
-            await patchQualification(token, resubmitRow.id, { status: 'revised' });
+            await patchQualification(token, resubmitRow.id, { status: 'pending' });
             setResubmitRow(null);
             setResubmitFile(null);
             await load();

@@ -9,6 +9,10 @@ const { validateNoExtraKeys } = require('../utils/validation');
 const prisma = new PrismaClient();
 const router = express.Router();
 
+function normalizeQualificationStatus(status) {
+    return status === 'approved' || status === 'rejected' ? status : 'pending';
+}
+
 function drainRequestBody(req) {
     return new Promise((resolve) => {
         if (req.readableEnded || req.complete) {
@@ -107,7 +111,11 @@ router.get('/', requireRole('admin'), async (req, res, next) => {
         }
 
         if (statusFilter) {
-            where.status = statusFilter;
+            if (statusFilter === 'pending') {
+                where.status = { in: ['pending', 'created', 'submitted', 'revised'] };
+            } else {
+                where.status = statusFilter;
+            }
         }
 
         const count = await prisma.qualification.count({ where });
@@ -131,7 +139,7 @@ router.get('/', requireRole('admin'), async (req, res, next) => {
 
         const results = qualifications.map((q) => ({
             id: q.id,
-            status: q.status,
+            status: normalizeQualificationStatus(q.status),
             user: {
                 id: q.regularUser.accountId,
                 first_name: q.regularUser.firstName,
@@ -208,7 +216,7 @@ router.post('/', requireRole('regular'), async (req, res, next) => {
             data: {
                 regularUserId: account.regularUser.id,
                 positionTypeId: position_type_id,
-                status: 'created',
+                status: 'pending',
                 approved: false,
                 note,
                 document: null,
@@ -221,7 +229,7 @@ router.post('/', requireRole('regular'), async (req, res, next) => {
 
         return res.status(201).json({
             id: created.id,
-            status: created.status,
+            status: normalizeQualificationStatus(created.status),
             note: created.note,
             document: created.document,
             user: {
@@ -336,7 +344,7 @@ router.get('/:qualificationId', requireRole('admin', 'regular', 'business'), asy
                     suspended: qualification.regularUser.suspended,
                     createdAt: qualification.regularUser.account.createdAt.toISOString(),
                 },
-                status: qualification.status,
+                status: normalizeQualificationStatus(qualification.status),
             });
         }
 
@@ -372,7 +380,7 @@ router.get('/:qualificationId', requireRole('admin', 'regular', 'business'), asy
                     suspended: qualification.regularUser.suspended,
                     createdAt: qualification.regularUser.account.createdAt.toISOString(),
                 },
-                status: qualification.status,
+                status: normalizeQualificationStatus(qualification.status),
             });
         }
 
@@ -493,7 +501,7 @@ router.patch('/:qualificationId', requireRole('admin', 'regular'), async (req, r
         if (status !== undefined) {
             if (account.role === 'admin') {
                 const allowed =
-                    (qualification.status === 'submitted' || qualification.status === 'revised') &&
+                    normalizeQualificationStatus(qualification.status) === 'pending' &&
                     (status === 'approved' || status === 'rejected');
 
                 if (!allowed) {
@@ -508,9 +516,7 @@ router.patch('/:qualificationId', requireRole('admin', 'regular'), async (req, r
                 }
 
                 const allowed =
-                    (qualification.status === 'created' && status === 'submitted') ||
-                    ((qualification.status === 'approved' || qualification.status === 'rejected') &&
-                        status === 'revised');
+                    normalizeQualificationStatus(qualification.status) === 'rejected' && status === 'pending';
 
                 if (!allowed) {
                     return sendError(res, 403, 'Forbidden');
@@ -518,7 +524,7 @@ router.patch('/:qualificationId', requireRole('admin', 'regular'), async (req, r
 
                 data.status = status;
 
-                if (status === 'submitted' || status === 'revised') {
+                if (status === 'pending') {
                     data.approved = false;
                 }
             } else {
@@ -541,7 +547,7 @@ router.patch('/:qualificationId', requireRole('admin', 'regular'), async (req, r
 
         return res.status(200).json({
             id: updated.id,
-            status: updated.status,
+            status: normalizeQualificationStatus(updated.status),
             document: updated.document,
             note: updated.note,
             user: {

@@ -20,16 +20,17 @@ function formatDate(iso) {
 
 function statusBadgeClass(status) {
     const s = (status || '').toLowerCase();
+    if (s === 'pending' || s === 'created' || s === 'submitted' || s === 'revised') {
+        return 'admin-qual-modal__badge admin-qual-modal__badge--pending';
+    }
     if (s === 'approved') return 'admin-qual-modal__badge admin-qual-modal__badge--approved';
     if (s === 'rejected') return 'admin-qual-modal__badge admin-qual-modal__badge--rejected';
-    if (s === 'revised') return 'admin-qual-modal__badge admin-qual-modal__badge--revised';
-    if (s === 'submitted') return 'admin-qual-modal__badge admin-qual-modal__badge--submitted';
     return 'admin-qual-modal__badge';
 }
 
 function canAdminDecide(status) {
     const s = (status || '').toLowerCase();
-    return s === 'submitted' || s === 'revised';
+    return s === 'pending' || s === 'created' || s === 'submitted' || s === 'revised';
 }
 
 /**
@@ -44,6 +45,7 @@ export default function AdminQualificationReviewModal({ token, qualificationId, 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [pdfUrl, setPdfUrl] = useState(null);
+    const [documentError, setDocumentError] = useState(null);
     const [actionError, setActionError] = useState(null);
     const [acting, setActing] = useState(false);
     const pdfRef = useRef(null);
@@ -58,6 +60,7 @@ export default function AdminQualificationReviewModal({ token, qualificationId, 
         setPdfUrl(null);
         setDetail(null);
         setError(null);
+        setDocumentError(null);
         setActionError(null);
 
         if (!qualificationId || !token) {
@@ -72,13 +75,24 @@ export default function AdminQualificationReviewModal({ token, qualificationId, 
                 if (cancelled) return;
                 setDetail(d);
                 if (d.document) {
-                    const url = await fetchQualificationDocumentBlobUrl(token, qualificationId);
-                    if (cancelled) {
-                        URL.revokeObjectURL(url);
-                        return;
+                    try {
+                        const url = await fetchQualificationDocumentBlobUrl(token, qualificationId);
+                        if (cancelled) {
+                            URL.revokeObjectURL(url);
+                            return;
+                        }
+                        pdfRef.current = url;
+                        setPdfUrl(url);
+                    } catch (e) {
+                        if (!cancelled) {
+                            setPdfUrl(null);
+                            setDocumentError(
+                                e?.status === 404
+                                    ? 'The uploaded PDF could not be found.'
+                                    : e?.message || 'Could not load the PDF preview.'
+                            );
+                        }
                     }
-                    pdfRef.current = url;
-                    setPdfUrl(url);
                 }
             } catch (e) {
                 if (!cancelled) {
@@ -172,9 +186,10 @@ export default function AdminQualificationReviewModal({ token, qualificationId, 
                             <div className="admin-qual-modal__meta-row">
                                 <span className="admin-qual-modal__meta-label">Status</span>
                                 <span className={statusBadgeClass(detail.status)}>
-                                    {detail.status
+                                    {(detail.status || '').toLowerCase() === 'approved' ||
+                                    (detail.status || '').toLowerCase() === 'rejected'
                                         ? detail.status.charAt(0).toUpperCase() + detail.status.slice(1)
-                                        : '—'}
+                                        : 'Pending'}
                                 </span>
                             </div>
                             <div className="admin-qual-modal__meta-row">
@@ -209,6 +224,11 @@ export default function AdminQualificationReviewModal({ token, qualificationId, 
                             ) : (
                                 <p className="admin-qual-modal__no-doc">No PDF uploaded.</p>
                             )}
+                            {documentError ? (
+                                <p className="admin-qual-modal__doc-error" role="alert">
+                                    {documentError}
+                                </p>
+                            ) : null}
                             {detail.document ? (
                                 <p className="admin-qual-modal__filename">
                                     <i className="fas fa-file-pdf" aria-hidden /> document.pdf

@@ -1,3 +1,5 @@
+import { formatJobStatusLabel } from '../../../lib/businessJobStatus.js';
+
 const STATUS_KEYS = ['OPEN', 'FILLED', 'EXPIRED', 'CANCELLED', 'COMPLETED'];
 
 export { STATUS_KEYS };
@@ -91,7 +93,7 @@ export default function BusinessJobPostingsFilterBar({
                         {STATUS_KEYS.map((k) => (
                             <label key={k} className="business-filters__check">
                                 <input type="checkbox" checked={statusFilters.has(k)} onChange={() => onToggleStatus(k)} />
-                                {k.charAt(0) + k.slice(1).toLowerCase()}
+                                {formatJobStatusLabel(k)}
                             </label>
                         ))}
                     </div>
