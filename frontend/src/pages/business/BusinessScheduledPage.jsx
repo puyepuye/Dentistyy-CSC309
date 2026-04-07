@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { getBusinessMyJobs } from '../../lib/api.js';
+import { formatJobStatusLabel } from '../../lib/businessJobStatus.js';
 import {
     formatSchedulePrimary,
     isBusinessScheduleJobAssigned,
     splitBusinessJobsForSchedule,
-    titleCaseStatus,
 } from '../../lib/scheduleDisplay.js';
 
 const DATE_ACCENT_CLASSES = [
@@ -30,7 +30,7 @@ function BusinessScheduleRow({ job, variant }) {
     const workerLabel = job.worker
         ? `${job.worker.first_name ?? ''} ${job.worker.last_name ?? ''}`.trim() || 'Worker'
         : 'Unassigned';
-    const statusLabel = titleCaseStatus(job.status);
+    const statusLabel = formatJobStatusLabel(job.status);
     const accentClass = DATE_ACCENT_CLASSES[job.id % DATE_ACCENT_CLASSES.length];
 
     return (

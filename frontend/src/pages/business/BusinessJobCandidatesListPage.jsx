@@ -264,9 +264,9 @@ export default function BusinessJobCandidatesListPage() {
                                         <tr>
                                             <th scope="col">Candidate</th>
                                             <th scope="col">Availability</th>
-                                            <th scope="col">Talent</th>
-                                            <th scope="col">Practice</th>
-                                            <th scope="col">Mutual</th>
+                                            <th scope="col">Talent interest</th>
+                                            <th scope="col">Practice interest</th>
+                                            <th scope="col">Mutual interest</th>
                                             <th scope="col">Next step</th>
                                         </tr>
                                     </thead>

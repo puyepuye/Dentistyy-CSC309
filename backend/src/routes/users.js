@@ -16,6 +16,10 @@ const {
 const prisma = new PrismaClient();
 const RESET_EXPIRY_DAYS = 7;
 
+function normalizeQualificationStatus(status) {
+    return status === 'approved' || status === 'rejected' ? status : 'pending';
+}
+
 const allowedRegisterKeys = [
     'first_name',
     'last_name',
@@ -269,7 +273,7 @@ router.get('/me/qualification-requests', requireRole('regular'), async (req, res
         return res.status(200).json({
             results: quals.map((q) => ({
                 id: q.id,
-                status: q.status,
+                status: normalizeQualificationStatus(q.status),
                 document: q.document,
                 position_type: {
                     id: q.positionType.id,

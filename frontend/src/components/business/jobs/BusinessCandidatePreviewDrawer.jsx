@@ -207,10 +207,17 @@ export default function BusinessCandidatePreviewDrawer({
                                         {u.first_name} {u.last_name}
                                     </p>
                                     {ctx ? (
-                                        <p className="business-candidate-preview-drawer__meta">
-                                            Talent: {talentInterested ? 'Yes' : 'No'} · Practice:{' '}
-                                            {practiceInterested ? 'Yes' : 'No'} · Mutual: {mutual ? 'Yes' : 'No'}
-                                        </p>
+                                        <div className="business-candidate-preview-drawer__meta" role="list">
+                                            <span className="business-candidate-preview-drawer__meta-item" role="listitem">
+                                                Talent interest: {talentInterested ? 'Yes' : 'No'}
+                                            </span>
+                                            <span className="business-candidate-preview-drawer__meta-item" role="listitem">
+                                                Practice interest: {practiceInterested ? 'Yes' : 'No'}
+                                            </span>
+                                            <span className="business-candidate-preview-drawer__meta-item" role="listitem">
+                                                Mutual interest: {mutual ? 'Yes' : 'No'}
+                                            </span>
+                                        </div>
                                     ) : !hiringClosed ? (
                                         <p className="business-candidate-preview-drawer__meta">
                                             Practice interest: {invited ? 'Yes' : 'No'}
