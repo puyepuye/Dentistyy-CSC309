@@ -256,6 +256,195 @@
     }
 }
 
+/* --- Bento (below partners marquee) --- */
+.bentoSection {
+    margin-top: 2.5rem;
+    padding: 2.5rem 0 2rem;
+}
+
+.bentoSectionTitle {
+    margin: 0;
+    font-size: clamp(1.85rem, 3.2vw, 2.45rem);
+    font-weight: 700;
+    font-family: var(--font-marketing);
+    color: var(--color-landing-heading);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    text-align: center;
+}
+
+.bentoSectionLead {
+    margin: 0.65rem auto 0;
+    max-width: 40rem;
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.bentoGrid {
+    margin-top: 1.75rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.65rem;
+    align-items: stretch;
+    text-align: left;
+}
+
+.bentoCard {
+    --bento-grid-line: color-mix(in srgb, var(--color-text) 7%, transparent);
+    border-radius: 32px;
+    padding: 1.85rem 1.9rem 1.65rem;
+    background-color: color-mix(in srgb, var(--color-bg-elevated) 92%, var(--color-border) 8%);
+    background-image:
+        linear-gradient(var(--bento-grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--bento-grid-line) 1px, transparent 1px);
+    background-size: 44px 44px;
+    border: 1px solid var(--color-landing-partner-border-subtle);
+    box-shadow: 0 14px 36px color-mix(in srgb, var(--color-brand-dark) 6%, transparent);
+}
+
+.bentoCardWide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+    gap: 2rem;
+    align-items: center;
+    padding: 1.85rem 2rem 1.85rem 2rem;
+}
+
+.bentoCardTitle {
+    margin: 0;
+    font-size: 1.28rem;
+    font-weight: 700;
+    font-family: var(--font-marketing);
+    color: var(--color-landing-heading);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+
+.bentoCardBody {
+    margin: 0.55rem 0 0;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: var(--color-text-muted);
+}
+
+.bentoMini {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.65rem;
+    align-items: center;
+}
+
+.bentoMiniLine {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+}
+
+.bentoMiniLineMuted {
+    font-size: 0.82rem;
+    color: var(--color-text-subtle);
+}
+
+.bentoPlaceholder {
+    margin-top: 1.1rem;
+    min-height: 5.5rem;
+    border-radius: 18px;
+    border: 2px dashed color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+    background: color-mix(in srgb, var(--color-bg-elevated) 88%, var(--color-primary-soft));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.bentoPlaceholder i {
+    font-size: 1.45rem;
+    color: var(--color-accent);
+    opacity: 0.85;
+}
+
+.bentoNegotiationFigure {
+    margin: 1.15rem 0 0;
+}
+
+.bentoNegotiationImg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    box-shadow:
+        0 16px 40px color-mix(in srgb, var(--color-brand-dark) 10%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--color-bg-elevated) 85%, transparent);
+    background: var(--color-bg-elevated);
+}
+
+.bentoNegotiationCaption {
+    margin: 0.55rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    color: var(--color-text-subtle);
+}
+
+.bentoWideCopy {
+    min-width: 0;
+}
+
+.bentoFigure {
+    margin: 0;
+    min-width: 0;
+}
+
+.bentoScreenshot {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    box-shadow:
+        0 20px 50px color-mix(in srgb, var(--color-brand-dark) 12%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+    background: var(--color-bg-elevated);
+}
+
+.bentoCaption {
+    margin: 0.55rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    color: var(--color-text-subtle);
+}
+
+.bentoStatList {
+    margin: 1rem 0 0;
+    padding-left: 1.15rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+}
+
+.bentoStatList li + li {
+    margin-top: 0.4rem;
+}
+
+.bentoStatList strong {
+    color: var(--color-landing-heading);
+    font-weight: 700;
+}
+
 @media (max-width: 980px) {
     .heroCard {
         grid-template-columns: 1fr;
@@ -300,5 +489,13 @@
 
     .partnerChipName {
         font-size: 0.98rem;
+    }
+
+    .bentoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .bentoCardWide {
+        grid-template-columns: 1fr;
     }
 }
