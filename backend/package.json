@@ -4,7 +4,7 @@
   "description": "Temporary Staffing Platform",
   "main": "server.js",
   "scripts": {
-    "start": "node src/server.js 3000",
+    "start": "node src/server.js ${PORT:-3000}",
     "seed": "node prisma/seed.js",
     "clean": "rm -rf prisma/dev.db* node_modules package-lock.json prisma/migrations/"
   },
